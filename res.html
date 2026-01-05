@@ -7,7 +7,7 @@
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f7f7f7;
       color: #000;
       line-height: 1.6;
@@ -68,16 +68,25 @@
     }
 
     .socials li {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
     }
 
     .socials a {
       text-decoration: none;
       color: #0077cc;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .socials a:hover {
       text-decoration: underline;
+    }
+
+    .socials img {
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
     }
 
     h1 {
@@ -96,7 +105,7 @@
       margin-bottom: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #555;
+      color: #000;
       position: relative;
       padding-bottom: 0.5rem;
     }
@@ -111,25 +120,9 @@
     }
 
     p, li {
+      color: #000;
       margin-bottom: 0.75rem;
-    }
-
-    a {
-      color: #0077cc;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* WIP box styling */
-    .wip-box {
-      border: 1px solid #e0e0e0;
-      background-color: #f9f9f9;
-      padding: 2rem;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      font-size: 1.1rem;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
   </style>
 </head>
@@ -155,9 +148,22 @@
       <div class="socials">
         <h3>Contacts</h3>
         <ul>
-          <li><a href="https://github.com/ben-shin">GitHub</a></li>
-          <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
-          <li><a href="mailto:benwshin@gmail.com">Email</a></li>
+          <li>
+            <img src="icons/github.svg" alt="GitHub">
+            <a href="https://github.com/ben-shin">github.com/ben-shin</a>
+          </li>
+          <li>
+            <img src="icons/linkedin.svg" alt="LinkedIn">
+            <a href="https://linkedin.com/in/ben-shin">linkedin.com/in/ben-shin</a>
+          </li>
+          <li>
+            <img src="icons/email.svg" alt="Email">
+            <a href="mailto:benwshin@gmail.com">benwshin@gmail.com</a>
+          </li>
+          <li>
+            <img src="icons/email.svg" alt="Email">
+            <a href="mailto:ye.shin18@imperial.ac.uk">ye.shin18@imperial.ac.uk</a>
+          </li>
         </ul>
       </div>
     </section>
@@ -165,9 +171,7 @@
     <!-- Right Column -->
     <section class="right-column">
       <h2>Resources</h2>
-      <div class="wip-box">
-        WIP – tools available for download on <a href="https://github.com/ben-shin">github.com/ben-shin</a>
-      </div>
+      <p>WIP – tools available for download on <a href="https://github.com/ben-shin">GitHub</a>.</p>
     </section>
 
   </main>
