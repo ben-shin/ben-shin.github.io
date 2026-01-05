@@ -1,19 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Ben Shin – Portfolio</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      max-width: 700px;
-      margin: 4rem auto;
-      line-height: 1.6;
-    }
-  </style>
-</head>
-<body>
-  <h1>Ben Shin</h1>
-  <p>PhD student. Scientist. Human who writes code sometimes.</p>
-</body>
+  <head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      nav {
+        padding: 1rem;
+        border-bottom: 1px solid #ccc;
+      }
+
+      nav ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 1rem;
+      }
+
+      nav a {
+        text-decoration: none;
+        color: #333;
+      }
+
+      .container {
+        display: flex;
+        padding: 2rem;
+        gap: 3rem;
+      }
+
+      .left-column {
+        width: 30%;
+      }
+
+      .right-column {
+        width: 70%;
+      }
+
+      .profile-pic {
+        width: 100%;
+        max-width: 200px;
+        border-radius: 4px;
+      }
+
+      .socials ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .socials li {
+        margin-bottom: 0.5rem;
+      }
+
+      h1, h2, h3 {
+        margin-top: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="pubs.html">Publications</a></li>
+        <li><a href="res.html">Resources</a></li>
+      </ul>
+    </nav>
+
+    <main class="container">
+
+      <section class="left-column">
+        <h1>Ben Shin</h1>
+
+        <img src="me.jpg" alt="Photo of Your Name" class="profile-pic">
+
+        <div class="socials">
+          <h3>Contact</h3>
+          <ul>
+            <li><a href="https://github.com/ben-shin">GitHub</a></li>
+            <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
+            <li><a href="mailto:benwshin@gmail.com">Email</a></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="right-column">
+        <h2>Biochemistry PhD Student</h2>
+
+        <h3>Technical Skills</h3>
+        <ul>
+          <li>Protein Expression and Purification</li>
+          <li>Molecular Biology</li>
+          <li>NMR</li>
+          <li>Fluorescence Microscopy (FCS, TIRF)</li>
+          <li>Coding (Matlab, Python)</li>
+        </ul>
+
+        <h3>Education</h3>
+        <p>
+          PhD in Biochemistry<br>
+          Imperial College London
+        </p>
+        <p>
+          MRes in Structural Biology<br>
+          Imperial College London
+        </p>
+        <p>
+          BSc in Biochemistry<br>
+          Imperial College London
+        </p>
+        <p>
+          High School Diploma<br>
+          Shanghai American School
+        </p>
+      </section>
+
+    </main>
+
+  </body>
 </html>
