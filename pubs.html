@@ -1,197 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Publications</title>
+<head>
+  <meta charset="UTF-8">
+  <title>Publications</title>
 
-    <style>
-      body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        background-color: #f7f7f7;
-        color: #222;
-        line-height: 1.6;
-      }
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background-color: #f7f7f7;
+      color: #000; /* all text black */
+      line-height: 1.6;
+    }
 
-      nav {
-        background-color: #ffffff;
-        border-bottom: 1px solid #e0e0e0;
-      }
+    nav {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+    }
 
-      nav ul {
-        list-style: none;
-        margin: 0 auto;
-        padding: 1rem 2rem;
-        max-width: 1100px;
-        display: flex;
-        gap: 1.5rem;
-      }
+    nav ul {
+      list-style: none;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      max-width: 1100px;
+      display: flex;
+      gap: 1.5rem;
+    }
 
-      nav a {
-        text-decoration: none;
-        color: #333;
-        font-weight: 500;
-      }
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
 
-      nav a:hover {
-        color: #0077cc;
-      }
+    nav a:hover {
+      color: #0077cc;
+    }
 
-      .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 3rem 2rem;
-        display: flex;
-        gap: 4rem;
-        background-color: #ffffff;
-      }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      display: flex;
+      gap: 4rem;
+      background-color: #ffffff;
+    }
 
-      .left-column {
-        width: 30%;
-      }
+    .left-column {
+      width: 30%;
+    }
 
-      .right-column {
-        width: 70%;
-      }
+    .right-column {
+      width: 70%;
+    }
 
-      .profile-pic {
-        width: 100%;
-        max-width: 220px;
-        border-radius: 6px;
-        margin-bottom: 1.5rem;
-      }
+    .profile-pic {
+      width: 100%;
+      max-width: 220px;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
 
-      .socials ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
+    .socials ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-      .socials li {
-        margin-bottom: 0.5rem;
-      }
+    .socials li {
+      margin-bottom: 0.5rem;
+    }
 
-      .socials a {
-        text-decoration: none;
-        color: #0077cc;
-      }
+    .socials a {
+      text-decoration: none;
+      color: #0077cc; /* only contacts links blue */
+    }
 
-      .socials a:hover {
-        text-decoration: underline;
-      }
+    .socials a:hover {
+      text-decoration: underline;
+    }
 
-      h1 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-      }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
 
-      h2 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-      }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
 
-      h3 {
-        font-size: 1.1rem;
-        margin-top: 2rem;
-        margin-bottom: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #555;
-      }
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #555;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
 
-      ul {
-        padding-left: 1.2rem;
-      }
+    h3::after {
+      content: "";
+      display: block;
+      height: 1px;
+      background-color: #e0e0e0;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
 
-      p {
-        margin-bottom: 0.75rem;
-      }
+    article {
+      margin-bottom: 2rem;
+    }
 
-      article {
-        margin-bottom: 2rem;
-      }
+    .journal {
+      font-style: italic;
+    }
 
-      .journal {
-        font-style: italic;
-      }
+    .meta {
+      color: #555;
+      margin: 0.25rem 0;
+    }
 
-      .meta {
-        color: #555;
-        margin: 0.25rem 0;
-      }
-    </style>
-  </head>
+    a {
+      color: #0077cc;
+    }
 
-  <body>
+    a:hover {
+      text-decoration: underline;
+    }
 
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="pubs.html">Publications</a></li>
-        <li><a href="res.html">Resources</a></li>
-      </ul>
-    </nav>
+    p, li {
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
 
-    <main class="container">
+<body>
 
-      <!-- Left column with your info for consistency -->
-      <section class="left-column">
-        <h1>Ben Shin</h1>
-        <img src="me.jpg" alt="Photo of Ben Shin" class="profile-pic">
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="pubs.html">Publications</a></li>
+      <li><a href="res.html">Resources</a></li>
+    </ul>
+  </nav>
 
-        <div class="socials">
-          <h3>Contacts</h3>
-          <ul>
-            <li><a href="https://github.com/ben-shin">GitHub</a></li>
-            <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
-            <li><a href="mailto:benwshin@gmail.com">Email</a></li>
-          </ul>
-        </div>
-      </section>
+  <main class="container">
 
-      <!-- Right column with publications -->
-      <section class="right-column">
-        <h1>Publications</h1>
+    <!-- Left Column -->
+    <section class="left-column">
+      <h1>Ben Shin</h1>
 
-        <article>
-          <h2>Mannan-targeting chimeric antigen receptor redirected antifungal activity of NK-92 cells against <em>Candida albicans</em></h2>
-          <p class="journal">Cytotherapy</p>
-          <p class="meta">August 2025 · Journal article</p>
-          <p class="meta">
-            DOI: <a href="https://doi.org/10.1016/j.jcyt.2025.05.001">10.1016/j.jcyt.2025.05.001</a>
-          </p>
-          <p class="meta">
-            Contributors: Gabriela Yamazaki de Campos; Júlia Garcia Guimarães; Michele Procópio Machado; Patrícia Kellen Martins Oliveira-Brito; <strong>Ben Shin</strong>; Antonio Di Maio; Douglas dos-Santos; Patricia Vianna Bonini Palma; Thaila Fernanda dos Reis; Gustavo Henrique Goldman et al.
-          </p>
-        </article>
+      <img src="me.jpg" alt="Photo of Ben Shin" class="profile-pic">
 
-        <article>
-          <h2>Seeding-competent early tau multimers are associated with cell type-specific transcriptional signatures</h2>
-          <p class="journal">Acta Neuropathologica</p>
-          <p class="meta">April 2025 · Journal article</p>
-          <p class="meta">
-            DOI: <a href="https://doi.org/10.1007/s00401-025-02869-4">10.1007/s00401-025-02869-4</a>
-          </p>
-          <p class="meta">
-            Contributors: Rahel Feleke; Simona Jogaudaite; Elisavet Velentza-Almpani; Leung Yeung-Yeung; Daniel Clode; Jeong Hun Ko; <strong>Ben Shin</strong>; Steve Matthews; Maria Otero-Jimenez; Marcelina J. Wojewska et al.
-          </p>
-        </article>
+      <div class="socials">
+        <h3>Contacts</h3>
+        <ul>
+          <li><a href="https://github.com/ben-shin">GitHub</a></li>
+          <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
+          <li><a href="mailto:benwshin@gmail.com">Email</a></li>
+        </ul>
+      </div>
+    </section>
 
-        <article>
-          <h2>FapA is an Intrinsically Disordered Chaperone for Pseudomonas Functional Amyloid FapC</h2>
-          <p class="journal">Journal of Molecular Biology</p>
-          <p class="meta">January 2023 · Journal article</p>
-          <p class="meta">
-            DOI: <a href="https://doi.org/10.1016/j.jmb.2022.167878">10.1016/j.jmb.2022.167878</a>
-          </p>
-          <p class="meta">
-            Contributors: Helena Ø. Rasmussen; Amit Kumar; <strong>Ben Shin</strong>; Fisentzos Stylianou; Lee Sewell; Yingqi Xu; Daniel E. Otzen; Jan Skov Pedersen; Steve J. Matthews
-          </p>
-        </article>
+    <!-- Right Column -->
+    <section class="right-column">
+      <h2>Publications</h2>
 
-      </section>
+      <article>
+        <h3>Mannan-targeting chimeric antigen receptor redirected antifungal activity of NK-92 cells against <em>Candida albicans</em></h3>
+        <p class="journal">Cytotherapy</p>
+        <p class="meta">August 2025 · Journal article</p>
+        <p class="meta">DOI: <a href="https://doi.org/10.1016/j.jcyt.2025.05.001">10.1016/j.jcyt.2025.05.001</a></p>
+        <p class="meta">
+          Contributors: Gabriela Yamazaki de Campos; Júlia Garcia Guimarães; Michele Procópio Machado; Patrícia Kellen Martins Oliveira-Brito; <strong>Ben Shin</strong>; Antonio Di Maio; Douglas dos-Santos; Patricia Vianna Bonini Palma; Thaila Fernanda dos Reis; Gustavo Henrique Goldman et al.
+        </p>
+      </article>
 
-    </main>
+      <article>
+        <h3>Seeding-competent early tau multimers are associated with cell type-specific transcriptional signatures</h3>
+        <p class="journal">Acta Neuropathologica</p>
+        <p class="meta">April 2025 · Journal article</p>
+        <p class="meta">DOI: <a href="https://doi.org/10.1007/s00401-025-02869-4">10.1007/s00401-025-02869-4</a></p>
+        <p class="meta">
+          Contributors: Rahel Feleke; Simona Jogaudaite; Elisavet Velentza-Almpani; Leung Yeung-Yeung; Daniel Clode; Jeong Hun Ko; <strong>Ben Shin</strong>; Steve Matthews; Maria Otero-Jimenez; Marcelina J. Wojewska et al.
+        </p>
+      </article>
 
-  </body>
+      <article>
+        <h3>FapA is an Intrinsically Disordered Chaperone for Pseudomonas Functional Amyloid FapC</h3>
+        <p class="journal">Journal of Molecular Biology</p>
+        <p class="meta">January 2023 · Journal article</p>
+        <p class="meta">DOI: <a href="https://doi.org/10.1016/j.jmb.2022.167878">10.1016/j.jmb.2022.167878</a></p>
+        <p class="meta">
+          Contributors: Helena Ø. Rasmussen; Amit Kumar; <strong>Ben Shin</strong>; Fisentzos Stylianou; Lee Sewell; Yingqi Xu; Daniel E. Otzen; Jan Skov Pedersen; Steve J. Matthews
+        </p>
+      </article>
+
+    </section>
+
+  </main>
+
+</body>
 </html>
