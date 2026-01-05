@@ -1,188 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Home</title>
+<head>
+  <meta charset="UTF-8">
+  <title>Home</title>
 
-<style>
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background-color: #f7f7f7;
-    color: #222;
-    line-height: 1.6;
-  }
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background-color: #f7f7f7;
+      color: #000; /* make all text black */
+      line-height: 1.6;
+    }
 
-  /* Add separation lines below major sections in the right column */
-.right-column h3 {
-  position: relative;
-  padding-bottom: 0.5rem;
-  margin-top: 2rem;
-  margin-bottom: 1rem;
-}
+    nav {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+    }
 
-.right-column h3::after {
-  content: "";
-  display: block;
-  height: 1px;
-  background-color: #e0e0e0;
-  margin-top: 0.5rem;
-  width: 100%;
-}
+    nav ul {
+      list-style: none;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      max-width: 1100px;
+      display: flex;
+      gap: 1.5rem;
+    }
 
-/* Optional: separate left column sections too */
-.left-column h3::after {
-  content: "";
-  display: block;
-  height: 1px;
-  background-color: #e0e0e0;
-  margin-top: 0.5rem;
-  width: 100%;
-}
-  
-  nav {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e0e0e0;
-  }
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
 
-  nav ul {
-    list-style: none;
-    margin: 0 auto;
-    padding: 1rem 2rem;
-    max-width: 1100px;
-    display: flex;
-    gap: 1.5rem;
-  }
+    nav a:hover {
+      color: #0077cc;
+    }
 
-  nav a {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-  }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      display: flex;
+      gap: 4rem;
+      background-color: #ffffff;
+    }
 
-  nav a:hover {
-    color: #0077cc;
-  }
+    .left-column {
+      width: 30%;
+    }
 
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 3rem 2rem;
-    display: flex;
-    gap: 4rem;
-    background-color: #ffffff;
-  }
+    .right-column {
+      width: 70%;
+    }
 
-  .left-column {
-    width: 30%;
-  }
+    .profile-pic {
+      width: 100%;
+      max-width: 220px;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
 
-  .right-column {
-    width: 70%;
-  }
+    .socials ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
 
-  .profile-pic {
-    width: 100%;
-    max-width: 220px;
-    border-radius: 6px;
-    margin-bottom: 1.5rem;
-  }
+    .socials li {
+      margin-bottom: 0.5rem;
+    }
 
-  .socials ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+    .socials a {
+      text-decoration: none;
+      color: #0077cc; /* only contacts links blue */
+    }
 
-  .socials li {
-    margin-bottom: 0.5rem;
-  }
+    .socials a:hover {
+      text-decoration: underline;
+    }
 
-  .socials a {
-    text-decoration: none;
-    color: #0077cc;
-  }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
 
-  .socials a:hover {
-    text-decoration: underline;
-  }
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
 
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-  }
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #555;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
 
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
+    /* Horizontal lines under headings */
+    h3::after {
+      content: "";
+      display: block;
+      height: 1px;
+      background-color: #e0e0e0;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
 
-  h3 {
-    font-size: 1.1rem;
-    margin-top: 2rem;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #555;
-  }
+    .education {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-family: monospace;
+    }
 
-  ul {
-    padding-left: 1.2rem;
-  }
+    .edu-line {
+      display: flex;
+      justify-content: space-between;
+    }
 
-  p {
-    margin-bottom: 0.75rem;
-  }
-</style>
+    .edu-line .degree {
+      font-weight: bold;
+    }
 
-  </head>
+    .edu-line .institution {
+      text-align: right;
+      color: #000;
+    }
 
-  <body>
+    p, li {
+      color: #000; /* ensure all text black */
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
 
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="pubs.html">Publications</a></li>
-        <li><a href="res.html">Resources</a></li>
-      </ul>
-    </nav>
+<body>
 
-    <main class="container">
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="pubs.html">Publications</a></li>
+      <li><a href="res.html">Resources</a></li>
+    </ul>
+  </nav>
 
-      <section class="left-column">
-        <h1>Ben Shin</h1>
+  <main class="container">
 
-        <img src="me.jpg" class="profile-pic">
+    <!-- Left Column -->
+    <section class="left-column">
+      <h1>Ben Shin</h1>
 
-        <div class="socials">
-          <h3>Contacts</h3>
-          <ul>
-            <li><a href="https://github.com/ben-shin">GitHub</a></li>
-            <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
-            <li><a href="mailto:benwshin@gmail.com">Email</a></li>
-          </ul>
+      <img src="me.jpg" alt="Photo of Ben Shin" class="profile-pic">
+
+      <div class="socials">
+        <h3>Contacts</h3>
+        <ul>
+          <li><a href="https://github.com/ben-shin">GitHub</a></li>
+          <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
+          <li><a href="mailto:benwshin@gmail.com">Email</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Right Column -->
+    <section class="right-column">
+      <h2>Biochemistry PhD Student</h2>
+
+      <h3>About Me</h3>
+      <p>
+        I am a PhD student in Biochemistry and Biophysics specializing in amyloid aggregation. My work combines molecular biology, protein biochemistry, and advanced biophysical techniques to understand protein misfolding processes. Outside the lab, I enjoy baseball, homebrewing, and exploring new ideas in science and technology.
+      </p>
+
+      <p><strong>Technical Skills:</strong> Protein Expression and Purification, Molecular Biology, NMR, Fluorescence Microscopy (FCS, TIRF), Coding (Matlab, Python)</p>
+
+      <h3>Education</h3>
+      <div class="education">
+        <div class="edu-line">
+          <span class="degree">Biochemistry PhD</span>
+          <span class="institution">Imperial College London (October 2022 – Present)</span>
         </div>
-      </section>
+        <div class="edu-line">
+          <span class="degree">MRes in Structural Biology</span>
+          <span class="institution">Imperial College London (2021 – 2022)</span>
+        </div>
+        <div class="edu-line">
+          <span class="degree">BSc in Biochemistry</span>
+          <span class="institution">Imperial College London (2018 – 2021)</span>
+        </div>
+        <div class="edu-line">
+          <span class="degree">High School Diploma</span>
+          <span class="institution">Shanghai American School (2014 – 2018)</span>
+        </div>
+      </div>
+    </section>
 
-      <section class="right-column">
-  <h2>Biochemistry PhD Student</h2>
+  </main>
 
-  <h3>About Me</h3>
-  <p>
-    I am a PhD student in Biochemistry and Biophysics specializing in amyloid aggregation. My work combines molecular biology, protein biochemistry, and advanced biophysical techniques to understand protein misfolding processes. Outside the lab, I enjoy baseball, homebrewing, and exploring new ideas in science and technology.
-  </p>
-        
-  <p><strong>Technical Skills:</strong> Protein Expression and Purification, Molecular Biology, NMR, Fluorescence Microscopy (FCS, TIRF), Coding (Matlab, Python)</p>
-
-  <h3>Education</h3>
-  <ul>
-    <li>Biochemistry PhD – Imperial College London (October 2022 – Present)</li>
-    <li>MRes in Structural Biology – Imperial College London (2021 – 2022)</li>
-    <li>BSc in Biochemistry – Imperial College London (2018 – 2021)</li>
-    <li>High School Diploma – Shanghai American School (2014 – 2018)</li>
-  </ul>
-</section>
-    </main>
-
-  </body>
+</body>
 </html>
