@@ -13,6 +13,33 @@
     line-height: 1.6;
   }
 
+  /* Add separation lines below major sections in the right column */
+.right-column h3 {
+  position: relative;
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.right-column h3::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* Optional: separate left column sections too */
+.left-column h3::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background-color: #e0e0e0;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+  
   nav {
     background-color: #ffffff;
     border-bottom: 1px solid #e0e0e0;
