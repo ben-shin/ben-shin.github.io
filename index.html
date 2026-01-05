@@ -7,9 +7,9 @@
   <style>
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f7f7f7;
-      color: #000; /* make all text black */
+      color: #000; /* all text black */
       line-height: 1.6;
     }
 
@@ -68,26 +68,37 @@
     }
 
     .socials li {
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
     }
 
     .socials a {
       text-decoration: none;
-      color: #0077cc; /* only contacts links blue */
+      color: #0077cc; /* contact links blue */
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
 
     .socials a:hover {
       text-decoration: underline;
     }
 
+    .socials img {
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+    }
+
     h1 {
       font-size: 2rem;
       margin-bottom: 1rem;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
 
     h2 {
       font-size: 1.5rem;
       margin-bottom: 1rem;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
 
     h3 {
@@ -96,12 +107,12 @@
       margin-bottom: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #555;
+      color: #000;
       position: relative;
       padding-bottom: 0.5rem;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    /* Horizontal lines under headings */
     h3::after {
       content: "";
       display: block;
@@ -115,7 +126,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      font-family: monospace;
+      font-family: Tahoma, Geneva, Verdana, monospace;
     }
 
     .edu-line {
@@ -135,6 +146,7 @@
     p, li {
       color: #000; /* ensure all text black */
       margin-bottom: 0.75rem;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
   </style>
 </head>
@@ -157,27 +169,27 @@
 
       <img src="me.jpg" alt="Photo of Ben Shin" class="profile-pic">
 
-<div class="socials">
-  <h3>Contacts</h3>
-  <ul>
-    <li>
-      <img src="icons/github.svg" alt="GitHub" style="width:18px; vertical-align:middle; margin-right:6px;">
-      <a href="https://github.com/ben-shin">github.com/ben-shin</a>
-    </li>
-    <li>
-      <img src="icons/linkedin.svg" alt="LinkedIn" style="width:18px; vertical-align:middle; margin-right:6px;">
-      <a href="https://linkedin.com/in/ben-shin">linkedin.com/in/ben-shin</a>
-    </li>
-    <li>
-      <img src="icons/email.svg" alt="Email" style="width:18px; vertical-align:middle; margin-right:6px;">
-      <a href="mailto:benwshin@gmail.com">benwshin@gmail.com</a>
-    </li>
-    <li>
-      <img src="icons/email.svg" alt="Email" style="width:18px; vertical-align:middle; margin-right:6px;">
-      <a href="mailto:ye.shin18@imperial.ac.uk">ye.shin18@imperial.ac.uk</a>
-    </li>
-  </ul>
-</div>
+      <div class="socials">
+        <h3>Contacts</h3>
+        <ul>
+          <li>
+            <img src="icons/github.svg" alt="GitHub">
+            <a href="https://github.com/ben-shin">github.com/ben-shin</a>
+          </li>
+          <li>
+            <img src="icons/linkedin.svg" alt="LinkedIn">
+            <a href="https://linkedin.com/in/ben-shin">linkedin.com/in/ben-shin</a>
+          </li>
+          <li>
+            <img src="icons/email.svg" alt="Email">
+            <a href="mailto:benwshin@gmail.com">benwshin@gmail.com</a>
+          </li>
+          <li>
+            <img src="icons/email.svg" alt="Email">
+            <a href="mailto:ye.shin18@imperial.ac.uk">ye.shin18@imperial.ac.uk</a>
+          </li>
+        </ul>
+      </div>
     </section>
 
     <!-- Right Column -->
@@ -186,7 +198,7 @@
 
       <h3>About Me</h3>
       <p>
-        I am a PhD student in Biochemistry and Biophysics, specializing in amyloid aggregation. My research combines biophysical techniques and computational methods to investigate the dynamics of intrinsically disordered proteins (IDPs) and the molecular events that drive their aggregation and misfolding. I am particularly interested in advancing my expertise in NMR spectroscopy and continuing to study IDPs and intrinsically disordered regions (IDRs) to better understand protein disorder and dynamics. I am currently seeking a postdoctoral position and welcome inquiries from potential employers. Outside of the lab, I enjoy playing baseball, brewing beer, and learning to code. 
+        I am a PhD student in Biochemistry and Biophysics, specializing in amyloid aggregation. My research combines biophysical techniques and computational methods to investigate the dynamics of intrinsically disordered proteins (IDPs) and the molecular events that drive their aggregation and misfolding. I am particularly interested in advancing my expertise in NMR spectroscopy and continuing to study IDPs and intrinsically disordered regions (IDRs) to better understand protein disorder and dynamics. I am currently seeking a postdoctoral position and welcome inquiries from potential employers. Outside of the lab, I enjoy playing baseball, brewing beer, and learning to code.
       </p>
 
       <p><strong>Technical Skills:</strong> Protein Expression and Purification, Molecular Biology, NMR, Fluorescence Microscopy (FCS, TIRF), Coding (Matlab, Python)</p>
@@ -195,7 +207,7 @@
       <div class="education">
         <div class="edu-line">
           <span class="degree">Biochemistry PhD</span>
-          <span class="institution">Imperial College London (October 2022 – Present)</span>
+          <span class="institution">Imperial College London (2022 – Present)</span>
         </div>
         <div class="edu-line">
           <span class="degree">MRes in Structural Biology</span>
