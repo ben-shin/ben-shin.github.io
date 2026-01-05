@@ -1,1 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resources</title>
 
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background-color: #f7f7f7;
+      color: #000;
+      line-height: 1.6;
+    }
+
+    nav {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      max-width: 1100px;
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: #0077cc;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      display: flex;
+      gap: 4rem;
+      background-color: #ffffff;
+    }
+
+    .left-column {
+      width: 30%;
+    }
+
+    .right-column {
+      width: 70%;
+    }
+
+    .profile-pic {
+      width: 100%;
+      max-width: 220px;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+
+    .socials ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .socials li {
+      margin-bottom: 0.5rem;
+    }
+
+    .socials a {
+      text-decoration: none;
+      color: #0077cc;
+    }
+
+    .socials a:hover {
+      text-decoration: underline;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #555;
+      position: relative;
+      padding-bottom: 0.5rem;
+    }
+
+    h3::after {
+      content: "";
+      display: block;
+      height: 1px;
+      background-color: #e0e0e0;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+
+    p, li {
+      margin-bottom: 0.75rem;
+    }
+
+    a {
+      color: #0077cc;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* WIP box styling */
+    .wip-box {
+      border: 1px solid #e0e0e0;
+      background-color: #f9f9f9;
+      padding: 2rem;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="pubs.html">Publications</a></li>
+      <li><a href="res.html">Resources</a></li>
+    </ul>
+  </nav>
+
+  <main class="container">
+
+    <!-- Left Column -->
+    <section class="left-column">
+      <h1>Ben Shin</h1>
+
+      <img src="me.jpg" alt="Photo of Ben Shin" class="profile-pic">
+
+      <div class="socials">
+        <h3>Contacts</h3>
+        <ul>
+          <li><a href="https://github.com/ben-shin">GitHub</a></li>
+          <li><a href="https://linkedin.com/in/ben-shin">LinkedIn</a></li>
+          <li><a href="mailto:benwshin@gmail.com">Email</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Right Column -->
+    <section class="right-column">
+      <h2>Resources</h2>
+      <div class="wip-box">
+        WIP – tools available for download on <a href="https://github.com/ben-shin">github.com/ben-shin</a>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
