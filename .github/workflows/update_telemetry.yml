@@ -36,37 +36,37 @@ jobs:
       - name: Update history.json
         run: |
           python - <<'PY'
-import json, os, datetime, sys
-dest = 'sim-progress'
-status_path = os.path.join(dest, 'status.json')
-hist_path = os.path.join(dest, 'history.json')
-with open(status_path) as f:
-    status = json.load(f)
-history = {}
-if os.path.exists(hist_path):
-    try:
-        with open(hist_path) as f:
-            history = json.load(f) or {}
-    except Exception:
-        history = {}
-timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
-for sim in status.get('simulations', []):
-    sid = sim.get('id') or sim.get('path') or 'unknown'
-    stage = sim.get('active_stage') or {}
-    entry = {
-        'timestamp': timestamp,
-        'ns': stage.get('current_ns'),
-        'temperature_k': stage.get('temperature_k'),
-        'pressure_bar': stage.get('pressure_bar'),
-        'performance_ns_per_day': stage.get('performance_ns_per_day'),
-        'potential_kj_mol': stage.get('potential_kj_mol'),
-    }
-    history.setdefault(sid, []).append(entry)
-    if len(history[sid]) > 200:
-        history[sid] = history[sid][-200:]
-with open(hist_path, 'w') as f:
-    json.dump(history, f, separators=(',', ':'))
-PY
+            import json, os, datetime, sys
+            dest = 'sim-progress'
+            status_path = os.path.join(dest, 'status.json')
+            hist_path = os.path.join(dest, 'history.json')
+            with open(status_path) as f:
+                status = json.load(f)
+            history = {}
+            if os.path.exists(hist_path):
+                try:
+                    with open(hist_path) as f:
+                        history = json.load(f) or {}
+                except Exception:
+                    history = {}
+            timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
+            for sim in status.get('simulations', []):
+                sid = sim.get('id') or sim.get('path') or 'unknown'
+                stage = sim.get('active_stage') or {}
+                entry = {
+                    'timestamp': timestamp,
+                    'ns': stage.get('current_ns'),
+                    'temperature_k': stage.get('temperature_k'),
+                    'pressure_bar': stage.get('pressure_bar'),
+                    'performance_ns_per_day': stage.get('performance_ns_per_day'),
+                    'potential_kj_mol': stage.get('potential_kj_mol'),
+                }
+                history.setdefault(sid, []).append(entry)
+                if len(history[sid]) > 200:
+                    history[sid] = history[sid][-200:]
+            with open(hist_path, 'w') as f:
+                json.dump(history, f, separators=(',', ':'))
+          PY
       - name: Commit and push changes
         env:
           PAT: ${{ secrets.PAT }}
