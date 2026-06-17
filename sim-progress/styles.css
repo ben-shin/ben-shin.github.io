@@ -200,6 +200,8 @@ main { width: min(1240px, 100%); margin: 0 auto; padding: 16px 12px 82px; }
 .chart-line.secondary { stroke: var(--cyan); filter: drop-shadow(0 0 6px rgba(99, 230, 255, 0.32)); }
 .chart-line.tertiary { stroke: var(--amber); filter: drop-shadow(0 0 6px rgba(255, 209, 102, 0.3)); }
 .chart-line.quaternary { stroke: var(--pink); filter: drop-shadow(0 0 6px rgba(255, 122, 217, 0.3)); }
+.chart-line.fifth { stroke: var(--blue); filter: drop-shadow(0 0 6px rgba(122, 162, 255, 0.26)); }
+.chart-line.sixth { stroke: var(--red); filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.22)); }
 .chart-area { fill: rgba(78, 255, 171, 0.08); }
 .point { fill: var(--green); stroke: #06110d; stroke-width: 1.5; }
 .tick-label, .value-label { fill: var(--muted); font-family: var(--mono); font-size: 10px; }
@@ -210,6 +212,8 @@ main { width: min(1240px, 100%); margin: 0 auto; padding: 16px 12px 82px; }
 .legend .secondary::before { background: var(--cyan); }
 .legend .tertiary::before { background: var(--amber); }
 .legend .quaternary::before { background: var(--pink); }
+.legend .fifth::before { background: var(--blue); }
+.legend .sixth::before { background: var(--red); }
 
 .phase-ribbon { display: grid; gap: 10px; padding: 12px; }
 .phase-track { display: grid; grid-template-columns: 72px minmax(0, 1fr) 72px; align-items: center; gap: 10px; }
@@ -595,4 +599,233 @@ footer {
   .hero-progress { justify-self: end; width: min(100%, 450px); }
   .stats-and-runs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .terminal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+}
+
+/* Terminal mode: simpler, denser, less dashboardy. */
+body {
+  background: #020403;
+}
+
+.scanlines {
+  opacity: 0.08;
+}
+
+.app-header {
+  border-bottom-color: rgba(78, 255, 171, 0.28);
+  background: #020403;
+  backdrop-filter: none;
+}
+
+.brand-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+h1 {
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
+  text-shadow: none;
+}
+
+main {
+  width: min(1480px, 100%);
+  padding-top: 10px;
+}
+
+.active-hero, .console-panel, .plot-card, .metric, .simulation {
+  border-color: rgba(78, 255, 171, 0.25);
+  border-radius: 0;
+  background: #03100b;
+  box-shadow: none;
+}
+
+.active-hero::before, .console-panel::before, .plot-card::before, .metric::before, .simulation::before {
+  background-size: 12px 12px;
+  opacity: 0.72;
+}
+
+.active-hero {
+  display: block;
+  min-height: 0;
+  padding: 0;
+}
+
+.terminal-session {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1px;
+}
+
+.terminal-session pre {
+  position: relative;
+  margin: 0;
+  padding: 14px;
+  color: var(--green-soft);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.prompt {
+  color: var(--cyan);
+  font-weight: 900;
+}
+
+.terminal-session .hero-stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  border-top: 1px solid rgba(78, 255, 171, 0.2);
+  background: rgba(78, 255, 171, 0.14);
+}
+
+.terminal-session .hero-stats div {
+  border: 0;
+  border-radius: 0;
+  background: #03100b;
+  padding: 9px 12px;
+}
+
+.terminal-session .hero-stats strong {
+  color: var(--green);
+  font-size: 0.9rem;
+}
+
+.hero-copy, .hero-progress, .hero-ring {
+  display: none;
+}
+
+.terminal-grid {
+  gap: 1px;
+  margin-top: 10px;
+  border: 1px solid rgba(78, 255, 171, 0.22);
+  background: rgba(78, 255, 171, 0.14);
+}
+
+.metric {
+  min-height: 70px;
+  padding: 10px;
+  border: 0;
+}
+
+.metric strong {
+  margin-top: 6px;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.metric em {
+  margin-top: 4px;
+  font-size: 0.62rem;
+}
+
+.panel-title {
+  min-height: 31px;
+  padding: 8px 10px;
+  background: #04160f;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+#terminalLines {
+  min-height: 118px;
+  padding: 10px;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.plot-grid {
+  gap: 10px;
+}
+
+.plot {
+  min-height: 190px;
+  padding: 8px;
+}
+
+.plot svg {
+  height: 190px;
+}
+
+.chart-line {
+  stroke-width: 1.8;
+  filter: none;
+}
+
+.point {
+  r: 1.8px;
+}
+
+.chart-area {
+  fill: rgba(78, 255, 171, 0.045);
+}
+
+.legend {
+  padding: 0 10px 9px;
+  gap: 8px;
+  font-size: 0.66rem;
+}
+
+.phase-ribbon {
+  padding: 10px;
+  gap: 6px;
+}
+
+.phase-track {
+  grid-template-columns: 54px minmax(0, 1fr) 56px;
+  gap: 8px;
+}
+
+.phase-bar {
+  min-height: 12px;
+  border-radius: 0;
+}
+
+.stats-and-runs {
+  gap: 10px;
+}
+
+.stat-row {
+  grid-template-columns: minmax(112px, 0.5fr) minmax(0, 1fr);
+  padding: 7px 0;
+}
+
+.tabs {
+  padding: 8px;
+}
+
+.tab, .status, .stage-name, .stage-box, .simulation, .ring {
+  border-radius: 0;
+}
+
+footer {
+  background: #020403;
+  backdrop-filter: none;
+}
+
+@media (min-width: 660px) {
+  .terminal-session {
+    grid-template-columns: minmax(0, 1fr) 310px;
+  }
+
+  .terminal-session .hero-stats {
+    grid-template-columns: 1fr;
+    border-top: 0;
+    border-left: 1px solid rgba(78, 255, 171, 0.2);
+  }
+}
+
+@media (min-width: 980px) {
+  main { padding-top: 12px; }
+  .active-hero {
+    display: block;
+    min-height: 0;
+    padding: 0;
+  }
+  .terminal-grid { grid-template-columns: repeat(14, minmax(0, 1fr)); }
 }

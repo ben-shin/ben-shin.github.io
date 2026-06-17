@@ -11,12 +11,8 @@ const STAGES = ["em", "nvt", "npt", "md"];
 const HISTORY_LIMIT = 1000;
 const $ = (selector) => document.querySelector(selector);
 
-function finite(value) {
-  return value !== null && value !== undefined && Number.isFinite(Number(value));
-}
-
-function num(value) {
-  return finite(value) ? Number(value) : null;
+if (window.location.protocol === "file:") {
+  window.location.replace("http://127.0.0.1:8765/");
 }
 
 function clamp(value, min, max) {
@@ -163,6 +159,19 @@ function totalFileBytes(files) {
   return values.length ? values.reduce((sum, value) => sum + Number(value), 0) : null;
 }
 
+function observable(sample, key) {
+  return sample.active?.observables?.[key] ?? sample.active?.[key] ?? null;
+}
+
+function formatAxisValue(value, decimals, suffix) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "-";
+  if (Math.abs(numeric) >= 100000 || (Math.abs(numeric) > 0 && Math.abs(numeric) < 0.001)) {
+    return `${numeric.toExponential(1)}${suffix}`;
+  }
+  return `${numeric.toFixed(decimals)}${suffix}`;
+}
+
 function statusLabel(status) {
   const labels = {
     running: "running",
@@ -177,14 +186,16 @@ function statusLabel(status) {
 
 function isStaticHost() {
   const host = window.location.hostname;
-  return host.endsWith("github.io") || (host === "localhost" && !window.location.port);
+  return window.location.protocol === "file:" || host.endsWith("github.io") || (host === "localhost" && !window.location.port);
 }
 
 function statusEndpoint() {
+  if (window.location.protocol === "file:") return "../out/status.json";
   return isStaticHost() ? "status.json" : "/api/status";
 }
 
 function historyEndpoint() {
+  if (window.location.protocol === "file:") return "../out/history.json";
   return isStaticHost() ? "history.json" : "/api/history";
 }
 
@@ -355,17 +366,12 @@ function activeHero(data, history = []) {
   const { simulation, active } = getActive(data);
   if (!simulation || !active) {
     return `
-      <div class="hero-copy">
-        <span class="eyebrow">idle</span>
-        <h2>NO LOG STREAM</h2>
-        <p>Expected files: em.log, nvt.log, npt.log, md.log or *.run.log under the scan root.</p>
-      </div>
-      <div class="hero-progress">
-        <div class="hero-ring" style="--value: 0"><span>0%</span></div>
-        <div class="hero-stats">
-          <div><span>endpoint</span><strong>${statusEndpoint()}</strong></div>
-          <div><span>mode</span><strong>${isStaticHost() ? "github pages snapshot" : "local live api"}</strong></div>
-        </div>
+      <div class="terminal-session">
+        <pre><span class="prompt">$</span> gmx-watch --status
+status: idle
+scan_root: ${state.data?.source_root || "-"}
+expected: em.log nvt.log npt.log md.log logs/*.run.log
+endpoint: ${statusEndpoint()}</pre>
       </div>
     `;
     return;
@@ -378,19 +384,28 @@ function activeHero(data, history = []) {
   const eta = cleanEta(active.eta_text) !== "-" ? cleanEta(active.eta_text) : formatDuration(historyActive?.eta_seconds_from_rate);
   const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
   const pid = active.process_id ? `pid ${active.process_id}${active.process_alive ? " live" : ""}` : "pid unknown";
+  const barWidth = 36;
+  const filled = Math.round((percent / 100) * barWidth);
+  const asciiBar = `${"#".repeat(filled)}${".".repeat(Math.max(0, barWidth - filled))}`;
+  const runtime = active.runtime || {};
+  const mdp = active.mdp || {};
   return `
-    <div class="hero-copy">
-      <span class="eyebrow">${statusLabel(simulation.status)} :: ${active.stage || "stage?"}</span>
-      <h2>${simulation.name}</h2>
-      <p>${active.label || "current stage"} :: ${timeLine} :: ${pid}</p>
-    </div>
-    <div class="hero-progress">
-      <div class="hero-ring" style="--value: ${percent}"><span>${formatPercent(active.percent)}</span></div>
+    <div class="terminal-session">
+      <pre><span class="prompt">$</span> gmx-watch --root "${data.source_root || "."}" --tail
+run: ${simulation.name}    status: ${statusLabel(simulation.status)}    phase: ${active.stage || "-"} / ${active.label || "-"}
+progress: [${asciiBar}] ${formatPercent(active.percent)}    ${timeLine}
+step: ${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}    ${pid}    samples: ${history.length}
+speed: ${speed}    eta: ${eta}
+thermo: T=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(3) : "-"} K    P=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(3) : "-"} bar    LINCS=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}
+energy: Pot=${defined(active.potential_kj_mol) ? Number(active.potential_kj_mol).toExponential(4) : "-"}    Kin=${defined(active.kinetic_energy_kj_mol) ? Number(active.kinetic_energy_kj_mol).toExponential(4) : "-"}    Tot=${defined(active.total_energy_kj_mol) ? Number(active.total_energy_kj_mol).toExponential(4) : "-"}
+gpu: ${runtime.gpu_0 || runtime.gpu_support || "-"}    map=${runtime.gpu_task_mapping || "-"}    omp=${runtime.openmp_threads || "-"}
+mdp: dt=${mdp.dt || "-"} ps    nsteps=${mdp.nsteps || "-"}    nstlog=${mdp.nstlog || "-"}    nstenergy=${mdp.nstenergy || "-"}
+log: ${active.log_path || "-"}</pre>
       <div class="hero-stats">
-        <div><span>eta</span><strong>${eta}</strong></div>
+        <div><span>phase</span><strong>${active.stage || "-"}</strong></div>
+        <div><span>progress</span><strong>${formatPercent(active.percent)}</strong></div>
         <div><span>speed</span><strong>${speed}</strong></div>
-        <div><span>gpu</span><strong>${active.runtime?.gpu_0 || active.runtime?.gpu_support || "-"}</strong></div>
-        <div><span>log</span><strong>${active.log_path || "-"}</strong></div>
+        <div><span>eta</span><strong>${eta}</strong></div>
       </div>
     </div>
     <div class="progress-block">
@@ -499,17 +514,16 @@ function renderLineChart(target, rows, options) {
   const x = (t) => margin.left + ((t - minT) / Math.max(1, maxT - minT)) * innerW;
   const y = (value) => margin.top + (1 - (Number(value) - minY) / Math.max(1e-12, maxY - minY)) * innerH;
 
-  const grid = [0, 0.25, 0.5, 0.75, 1].map((f) => {
-    const yy = margin.top + f * innerH;
-    const value = maxY - f * (maxY - minY);
-    return `<line class="grid-line" x1="${margin.left}" x2="${width - margin.right}" y1="${yy}" y2="${yy}"/><text class="tick-label" x="${margin.left - 10}" y="${yy + 4}" text-anchor="end">${formatNumber(value, options.yDigits ?? 1)}</text>`;
+  const grid = yTicks.map((value) => {
+    const yy = y(value);
+    return `<line class="grid-line" x1="${margin.left}" y1="${yy.toFixed(1)}" x2="${width - margin.right}" y2="${yy.toFixed(1)}"></line><text class="tick-label" x="6" y="${(yy + 3).toFixed(1)}">${formatAxisValue(value, decimals, suffix)}</text>`;
   }).join("");
 
   const xTicks = [validRows[0], validRows[Math.floor(validRows.length / 2)], validRows[validRows.length - 1]];
   const xLabels = xTicks.map((row) => `<text class="tick-label" x="${x(row.t)}" y="${height - 14}" text-anchor="middle">${formatClock(row.generated_at)}</text>`).join("");
 
   const paths = series.map((item, index) => {
-    const classNames = ["chart-line", "chart-line secondary", "chart-line tertiary", "chart-line quaternary"];
+    const classNames = ["chart-line", "chart-line secondary", "chart-line tertiary", "chart-line quaternary", "chart-line fifth", "chart-line sixth"];
     const className = classNames[index] || "chart-line";
     const pointRows = rows.filter((row) => defined(item.value(row)));
     const path = linePath(pointRows, x, (row) => y(item.value(row)));
@@ -522,9 +536,9 @@ function renderLineChart(target, rows, options) {
     const reversed = [...rows].reverse().find((row) => defined(item.value(row)));
     if (!reversed) return "";
     const value = Number(item.value(reversed));
-    const legendClasses = ["", "secondary", "tertiary", "quaternary"];
+    const legendClasses = ["", "secondary", "tertiary", "quaternary", "fifth", "sixth"];
     const className = legendClasses[index] || "";
-    return `<span class="${className}">${item.label}: ${value.toFixed(decimals)}${suffix}</span>`;
+    return `<span class="${className}">${item.label}: ${formatAxisValue(value, decimals, suffix)}</span>`;
   }).join("");
 
   const legend = series.map((s, idx) => `<text class="legend" x="${margin.left + idx * 150}" y="14">${escapeHtml(s.label || s.key)}</text>`).join("");
@@ -721,6 +735,16 @@ function renderPlots(history) {
     suffix: "%",
     decimals: 0,
   });
+  $("#plotStep").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "step / 1e6", value: (sample) => defined(sample.active?.current_step) ? sample.active.current_step / 1000000 : null },
+      { label: "ns", value: (sample) => sample.active?.current_ns },
+      { label: "ksteps/s", value: (sample) => defined(sample.active?.steps_per_second) ? sample.active.steps_per_second / 1000 : null },
+    ],
+    suffix: "",
+    decimals: 2,
+  });
   $("#plotSpeed").innerHTML = makeLineChart({
     samples: activeSamples,
     series: [
@@ -731,11 +755,30 @@ function renderPlots(history) {
     suffix: "",
     decimals: 2,
   });
+  $("#plotTemperature").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "temperature", value: (sample) => sample.active?.temperature_k },
+      { label: "target 310K", value: () => 310 },
+    ],
+    suffix: "",
+    decimals: 2,
+  });
   $("#plotTempPressure").innerHTML = makeLineChart({
     samples: activeSamples,
     series: [
       { label: "temperature K", value: (sample) => sample.active?.temperature_k },
       { label: "pressure bar", value: (sample) => sample.active?.pressure_bar },
+    ],
+    suffix: "",
+    decimals: 1,
+  });
+  $("#plotPressureControl").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "pressure", value: (sample) => sample.active?.pressure_bar },
+      { label: "Pres. DC", value: (sample) => sample.active?.pressure_coupling_bar },
+      { label: "target 1 bar", value: () => 1 },
     ],
     suffix: "",
     decimals: 1,
@@ -751,11 +794,36 @@ function renderPlots(history) {
     suffix: "",
     decimals: 0,
   });
+  $("#plotBonded").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "bond", value: (sample) => observable(sample, "bond_kj_mol") },
+      { label: "angle", value: (sample) => observable(sample, "angle_kj_mol") },
+      { label: "proper dih", value: (sample) => observable(sample, "proper_dih_kj_mol") },
+      { label: "improper", value: (sample) => observable(sample, "improper_dih_kj_mol") },
+      { label: "CMAP", value: (sample) => observable(sample, "cmap_dih_kj_mol") },
+    ],
+    suffix: "",
+    decimals: 0,
+  });
+  $("#plotNonbonded").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "LJ SR", value: (sample) => observable(sample, "lj_sr_kj_mol") },
+      { label: "Coul SR", value: (sample) => observable(sample, "coulomb_sr_kj_mol") },
+      { label: "Coul recip", value: (sample) => observable(sample, "coulomb_recip_kj_mol") },
+      { label: "LJ-14", value: (sample) => observable(sample, "lj_14_kj_mol") },
+      { label: "Coul-14", value: (sample) => observable(sample, "coulomb_14_kj_mol") },
+      { label: "DispCorr", value: (sample) => observable(sample, "dispersion_correction_kj_mol") },
+    ],
+    suffix: "",
+    decimals: 0,
+  });
   $("#plotConstraint").innerHTML = makeLineChart({
     samples: activeSamples,
     series: [
       { label: "constraint rmsd", value: (sample) => sample.active?.constraint_rmsd },
-      { label: "pressure DC", value: (sample) => sample.active?.pressure_coupling_bar },
+      { label: "conserved / 1e6", value: (sample) => defined(sample.active?.conserved_energy_kj_mol) ? sample.active.conserved_energy_kj_mol / 1000000 : null },
     ],
     suffix: "",
     decimals: 3,
