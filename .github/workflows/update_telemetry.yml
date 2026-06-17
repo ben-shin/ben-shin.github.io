@@ -81,7 +81,7 @@ jobs:
               }
 
               history.setdefault(sid, []).append(entry)
-#             history[sid] = history[sid][-200:]
+              # history[sid] = history[sid][-200:]
 
           with open(hist_path, "w", encoding="utf-8") as f:
               json.dump(history, f, indent=2)
