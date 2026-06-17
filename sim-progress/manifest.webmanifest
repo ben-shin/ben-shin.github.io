@@ -1,10 +1,10 @@
 {
-  "name": "Simulation Progress",
-  "short_name": "Sim Progress",
-  "start_url": "/sim-progress/",
+  "name": "GROMACS Progress",
+  "short_name": "GROMACS",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#f7f6f1",
-  "theme_color": "#f7f6f1",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0f1720",
   "icons": [
     {
       "src": "icon.svg",

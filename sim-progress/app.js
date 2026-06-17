@@ -1,6 +1,6 @@
 const state = {
   filter: "all",
-  status: null,
+  data: null,
   history: [],
   clientHistory: [],
   timer: null,
@@ -8,7 +8,6 @@ const state = {
 };
 
 const STAGES = ["em", "nvt", "npt", "md"];
-const HISTORY_LIMIT = 1000;
 const $ = (selector) => document.querySelector(selector);
 
 if (window.location.protocol === "file:") {
@@ -19,25 +18,12 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function formatNumber(value, digits = 1) {
-  if (!finite(value)) return "–";
-  const numeric = Number(value);
-  if (Math.abs(numeric) >= 1000000) return numeric.toExponential(2);
-  if (Math.abs(numeric) >= 1000) return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(numeric);
-  return new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(numeric);
+function defined(value) {
+  return value !== null && value !== undefined && Number.isFinite(Number(value));
 }
 
 function formatPercent(value) {
-  if (!finite(value)) return "–";
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
   const numeric = Number(value);
   if (numeric >= 99.95) return "100%";
   if (numeric < 1) return `${numeric.toFixed(2)}%`;
@@ -98,45 +84,38 @@ function formatDuration(seconds) {
 }
 
 function formatNs(value) {
-  if (!finite(value)) return "–";
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
   const numeric = Number(value);
   if (Math.abs(numeric) >= 100) return `${numeric.toFixed(1)} ns`;
   if (Math.abs(numeric) >= 1) return `${numeric.toFixed(2)} ns`;
   return `${(numeric * 1000).toFixed(0)} ps`;
 }
 
-function formatRate(value) {
-  if (!finite(value)) return "–";
-  const numeric = Number(value);
-  if (Math.abs(numeric) >= 10) return `${numeric.toFixed(1)} ns/h`;
-  return `${numeric.toFixed(2)} ns/h`;
-}
-
-function formatDateTime(value) {
-  if (!value) return "–";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+function formatAge(seconds) {
+  if (seconds === null || seconds === undefined || Number.isNaN(Number(seconds))) return "-";
+  const numeric = Number(seconds);
+  if (numeric < 60) return `${Math.floor(numeric)}s ago`;
+  if (numeric < 3600) return `${Math.floor(numeric / 60)}m ago`;
+  if (numeric < 86400) return `${Math.floor(numeric / 3600)}h ago`;
+  return `${Math.floor(numeric / 86400)}d ago`;
 }
 
 function formatClock(value) {
-  if (!value) return "–";
+  if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
+function formatShortTime(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatDuration(hours) {
-  if (!finite(hours)) return "–";
-  const h = Number(hours);
-  if (h < 0) return "–";
-  if (h < 1) return `${Math.round(h * 60)} min`;
-  if (h < 48) return `${h.toFixed(1)} h`;
-  return `${(h / 24).toFixed(1)} d`;
-}
-
 function cleanEta(text) {
-  if (!text) return "–";
+  if (!text) return "-";
   return String(text).replace(/\s+/g, " ").trim();
 }
 
@@ -204,13 +183,15 @@ function cacheBust(url) {
   return `${url}${separator}t=${Date.now()}`;
 }
 
-function statusText(status) {
-  return status || "unknown";
+function simulationMatches(simulation) {
+  if (state.filter === "all") return true;
+  if (state.filter === "attention") return ["failed", "stale"].includes(simulation.status);
+  return simulation.status === state.filter;
 }
 
-function activeSimulation(status = state.status) {
-  const simulations = status?.simulations || [];
-  return simulations.find((sim) => sim.status === "running") || simulations[0] || null;
+function getActive(data = state.data) {
+  const simulation = data?.simulations?.[0] || null;
+  return { simulation, active: simulation?.active_stage || null };
 }
 
 function snapshotToTelemetry(data) {
@@ -327,35 +308,10 @@ function enrichHistory(samples) {
   });
 }
 
-  const samples = Array.isArray(payload.samples) ? payload.samples.filter((row) => row?.generated_at) : [];
-
-  // Backward compatibility with the accidental per-simulation dictionary format:
-  // { "sim_id": [{ timestamp, ns, temperature_k, ... }] }
-  const converted = [];
-  for (const [path, rows] of Object.entries(payload)) {
-    if (path === "samples" || !Array.isArray(rows)) continue;
-    for (const row of rows) {
-      if (!row || !row.timestamp) continue;
-      converted.push({
-        generated_at: row.timestamp,
-        latest_path: path,
-        active: {
-          name: path.split("/").slice(-3).join(" / "),
-          path,
-          current_ns: num(row.ns),
-          temperature_k: num(row.temperature_k),
-          pressure_bar: num(row.pressure_bar),
-          performance_ns_per_day: num(row.performance_ns_per_day),
-          potential_kj_mol: num(row.potential_kj_mol),
-        },
-      });
-    }
-  }
-
-  const byKey = new Map();
-  [...converted, ...samples].forEach((sample) => {
-    const path = sample?.active?.path || sample?.latest_path || "unknown";
-    byKey.set(`${sample.generated_at}|${path}`, sample);
+function mergeHistory(staticHistory, clientHistory, current) {
+  const byTime = new Map();
+  [...staticHistory, ...clientHistory, current].filter(Boolean).forEach((sample) => {
+    byTime.set(sample.generated_at, sample);
   });
   return enrichHistory(Array.from(byTime.values())
     .sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at))
@@ -374,7 +330,6 @@ expected: em.log nvt.log npt.log md.log logs/*.run.log
 endpoint: ${statusEndpoint()}</pre>
       </div>
     `;
-    return;
   }
 
   const percent = clamp(active.percent ?? 0, 0, 100);
@@ -408,21 +363,19 @@ log: ${active.log_path || "-"}</pre>
         <div><span>eta</span><strong>${eta}</strong></div>
       </div>
     </div>
-    <div class="progress-block">
-      <div class="progress-label"><span>${formatNs(stage.current_ns)} / ${formatNs(stage.total_ns)}</span><strong>${formatPercent(stage.percent)}</strong></div>
-      <div class="progress-bar" aria-label="Progress"><span style="--value: ${percent}%"></span></div>
-      <p class="progress-note">Derived rate: ${formatRate(rollingRate)}. Projected remaining: ${finish ? formatDuration(finish.hours) : "–"}.</p>
-    </div>
   `;
 }
 
-function updateStats(status, rows) {
-  const sim = activeSimulation(status);
-  const stage = activeStage(sim) || {};
-  const latest = rows[rows.length - 1] || {};
-  const rate = rollingMean(rows, "ns_per_hour", 6) ?? latestValid(rows, "ns_per_hour");
-  const finish = estimateFinish(latest, rate);
-  const progressSub = stage.stage ? `${stage.stage} / ${stage.label || "stage"}` : "current stage";
+function terminalLog(data, history) {
+  const { simulation, active } = getActive(data);
+  const newest = history[history.length - 1];
+  const previous = history.length >= 2 ? history[history.length - 2] : null;
+  const deltaPercent = previous?.active && newest?.active && defined(newest.active.percent) && defined(previous.active.percent)
+    ? Number(newest.active.percent) - Number(previous.active.percent)
+    : null;
+  const deltaStep = previous?.active && newest?.active && defined(newest.active.current_step) && defined(previous.active.current_step)
+    ? Number(newest.active.current_step) - Number(previous.active.current_step)
+    : null;
 
   const lines = [
     `[${formatClock(data?.generated_at)}] status=${statusLabel(simulation?.status)} endpoint=${statusEndpoint()} samples=${history.length}`,
@@ -448,79 +401,57 @@ function updateStats(status, rows) {
   return lines.join("\n");
 }
 
-function renderStages(status) {
-  const sim = activeSimulation(status);
-  const stages = sim?.stages || [];
-  const active = activeStage(sim);
-  const byStage = new Map(stages.map((stage) => [stage.stage, stage]));
-  const stageOrder = [...new Set([...STAGES, ...stages.map((stage) => stage.stage).filter(Boolean)])];
-
-  $("#stageGrid").innerHTML = stageOrder.map((name) => {
-    const stage = byStage.get(name) || {};
-    const percent = clamp(num(stage.percent) ?? (stage.status === "complete" ? 100 : 0), 0, 100);
-    const classes = ["stage-card"];
-    if (active?.stage === name) classes.push("current");
-    if (["failed", "stale"].includes(stage.status)) classes.push("failed");
-    return `
-      <article class="${classes.join(" ")}">
-        <strong>${escapeHtml(name || "stage")}</strong>
-        <span>${escapeHtml(statusText(stage.status || "not seen"))} · ${formatPercent(percent)}</span>
-        <span>${formatNs(stage.current_ns)} / ${formatNs(stage.total_ns)}</span>
-        <div class="mini-bar"><i style="--value:${percent}%"></i></div>
-      </article>
-    `;
-  }).join("");
+function linePath(points, getX, getY) {
+  return points.map((point, index) => `${index === 0 ? "M" : "L"}${getX(point).toFixed(2)},${getY(point).toFixed(2)}`).join(" ");
 }
 
-function niceDomain(values) {
-  const valid = values.filter(finite).map(Number);
-  if (!valid.length) return [0, 1];
-  let min = Math.min(...valid);
-  let max = Math.max(...valid);
-  if (min === max) {
-    const pad = Math.abs(min || 1) * 0.05;
-    min -= pad;
-    max += pad;
-  }
-  const pad = (max - min) * 0.08;
-  return [min - pad, max + pad];
+function areaPath(points, getX, getY, bottom) {
+  if (!points.length) return "";
+  return `${linePath(points, getX, getY)} L${getX(points[points.length - 1]).toFixed(2)},${bottom} L${getX(points[0]).toFixed(2)},${bottom} Z`;
 }
 
-function renderLineChart(target, rows, options) {
-  const el = $(target);
-  const series = options.series || [];
-  const validRowsAll = rows
-    .filter((row) => finite(row.t) && series.some((s) => finite(row[s.key])));
-  const validRows = options.limit ? validRowsAll.slice(-options.limit) : validRowsAll;
+function makeLineChart({ samples, series, yMin = null, yMax = null, suffix = "", decimals = 1 }) {
+  const valid = samples
+    .map((sample) => ({ ...sample, xDate: new Date(sample.generated_at) }))
+    .filter((sample) => !Number.isNaN(sample.xDate.getTime()));
 
-  if (validRows.length < 2) {
-    el.innerHTML = `<div class="chart-empty">Need at least two samples with ${escapeHtml(options.emptyLabel || "valid values")}.</div>`;
-    return;
+  const rows = valid.filter((sample) => series.some((item) => defined(item.value(sample))));
+  if (rows.length < 2) {
+    return `<div class="empty-plot">Need at least two telemetry samples for this trace.<br>Static GitHub Pages will fill this after a few publishes.</div>`;
   }
 
-  const width = 820;
-  const height = options.height || 260;
-  const margin = { top: 18, right: 22, bottom: 42, left: 62 };
+  const width = 720;
+  const height = 230;
+  const margin = { top: 14, right: 20, bottom: 34, left: 46 };
   const innerW = width - margin.left - margin.right;
   const innerH = height - margin.top - margin.bottom;
-  const times = validRows.map((row) => row.t);
+
+  const times = rows.map((row) => row.xDate.getTime());
   const minT = Math.min(...times);
   const maxT = Math.max(...times);
-  const yValues = validRows.flatMap((row) => series.map((s) => row[s.key])).filter(finite).map(Number);
-  let [minY, maxY] = options.domain || niceDomain(yValues);
-  if (finite(options.minY)) minY = Number(options.minY);
-  if (finite(options.maxY)) maxY = Number(options.maxY);
+  const values = [];
+  rows.forEach((row) => series.forEach((item) => {
+    const value = Number(item.value(row));
+    if (Number.isFinite(value)) values.push(value);
+  }));
+  const rawMin = yMin ?? Math.min(...values);
+  const rawMax = yMax ?? Math.max(...values);
+  const span = rawMax - rawMin || 1;
+  const pad = yMin === null && yMax === null ? span * 0.12 : 0;
+  const minY = rawMin - pad;
+  const maxY = rawMax + pad;
 
-  const x = (t) => margin.left + ((t - minT) / Math.max(1, maxT - minT)) * innerW;
-  const y = (value) => margin.top + (1 - (Number(value) - minY) / Math.max(1e-12, maxY - minY)) * innerH;
+  const x = (row) => margin.left + ((row.xDate.getTime() - minT) / (maxT - minT || 1)) * innerW;
+  const y = (value) => margin.top + (1 - ((Number(value) - minY) / (maxY - minY || 1))) * innerH;
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((fraction) => minY + (maxY - minY) * fraction);
+  const xTicks = [rows[0], rows[Math.floor(rows.length / 2)], rows[rows.length - 1]];
 
   const grid = yTicks.map((value) => {
     const yy = y(value);
     return `<line class="grid-line" x1="${margin.left}" y1="${yy.toFixed(1)}" x2="${width - margin.right}" y2="${yy.toFixed(1)}"></line><text class="tick-label" x="6" y="${(yy + 3).toFixed(1)}">${formatAxisValue(value, decimals, suffix)}</text>`;
   }).join("");
 
-  const xTicks = [validRows[0], validRows[Math.floor(validRows.length / 2)], validRows[validRows.length - 1]];
-  const xLabels = xTicks.map((row) => `<text class="tick-label" x="${x(row.t)}" y="${height - 14}" text-anchor="middle">${formatClock(row.generated_at)}</text>`).join("");
+  const xLabels = xTicks.map((row) => `<text class="tick-label" x="${x(row).toFixed(1)}" y="${height - 9}" text-anchor="middle">${formatShortTime(row.generated_at)}</text>`).join("");
 
   const paths = series.map((item, index) => {
     const classNames = ["chart-line", "chart-line secondary", "chart-line tertiary", "chart-line quaternary", "chart-line fifth", "chart-line sixth"];
@@ -541,17 +472,15 @@ function renderLineChart(target, rows, options) {
     return `<span class="${className}">${item.label}: ${formatAxisValue(value, decimals, suffix)}</span>`;
   }).join("");
 
-  const legend = series.map((s, idx) => `<text class="legend" x="${margin.left + idx * 150}" y="14">${escapeHtml(s.label || s.key)}</text>`).join("");
-
-  el.innerHTML = `
-    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(options.label || "line chart")}">
+  return `
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${series.map((s) => s.label).join(", ")}">
       ${grid}
-      <line class="grid-line" x1="${margin.left}" x2="${width - margin.right}" y1="${height - margin.bottom}" y2="${height - margin.bottom}"/>
+      <line class="axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
+      <line class="axis" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
       ${xLabels}
-      ${area}
       ${paths}
-      ${legend}
     </svg>
+    <div class="legend">${latestLabels}</div>
   `;
 }
 
@@ -562,18 +491,46 @@ function stageCell(stageName, stage) {
   return `<div class="stage ${stage.status}"><strong>${stage.label}</strong><span>${formatPercent(stage.completion_percent ?? stage.percent)}</span></div>`;
 }
 
-function renderRecentRows(rows) {
-  const recent = rows.slice(-12).reverse();
-  $("#recentRows").innerHTML = recent.map((row) => `
-    <tr>
-      <td>${formatClock(row.generated_at)}</td>
-      <td>${formatNumber(row.current_ns, 2)}</td>
-      <td>${finite(row.delta_ns) ? `+${formatNumber(row.delta_ns, 3)}` : "–"}</td>
-      <td>${finite(row.ns_per_hour) ? formatNumber(row.ns_per_hour, 2) : "–"}</td>
-      <td>${finite(row.temperature_k) ? formatNumber(row.temperature_k, 2) : "–"}</td>
-      <td>${finite(row.pressure_bar) ? formatNumber(row.pressure_bar, 2) : "–"}</td>
-    </tr>
-  `).join("") || `<tr><td colspan="6">No history samples available yet.</td></tr>`;
+function simulationCard(simulation) {
+  const active = simulation.active_stage || {};
+  const percent = clamp(active.percent ?? 0, 0, 100);
+  const stageMap = Object.fromEntries((simulation.stages || []).map((stage) => [stage.stage, stage]));
+  const performance = defined(active.performance_ns_per_day) ? `${Number(active.performance_ns_per_day).toFixed(2)} ns/day` : "-";
+  const temperature = defined(active.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
+  const pressure = defined(active.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
+  const process = active.process_id ? `${active.process_id}${active.process_alive ? " live" : ""}` : "-";
+
+  return `
+    <article class="simulation">
+      <div class="simulation-main">
+        <div class="row">
+          <div class="title-block">
+            <h2>${simulation.name}</h2>
+            <p>${simulation.path}</p>
+          </div>
+          <span class="status ${simulation.status}">${statusLabel(simulation.status)}</span>
+        </div>
+        <div class="progress-panel">
+          <div class="ring" style="--value: ${percent}"><span>${formatPercent(active.percent)}</span></div>
+          <div class="detail-grid">
+            <div class="detail"><span class="detail-label">stage</span><strong>${active.label || "-"}</strong></div>
+            <div class="detail"><span class="detail-label">time</span><strong>${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}</strong></div>
+            <div class="detail"><span class="detail-label">step</span><strong>${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}</strong></div>
+            <div class="detail"><span class="detail-label">eta</span><strong>${cleanEta(active.eta_text)}</strong></div>
+            <div class="detail"><span class="detail-label">speed</span><strong>${performance}</strong></div>
+            <div class="detail"><span class="detail-label">updated</span><strong>${formatAge(simulation.age_seconds)}</strong></div>
+            <div class="detail"><span class="detail-label">temp</span><strong>${temperature}</strong></div>
+            <div class="detail"><span class="detail-label">pressure</span><strong>${pressure}</strong></div>
+            <div class="detail"><span class="detail-label">pid</span><strong>${process}</strong></div>
+            <div class="detail"><span class="detail-label">log</span><strong>${active.log_path || "-"}</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-strip">
+        ${STAGES.map((name) => stageCell(name, stageMap[name])).join("")}
+      </div>
+    </article>
+  `;
 }
 
 function renderStageMatrix(data) {
@@ -719,10 +676,7 @@ function renderStats(data, history) {
     ["artifact total", formatBytes(totalFileBytes(files))],
     ["samples", String(history.length)],
   ];
-
-  $("#diagnostics").innerHTML = diagnostics.map(([key, value]) => `
-    <dt>${escapeHtml(key)}</dt><dd>${escapeHtml(value)}</dd>
-  `).join("");
+  return rows.map(([key, value]) => `<div class="stat-row"><span>${key}</span><strong>${value}</strong></div>`).join("");
 }
 
 function renderPlots(history) {
@@ -840,36 +794,9 @@ function renderPlots(history) {
     decimals: 1,
   });
 
-function renderSimulationRows(status) {
-  const sims = (status?.simulations || []).filter(simulationMatches).slice(0, 80);
-  $("#simulationRows").innerHTML = sims.map((sim) => {
-    const stage = activeStage(sim) || {};
-    return `
-      <tr>
-        <td>${escapeHtml(sim.name || sim.id || sim.path || "simulation")}<br><span class="subtle">${escapeHtml(sim.path || "")}</span></td>
-        <td><span class="status-text ${escapeHtml(sim.status || "")}">${escapeHtml(statusText(sim.status))}</span></td>
-        <td>${escapeHtml(stage.stage || "–")}</td>
-        <td>${formatPercent(stage.percent)}</td>
-        <td>${formatNs(stage.current_ns)}</td>
-        <td>${formatDateTime(sim.updated_at || stage.updated_at)}</td>
-      </tr>
-    `;
-  }).join("") || `<tr><td colspan="6">No matching simulations.</td></tr>`;
-}
-
-function updateHealth(status) {
-  const chip = $("#healthState");
-  const summary = status?.summary || {};
-  chip.className = "status-chip";
-  if ((summary.attention ?? 0) > 0) {
-    chip.classList.add("warn");
-    chip.textContent = `${summary.attention} attention`;
-  } else if ((summary.running ?? 0) > 0) {
-    chip.classList.add("good");
-    chip.textContent = `${summary.running} running`;
-  } else {
-    chip.textContent = "idle";
-  }
+  const first = activeSamples[0]?.generated_at;
+  const last = activeSamples[activeSamples.length - 1]?.generated_at;
+  $("#progressRange").textContent = first && last ? `${formatShortTime(first)} → ${formatShortTime(last)}` : "-";
 }
 
 function render() {
@@ -910,25 +837,29 @@ function render() {
   $("#stageMatrix").innerHTML = renderStageMatrix(data);
   renderPlots(history);
 
-  updateHealth(status);
-  renderActivePanel(status, state.derived);
-  updateStats(status, state.derived);
-  renderStages(status);
-  renderCharts(state.derived);
-  renderRecentRows(state.derived);
-  renderDiagnostics(status, state.derived);
-  renderSimulationRows(status);
+  const simulations = (data.simulations || []).filter(simulationMatches);
+  $("#simulationList").innerHTML = simulations.map(simulationCard).join("");
+  $("#emptyState").hidden = simulations.length !== 0;
 }
 
-async function loadJson(path, fallback = null) {
+async function loadHistory() {
+  const endpoint = historyEndpoint();
+  if (!endpoint) return;
   try {
-    const response = await fetch(cacheBust(path), { cache: "no-store" });
-    if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-    return await response.json();
+    const response = await fetch(cacheBust(endpoint), { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    state.history = normalizeHistory(payload);
   } catch (error) {
-    console.warn(`Could not load ${path}`, error);
-    return fallback;
+    console.debug("history unavailable", error);
   }
+}
+
+function setHealth(label, ok) {
+  $("#healthState").textContent = label;
+  const dot = $("#healthDot");
+  dot.classList.toggle("ok", ok === true);
+  dot.classList.toggle("bad", ok === false);
 }
 
 async function refresh() {
@@ -949,25 +880,17 @@ async function refresh() {
     setHealth("offline", false);
     console.error(error);
   }
-
-  state.status = status;
-  const samples = normalizeHistory(historyPayload);
-  state.history = mergeCurrentSample(samples, snapshotFromStatus(status));
-  render();
 }
 
-function setupEvents() {
-  $("#refreshButton")?.addEventListener("click", refresh);
-  document.querySelectorAll(".tab").forEach((button) => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
-      button.classList.add("active");
-      state.filter = button.dataset.filter || "all";
-      renderSimulationRows(state.status);
-    });
+document.querySelectorAll(".tab").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
+    button.classList.add("active");
+    state.filter = button.dataset.filter;
+    render();
   });
-}
+});
 
-setupEvents();
+$("#refreshButton").addEventListener("click", refresh);
 refresh();
 state.timer = setInterval(refresh, state.refreshMs);

@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Simulation progress">
-  <rect width="120" height="120" rx="20" fill="#f7f6f1"/>
-  <rect x="18" y="24" width="84" height="72" rx="8" fill="#ffffff" stroke="#1d1d1b" stroke-width="4"/>
-  <path d="M30 76 L46 66 L58 70 L74 48 L90 38" fill="none" stroke="#2f5f8f" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M30 86 H92" stroke="#aaa69a" stroke-width="4" stroke-linecap="round"/>
-  <path d="M30 34 H78" stroke="#aaa69a" stroke-width="4" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="GROMACS progress">
+  <rect width="120" height="120" rx="24" fill="#0f1720"/>
+  <circle cx="60" cy="60" r="38" fill="none" stroke="#d8dde4" stroke-width="12"/>
+  <path d="M60 22a38 38 0 1 1-32.9 57" fill="none" stroke="#21b89a" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="60" cy="60" r="14" fill="#f2b84b"/>
+  <path d="M40 78h40" stroke="#ffffff" stroke-width="8" stroke-linecap="round"/>
 </svg>
