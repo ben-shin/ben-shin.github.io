@@ -82,4 +82,5 @@ jobs:
           fi
           git commit -m "Update simulation progress via scheduled workflow"
           # Push using the personal access token
-          git push https://x-access-token:${PAT}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
+          # Use the personal access token for pushing. Specify the token in the URL to avoid using the default GITHUB_TOKEN.
+          git push https://${PAT}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
