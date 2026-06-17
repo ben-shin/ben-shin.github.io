@@ -185,7 +185,7 @@ function statusEndpoint() {
 }
 
 function historyEndpoint() {
-  return isStaticHost() ? "history.json" : null;
+  return isStaticHost() ? "history.json" : "/api/history";
 }
 
 function cacheBust(url) {
@@ -275,6 +275,8 @@ function normalizeHistory(payload) {
 
 function enrichHistory(samples) {
   const previousByRun = new Map();
+  const lastPositiveRateByRun = new Map();
+  const lastPositiveStepRateByRun = new Map();
   return samples.map((sample) => {
     const enriched = {
       ...sample,
@@ -290,12 +292,20 @@ function enrichHistory(samples) {
       const previousTime = new Date(previous.generated_at).getTime();
       const dtSeconds = (time - previousTime) / 1000;
       const deltaNs = Number(active.current_ns) - Number(previous.active.current_ns);
-      if (dtSeconds > 0 && deltaNs >= 0) {
+      if (dtSeconds > 0 && deltaNs > 0) {
         active.wall_speed_ns_per_day = deltaNs / (dtSeconds / 86400);
+        lastPositiveRateByRun.set(key, active.wall_speed_ns_per_day);
+      } else if (lastPositiveRateByRun.has(key)) {
+        active.wall_speed_ns_per_day = lastPositiveRateByRun.get(key);
       }
       if (dtSeconds > 0 && defined(active.current_step) && defined(previous.active?.current_step)) {
         const deltaSteps = Number(active.current_step) - Number(previous.active.current_step);
-        if (deltaSteps >= 0) active.steps_per_second = deltaSteps / dtSeconds;
+        if (deltaSteps > 0) {
+          active.steps_per_second = deltaSteps / dtSeconds;
+          lastPositiveStepRateByRun.set(key, active.steps_per_second);
+        } else if (lastPositiveStepRateByRun.has(key)) {
+          active.steps_per_second = lastPositiveStepRateByRun.get(key);
+        }
       }
       if (defined(active.total_ns) && defined(active.current_ns) && defined(active.wall_speed_ns_per_day) && active.wall_speed_ns_per_day > 0) {
         active.eta_seconds_from_rate = ((Number(active.total_ns) - Number(active.current_ns)) / active.wall_speed_ns_per_day) * 86400;
@@ -863,9 +873,8 @@ async function refresh() {
     if (!isStaticHost()) {
       state.clientHistory.push(snapshotToTelemetry(state.data));
       state.clientHistory = state.clientHistory.slice(-2160);
-    } else {
-      await loadHistory();
     }
+    await loadHistory();
     setHealth(endpoint === "status.json" ? "snapshot" : "live", true);
     render();
   } catch (error) {
