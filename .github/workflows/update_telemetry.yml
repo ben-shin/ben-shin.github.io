@@ -67,7 +67,7 @@ jobs:
 
           simulations = status.get("simulations", [])
 
-          for sim in simulations:
+          for sim in status.get('simulations', []):
               sid = sim.get("id") or sim.get("path") or "unknown"
               stage = sim.get("active_stage") or {}
 
@@ -81,7 +81,7 @@ jobs:
               }
 
               history.setdefault(sid, []).append(entry)
-              history[sid] = history[sid][-200:]
+#             history[sid] = history[sid][-200:]
 
           with open(hist_path, "w", encoding="utf-8") as f:
               json.dump(history, f, indent=2)
