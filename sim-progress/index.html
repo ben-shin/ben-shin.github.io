@@ -1,158 +1,615 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#f7f6f1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Simulation Progress">
-    <title>Simulation Progress</title>
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icon.svg">
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <header class="page-header">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f4ee">
+  <title>Simulation Progress</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f4ee;
+      --surface: #ffffff;
+      --surface-2: #fbfaf7;
+      --text: #171717;
+      --muted: #69655d;
+      --line: #ddd8cb;
+      --line-2: #c6c0b3;
+      --ink: #263238;
+      --accent: #315f7d;
+      --good: #287247;
+      --warn: #9b6400;
+      --bad: #a33a3a;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+      font: 14px/1.45 var(--sans);
+    }
+    button { font: inherit; }
+    h1, h2, h3, p { margin: 0; }
+    code, .mono { font-family: var(--mono); }
+
+    .wrap { max-width: 1320px; margin: 0 auto; padding: 28px 20px 56px; }
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+    .kicker {
+      margin-bottom: 5px;
+      color: var(--muted);
+      font: 11px/1.2 var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    h1 { font-size: clamp(28px, 3vw, 40px); line-height: 1; letter-spacing: -0.035em; font-weight: 720; }
+    .subtitle { margin-top: 10px; color: var(--muted); max-width: 82ch; }
+    .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .chip, button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 12px;
+      background: var(--surface);
+      color: var(--text);
+    }
+    .chip { font: 12px/1 var(--mono); color: var(--muted); }
+    .chip.good { color: var(--good); border-color: color-mix(in srgb, var(--good) 35%, var(--line)); }
+    .chip.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+    .chip.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, var(--line)); }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--line-2); }
+
+    .panel, .card, .chart-card, .table-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.03);
+    }
+    .panel { padding: 18px; margin-bottom: 16px; }
+
+    .active-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, .8fr);
+      gap: 18px;
+      align-items: center;
+    }
+    .sim-title { font-size: clamp(20px, 2vw, 28px); letter-spacing: -0.025em; }
+    .meta-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .meta-row span {
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--muted);
+      font: 12px/1.2 var(--mono);
+    }
+    .progress-label { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+    .progress-label strong { color: var(--text); }
+    .bar { height: 12px; border: 1px solid var(--line); border-radius: 999px; background: #ebe7dc; overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: var(--value, 0%); background: var(--accent); border-radius: inherit; }
+    .note { margin-top: 10px; color: var(--muted); font-size: 13px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .card { padding: 13px 14px; min-height: 92px; }
+    .card span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .card strong { display: block; font-size: 23px; line-height: 1.1; letter-spacing: -0.035em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card em { display: block; margin-top: 7px; color: var(--muted); font-size: 11px; font-style: normal; font-family: var(--mono); }
+
+    .stage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .stage { padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+    .stage.current { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); background: #f4f8fb; }
+    .stage.failed { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); background: #fff8f8; }
+    .stage h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
+    .stage p { color: var(--muted); font: 12px/1.4 var(--mono); margin: 6px 0 10px; }
+
+    .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .chart-card { padding: 14px; min-height: 292px; }
+    .chart-card.wide { grid-column: 1 / -1; }
+    .chart-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 10px; }
+    .chart-head h2 { font-size: 16px; letter-spacing: -0.015em; }
+    .chart-head span { color: var(--muted); font: 11px/1 var(--mono); }
+    .chart { width: 100%; height: 238px; }
+    .chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    .grid-line { stroke: #e8e3d8; stroke-width: 1; vector-effect: non-scaling-stroke; }
+    .axis-label, .tick { fill: var(--muted); font: 11px var(--mono); }
+    .data-line { fill: none; stroke: var(--accent); stroke-width: 2.2; vector-effect: non-scaling-stroke; }
+    .data-line.secondary { stroke: #8f7560; stroke-dasharray: 5 4; }
+    .data-area { fill: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .data-point { fill: var(--accent); }
+    .empty { display: grid; place-items: center; height: 100%; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; padding: 18px; text-align: center; }
+
+    .tables { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 12px; }
+    .table-card { padding: 14px; overflow: hidden; }
+    .table-scroll { overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; min-width: 620px; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); background: var(--surface-2); font: 11px/1.2 var(--mono); text-transform: uppercase; letter-spacing: .04em; }
+    td { font-size: 13px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .small { color: var(--muted); font: 11px/1.35 var(--mono); }
+    .tabs { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .tabs button { min-height: 30px; font-size: 12px; }
+    .tabs button.active { color: #fff; border-color: var(--accent); background: var(--accent); }
+    .footer { margin-top: 18px; display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font: 11px/1.4 var(--mono); }
+
+    @media (max-width: 1120px) {
+      .stats { grid-template-columns: repeat(4, 1fr); }
+      .charts, .tables, .active-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 680px) {
+      .wrap { padding: 20px 12px 44px; }
+      header { grid-template-columns: 1fr; }
+      .toolbar { justify-content: flex-start; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stage-grid { grid-template-columns: 1fr 1fr; }
+      .card strong { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
       <div>
         <p class="kicker">GROMACS telemetry</p>
         <h1>Simulation progress</h1>
-        <p id="sourceRoot" class="subtle">Loading status.json…</p>
+        <p id="sourceRoot" class="subtitle">Loading status.json and history.json…</p>
       </div>
-      <div class="header-meta">
-        <span id="healthState" class="status-chip">loading</span>
-        <button id="refreshButton" type="button">Refresh</button>
+      <div class="toolbar">
+        <span id="health" class="chip">loading</span>
+        <button id="refresh" type="button">Refresh</button>
       </div>
     </header>
 
-    <main>
-      <section id="activePanel" class="panel active-panel" aria-label="Active simulation"></section>
+    <section id="active" class="panel" aria-label="Active simulation"></section>
 
-      <section class="stat-grid" aria-label="Summary statistics">
-        <article class="stat"><span>Progress</span><strong id="statProgress">–</strong><em id="statProgressSub">current stage</em></article>
-        <article class="stat"><span>Trajectory</span><strong id="statNs">–</strong><em id="statNsSub">ns completed</em></article>
-        <article class="stat"><span>Derived rate</span><strong id="statNsHour">–</strong><em>from history.json</em></article>
-        <article class="stat"><span>Projected finish</span><strong id="statEta">–</strong><em id="statEtaSub">from derived rate</em></article>
-        <article class="stat"><span>Temperature</span><strong id="statTemp">–</strong><em>K, latest frame</em></article>
-        <article class="stat"><span>Pressure</span><strong id="statPressure">–</strong><em>bar, latest frame</em></article>
-        <article class="stat"><span>Energy</span><strong id="statEnergy">–</strong><em>potential kJ/mol</em></article>
-        <article class="stat"><span>Sampling</span><strong id="statSamples">–</strong><em>history points</em></article>
-      </section>
+    <section id="stats" class="stats" aria-label="Summary statistics"></section>
 
-      <section class="panel" aria-label="Stage overview">
-        <div class="section-title">
+    <section id="stages" class="stage-grid" aria-label="Stage summary"></section>
+
+    <section class="charts" aria-label="Telemetry plots">
+      <article class="chart-card wide"><div class="chart-head"><h2>Progress over time</h2><span>%</span></div><div id="chartProgress" class="chart"></div></article>
+      <article class="chart-card"><div class="chart-head"><h2>Trajectory time</h2><span>ns</span></div><div id="chartNs" class="chart"></div></article>
+      <article class="chart-card"><div class="chart-head"><h2>Derived throughput</h2><span>ns/hour</span></div><div id="chartRate" class="chart"></div></article>
+      <article class="chart-card"><div class="chart-head"><h2>Temperature</h2><span>K</span></div><div id="chartTemp" class="chart"></div></article>
+      <article class="chart-card"><div class="chart-head"><h2>Pressure</h2><span>bar</span></div><div id="chartPressure" class="chart"></div></article>
+      <article class="chart-card"><div class="chart-head"><h2>Potential energy</h2><span>kJ/mol</span></div><div id="chartPotential" class="chart"></div></article>
+      <article class="chart-card"><div class="chart-head"><h2>Step throughput</h2><span>steps/hour</span></div><div id="chartSteps" class="chart"></div></article>
+    </section>
+
+    <section class="tables">
+      <article class="table-card">
+        <div class="chart-head"><h2>Recent samples</h2><span>derived from history.json</span></div>
+        <div class="table-scroll"><table><thead><tr><th>Time</th><th>ns</th><th>Δns</th><th>ns/h</th><th>Temp</th><th>Pressure</th></tr></thead><tbody id="samplesBody"></tbody></table></div>
+      </article>
+      <article class="table-card">
+        <div class="chart-head"><h2>Simulation inventory</h2><span>status.json</span></div>
+        <nav class="tabs" aria-label="Simulation filters">
+          <button class="active" type="button" data-filter="all">All</button>
+          <button type="button" data-filter="running">Running</button>
+          <button type="button" data-filter="attention">Attention</button>
+          <button type="button" data-filter="complete">Complete</button>
+        </nav>
+        <div class="table-scroll"><table><thead><tr><th>Simulation</th><th>Status</th><th>Stage</th><th>Progress</th><th>Current ns</th><th>Updated</th></tr></thead><tbody id="inventoryBody"></tbody></table></div>
+      </article>
+    </section>
+
+    <div class="footer"><span id="lastRefresh">No refresh yet.</span><span>Static dashboard: one HTML file, status.json, history.json.</span></div>
+  </div>
+
+  <script>
+    const state = { status: null, history: [], rows: [], filter: "all" };
+    const STAGE_ORDER = ["em", "nvt", "npt", "md"];
+    const $ = (id) => document.getElementById(id);
+
+    function n(value) {
+      if (value === null || value === undefined || value === "") return null;
+      const x = Number(value);
+      return Number.isFinite(x) ? x : null;
+    }
+    function finite(value) { return n(value) !== null; }
+    function pct(value) { const x = n(value); return x === null ? "–" : `${x.toFixed(x >= 99.95 ? 0 : 1)}%`; }
+    function num(value, digits = 1) {
+      const x = n(value);
+      if (x === null) return "–";
+      if (Math.abs(x) >= 1e6 || (Math.abs(x) > 0 && Math.abs(x) < 0.01)) return x.toExponential(2);
+      return new Intl.NumberFormat(undefined, { maximumFractionDigits: digits }).format(x);
+    }
+    function ns(value) { const x = n(value); return x === null ? "–" : `${num(x, x < 1 ? 3 : 2)} ns`; }
+    function rate(value) { const x = n(value); return x === null ? "–" : `${num(x, 2)} ns/h`; }
+    function dateText(value) {
+      if (!value) return "–";
+      const d = new Date(String(value).replace(" ", "T"));
+      return Number.isFinite(d.getTime()) ? d.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : String(value);
+    }
+    function clock(value) {
+      if (!value) return "–";
+      const d = new Date(String(value).replace(" ", "T"));
+      return Number.isFinite(d.getTime()) ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : String(value);
+    }
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+    }
+    function cleanPath(value) { return String(value || "").replace(/^\/+/g, "").replace(/^home\/[^/]+\//, "").replace(/^gromacs_run\//, ""); }
+    function samePath(a, b) {
+      const x = cleanPath(a), y = cleanPath(b);
+      return !!(x && y && (x === y || x.endsWith("/" + y) || y.endsWith("/" + x)));
+    }
+    function duration(hours) {
+      const h = n(hours);
+      if (h === null || h < 0) return "–";
+      if (h < 1) return `${Math.round(h * 60)} min`;
+      if (h < 36) return `${h.toFixed(1)} h`;
+      return `${(h / 24).toFixed(1)} d`;
+    }
+
+    async function loadJson(path, fallback) {
+      try {
+        const r = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return await r.json();
+      } catch (err) {
+        console.warn(`Could not load ${path}`, err);
+        return fallback;
+      }
+    }
+
+    function activeSimulation(status) {
+      const sims = status?.simulations || [];
+      const latest = status?.summary?.latest_path;
+      return sims.find((s) => s.status === "running") || sims.find((s) => samePath(s.path || s.id, latest)) || sims[0] || null;
+    }
+    function activeStage(sim) {
+      if (!sim) return null;
+      return sim.active_stage || (sim.stages || []).find((s) => s.status === "running") || (sim.stages || []).at(-1) || null;
+    }
+    function activeSampleFromStatus(status) {
+      const sim = activeSimulation(status);
+      const stage = activeStage(sim);
+      if (!sim || !stage) return null;
+      return {
+        generated_at: status.generated_at || new Date().toISOString(),
+        source_root: status.source_root,
+        running: status.summary?.running,
+        attention: status.summary?.attention,
+        complete: status.summary?.complete,
+        simulations: status.summary?.simulations ?? status.simulations?.length,
+        latest_path: sim.path || sim.id,
+        active: {
+          name: sim.name || sim.id || sim.path,
+          path: sim.path || sim.id,
+          status: sim.status || stage.status,
+          stage: stage.stage,
+          label: stage.label,
+          percent: n(stage.percent),
+          current_step: n(stage.current_step),
+          total_steps: n(stage.total_steps),
+          current_ns: n(stage.current_ns),
+          total_ns: n(stage.total_ns),
+          eta_text: stage.eta_text,
+          performance_ns_per_day: n(stage.performance_ns_per_day),
+          temperature_k: n(stage.temperature_k),
+          pressure_bar: n(stage.pressure_bar),
+          potential_kj_mol: n(stage.potential_kj_mol),
+          total_energy_kj_mol: n(stage.total_energy_kj_mol),
+          process_id: stage.process_id,
+          process_alive: stage.process_alive,
+          log_path: stage.log_path,
+          updated_at: stage.updated_at || sim.updated_at
+        }
+      };
+    }
+
+    function normalizeHistory(payload) {
+      let samples = [];
+      if (Array.isArray(payload)) samples = payload;
+      else if (payload && Array.isArray(payload.samples)) samples = payload.samples;
+      else if (payload && typeof payload === "object") {
+        for (const [path, entries] of Object.entries(payload)) {
+          if (!Array.isArray(entries)) continue;
+          for (const e of entries) {
+            samples.push({
+              generated_at: e.timestamp || e.generated_at,
+              latest_path: path,
+              active: {
+                path,
+                name: path.split("/").slice(-3).join(" / "),
+                current_ns: n(e.ns ?? e.current_ns),
+                total_ns: n(e.total_ns),
+                temperature_k: n(e.temperature_k),
+                pressure_bar: n(e.pressure_bar),
+                potential_kj_mol: n(e.potential_kj_mol),
+                performance_ns_per_day: n(e.performance_ns_per_day),
+                current_step: n(e.current_step),
+                total_steps: n(e.total_steps)
+              }
+            });
+          }
+        }
+      }
+      return samples.filter((s) => s && s.generated_at && s.active);
+    }
+
+    function mergeCurrent(samples, current) {
+      const byKey = new Map();
+      for (const s of [...samples, current].filter(Boolean)) {
+        const key = `${s.generated_at}|${cleanPath(s.active?.path || s.latest_path)}`;
+        byKey.set(key, s);
+      }
+      return [...byKey.values()].sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at)).slice(-1200);
+    }
+
+    function deriveRows(samples, activePath) {
+      const rows = samples
+        .filter((s) => s.active && s.generated_at)
+        .filter((s) => !activePath || samePath(s.active.path || s.latest_path, activePath))
+        .map((s) => ({ sample: s, t: new Date(s.generated_at).getTime() }))
+        .filter((s) => Number.isFinite(s.t))
+        .sort((a, b) => a.t - b.t)
+        .map(({ sample, t }) => {
+          const a = sample.active || {};
+          return {
+            generated_at: sample.generated_at,
+            t,
+            name: a.name || "simulation",
+            path: a.path || sample.latest_path,
+            status: a.status || "unknown",
+            stage: a.stage,
+            label: a.label,
+            percent: n(a.percent),
+            current_ns: n(a.current_ns),
+            total_ns: n(a.total_ns),
+            current_step: n(a.current_step),
+            total_steps: n(a.total_steps),
+            temperature_k: n(a.temperature_k),
+            pressure_bar: n(a.pressure_bar),
+            potential_kj_mol: n(a.potential_kj_mol),
+            total_energy_kj_mol: n(a.total_energy_kj_mol),
+            log_ns_day: n(a.performance_ns_per_day),
+            derived_ns_per_hour: n(a.derived_ns_per_hour),
+            derived_ns_per_day: n(a.derived_ns_per_day),
+            derived_steps_per_hour: n(a.derived_steps_per_hour),
+            delta_ns: n(a.delta_ns),
+            delta_hours: n(a.delta_hours),
+            eta_text: a.eta_text,
+            process_id: a.process_id,
+            process_alive: a.process_alive,
+            log_path: a.log_path,
+            updated_at: a.updated_at || sample.generated_at
+          };
+        });
+
+      let prev = null;
+      for (const row of rows) {
+        if (prev && samePath(prev.path, row.path)) {
+          const hours = (row.t - prev.t) / 36e5;
+          const dns = finite(row.current_ns) && finite(prev.current_ns) ? row.current_ns - prev.current_ns : null;
+          const dstep = finite(row.current_step) && finite(prev.current_step) ? row.current_step - prev.current_step : null;
+          if (hours > 0) {
+            row.delta_hours = row.delta_hours ?? hours;
+            if (dns !== null && dns >= 0) {
+              row.delta_ns = row.delta_ns ?? dns;
+              row.ns_per_hour = row.derived_ns_per_hour ?? (dns / hours);
+              row.ns_per_day = row.derived_ns_per_day ?? (dns / hours * 24);
+            }
+            if (dstep !== null && dstep >= 0) row.steps_per_hour = row.derived_steps_per_hour ?? (dstep / hours);
+          }
+        }
+        row.ns_per_hour = row.ns_per_hour ?? row.derived_ns_per_hour ?? (finite(row.log_ns_day) ? row.log_ns_day / 24 : null);
+        row.ns_per_day = row.ns_per_day ?? row.derived_ns_per_day ?? row.log_ns_day;
+        row.steps_per_hour = row.steps_per_hour ?? row.derived_steps_per_hour ?? null;
+        prev = row;
+      }
+      return rows;
+    }
+
+    function avg(values, last = 8) {
+      const v = values.slice(-last).map(n).filter((x) => x !== null);
+      return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+    }
+    function sd(values, last = 8) {
+      const v = values.slice(-last).map(n).filter((x) => x !== null);
+      if (v.length < 2) return null;
+      const m = v.reduce((a, b) => a + b, 0) / v.length;
+      return Math.sqrt(v.reduce((s, x) => s + (x - m) ** 2, 0) / (v.length - 1));
+    }
+    function finishEstimate(row, nsHour) {
+      if (!row || !finite(row.current_ns) || !finite(row.total_ns) || !finite(nsHour) || nsHour <= 0) return null;
+      const remaining = Math.max(0, row.total_ns - row.current_ns);
+      const hours = remaining / nsHour;
+      return { remaining, hours, date: new Date(Date.now() + hours * 36e5) };
+    }
+
+    function renderActive(status, rows) {
+      const sim = activeSimulation(status);
+      const stage = activeStage(sim);
+      const latest = rows.at(-1);
+      if (!sim || !stage) {
+        $("active").innerHTML = `<p class="kicker">No active simulation</p><h2>No simulation detected</h2><p class="subtitle">status.json loaded, but no simulation with an active_stage was found.</p>`;
+        return;
+      }
+      const percent = Math.max(0, Math.min(100, n(stage.percent) ?? 0));
+      const r = avg(rows.map((x) => x.ns_per_hour), 6);
+      const eta = finishEstimate(latest, r);
+      $("active").innerHTML = `
+        <div class="active-grid">
           <div>
-            <h2>Run state</h2>
-            <p>Stage completion and current log source.</p>
-          </div>
-          <span id="lastUpdated">–</span>
-        </div>
-        <div id="stageGrid" class="stage-grid"></div>
-      </section>
-
-      <section class="chart-grid" aria-label="Progress plots">
-        <article class="panel chart-wide">
-          <div class="section-title"><h2>Progress over time</h2><span>%</span></div>
-          <div id="chartProgress" class="chart"></div>
-        </article>
-        <article class="panel">
-          <div class="section-title"><h2>Trajectory time</h2><span>ns</span></div>
-          <div id="chartNs" class="chart"></div>
-        </article>
-        <article class="panel">
-          <div class="section-title"><h2>Derived throughput</h2><span>ns/hour</span></div>
-          <div id="chartRate" class="chart"></div>
-        </article>
-        <article class="panel">
-          <div class="section-title"><h2>Temperature</h2><span>K</span></div>
-          <div id="chartTemp" class="chart"></div>
-        </article>
-        <article class="panel">
-          <div class="section-title"><h2>Pressure</h2><span>bar</span></div>
-          <div id="chartPressure" class="chart"></div>
-        </article>
-        <article class="panel">
-          <div class="section-title"><h2>Potential energy</h2><span>kJ/mol</span></div>
-          <div id="chartPotential" class="chart"></div>
-        </article>
-        <article class="panel chart-wide">
-          <div class="section-title"><h2>Step throughput</h2><span>steps/hour</span></div>
-          <div id="chartSteps" class="chart short"></div>
-        </article>
-      </section>
-
-      <section class="two-column">
-        <article class="panel">
-          <div class="section-title">
-            <div>
-              <h2>Recent samples</h2>
-              <p>Each row is derived from consecutive entries in history.json.</p>
+            <p class="kicker">${esc(sim.status || "unknown")} / ${esc(stage.stage || "stage")}</p>
+            <h2 class="sim-title">${esc(sim.name || sim.id || sim.path || "Simulation")}</h2>
+            <div class="meta-row">
+              <span>${esc(stage.label || "current stage")}</span>
+              <span>${stage.process_id ? `pid ${esc(stage.process_id)}${stage.process_alive ? " alive" : ""}` : "pid unavailable"}</span>
+              <span>${esc(stage.log_path || "log path unavailable")}</span>
             </div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>ns</th>
-                  <th>Δns</th>
-                  <th>ns/h</th>
-                  <th>Temp</th>
-                  <th>Pressure</th>
-                </tr>
-              </thead>
-              <tbody id="recentRows"></tbody>
-            </table>
-          </div>
-        </article>
-
-        <article class="panel">
-          <div class="section-title">
-            <div>
-              <h2>Diagnostics</h2>
-              <p>Quick checks for whether the simulation is moving cleanly.</p>
-            </div>
-          </div>
-          <dl id="diagnostics" class="diagnostics"></dl>
-        </article>
-      </section>
-
-      <section class="panel">
-        <div class="section-title">
           <div>
-            <h2>Simulation inventory</h2>
-            <p>Filtered status table from status.json.</p>
+            <div class="progress-label"><span>${ns(stage.current_ns)} / ${ns(stage.total_ns)}</span><strong>${pct(stage.percent)}</strong></div>
+            <div class="bar"><span style="--value:${percent}%"></span></div>
+            <p class="note">Derived rate ${rate(r)}. Remaining ${eta ? `${ns(eta.remaining)} / ${duration(eta.hours)}` : "–"}.</p>
           </div>
-          <nav class="tabs" aria-label="Simulation filters">
-            <button class="tab active" type="button" data-filter="all">All</button>
-            <button class="tab" type="button" data-filter="running">Running</button>
-            <button class="tab" type="button" data-filter="attention">Attention</button>
-            <button class="tab" type="button" data-filter="complete">Complete</button>
-          </nav>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Simulation</th>
-                <th>Status</th>
-                <th>Stage</th>
-                <th>Progress</th>
-                <th>Current ns</th>
-                <th>Updated</th>
-              </tr>
-            </thead>
-            <tbody id="simulationRows"></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+        </div>`;
+    }
 
-    <footer>
-      <span id="refreshState">No refresh yet.</span>
-      <span>Static dashboard: HTML, CSS, JS, status.json, history.json.</span>
-    </footer>
+    function renderStats(status, rows) {
+      const sim = activeSimulation(status);
+      const stage = activeStage(sim) || {};
+      const latest = rows.at(-1) || {};
+      const r = avg(rows.map((x) => x.ns_per_hour), 6);
+      const rSd = sd(rows.map((x) => x.ns_per_hour), 12);
+      const eta = finishEstimate(latest, r);
+      const cards = [
+        ["Progress", pct(stage.percent), stage.stage ? `${stage.stage} / ${stage.label || "stage"}` : "current stage"],
+        ["Trajectory", `${ns(stage.current_ns)} / ${ns(stage.total_ns)}`, "completed / target"],
+        ["Rate", rate(r), `SD ${rate(rSd)}`],
+        ["ns/day", finite(r) ? `${num(r * 24, 1)} ns/d` : "–", "from history"],
+        ["ETA", eta ? duration(eta.hours) : (stage.eta_text || "–"), eta ? dateText(eta.date) : "GROMACS estimate"],
+        ["Temperature", finite(stage.temperature_k) ? `${num(stage.temperature_k, 2)} K` : "–", "latest frame"],
+        ["Pressure", finite(stage.pressure_bar) ? `${num(stage.pressure_bar, 2)} bar` : "–", "latest frame"],
+        ["Energy", finite(stage.potential_kj_mol) ? num(stage.potential_kj_mol, 0) : "–", "potential kJ/mol"]
+      ];
+      $("stats").innerHTML = cards.map(([k, v, s]) => `<article class="card"><span>${esc(k)}</span><strong>${esc(v)}</strong><em>${esc(s)}</em></article>`).join("");
+    }
 
-    <script src="app.js"></script>
-  </body>
+    function renderStages(status) {
+      const sim = activeSimulation(status);
+      const stages = sim?.stages || [];
+      const active = activeStage(sim);
+      const by = new Map(stages.map((s) => [s.stage, s]));
+      const order = [...new Set([...STAGE_ORDER, ...stages.map((s) => s.stage).filter(Boolean)])];
+      $("stages").innerHTML = order.map((name) => {
+        const s = by.get(name) || {};
+        const p = Math.max(0, Math.min(100, n(s.percent) ?? (s.status === "complete" ? 100 : 0)));
+        const cls = ["stage", active?.stage === name ? "current" : "", ["failed", "stale"].includes(s.status) ? "failed" : ""].join(" ");
+        return `<article class="${cls}"><h3>${esc(name)}</h3><p>${esc(s.status || "not seen")} · ${pct(p)}<br>${ns(s.current_ns)} / ${ns(s.total_ns)}</p><div class="bar"><span style="--value:${p}%"></span></div></article>`;
+      }).join("");
+    }
+
+    function lineChart(id, rows, series, opts = {}) {
+      const el = $(id);
+      const valid = rows.filter((r) => Number.isFinite(r.t) && series.some((s) => finite(r[s.key]))).slice(-(opts.limit || 180));
+      if (valid.length < 2) {
+        el.innerHTML = `<div class="empty">Need at least two history samples with ${esc(opts.empty || "valid values")}.</div>`;
+        return;
+      }
+      const W = 900, H = 230, m = { l: 62, r: 22, t: 20, b: 38 };
+      const iw = W - m.l - m.r, ih = H - m.t - m.b;
+      const ts = valid.map((r) => r.t), minT = Math.min(...ts), maxT = Math.max(...ts);
+      let ys = valid.flatMap((r) => series.map((s) => r[s.key])).map(n).filter((x) => x !== null);
+      let minY = opts.minY ?? Math.min(...ys), maxY = opts.maxY ?? Math.max(...ys);
+      if (minY === maxY) { const pad = Math.abs(minY || 1) * .05; minY -= pad; maxY += pad; }
+      const pad = opts.fixed ? 0 : (maxY - minY) * .08;
+      minY -= pad; maxY += pad;
+      const x = (t) => m.l + ((t - minT) / Math.max(1, maxT - minT)) * iw;
+      const y = (v) => m.t + (1 - ((Number(v) - minY) / Math.max(1e-12, maxY - minY))) * ih;
+      const grid = [0, .25, .5, .75, 1].map((f) => {
+        const yy = m.t + f * ih, val = maxY - f * (maxY - minY);
+        return `<line class="grid-line" x1="${m.l}" x2="${W-m.r}" y1="${yy}" y2="${yy}"/><text class="tick" x="${m.l-9}" y="${yy+4}" text-anchor="end">${num(val, opts.digits ?? 1)}</text>`;
+      }).join("");
+      const ticks = [valid[0], valid[Math.floor(valid.length / 2)], valid.at(-1)];
+      const xTicks = ticks.map((r) => `<text class="tick" x="${x(r.t)}" y="${H-13}" text-anchor="middle">${clock(r.generated_at)}</text>`).join("");
+      const paths = series.map((s, i) => {
+        const pts = valid.filter((r) => finite(r[s.key]));
+        const d = pts.map((r, j) => `${j ? "L" : "M"}${x(r.t).toFixed(2)},${y(r[s.key]).toFixed(2)}`).join(" ");
+        const last = pts.at(-1);
+        return `<path class="data-line ${i ? "secondary" : ""}" d="${d}"/><circle class="data-point" cx="${x(last.t)}" cy="${y(last[s.key])}" r="3"/><text class="tick" x="${x(last.t)-5}" y="${y(last[s.key])-9}" text-anchor="end">${num(last[s.key], opts.digits ?? 1)}${s.suffix || ""}</text>`;
+      }).join("");
+      const primary = valid.filter((r) => finite(r[series[0].key]));
+      const area = primary.length > 1 ? `<path class="data-area" d="${primary.map((r, j) => `${j ? "L" : "M"}${x(r.t).toFixed(2)},${y(r[series[0].key]).toFixed(2)}`).join(" ")} L${x(primary.at(-1).t).toFixed(2)},${H-m.b} L${x(primary[0].t).toFixed(2)},${H-m.b} Z"/>` : "";
+      el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img"><line class="grid-line" x1="${m.l}" x2="${W-m.r}" y1="${H-m.b}" y2="${H-m.b}"/>${grid}${xTicks}${area}${paths}</svg>`;
+    }
+
+    function renderCharts(rows) {
+      lineChart("chartProgress", rows, [{ key: "percent", suffix: "%" }], { minY: 0, maxY: 100, fixed: true, digits: 0, empty: "progress values" });
+      lineChart("chartNs", rows, [{ key: "current_ns" }], { digits: 2, empty: "trajectory values" });
+      lineChart("chartRate", rows, [{ key: "ns_per_hour" }], { digits: 2, empty: "consecutive ns values" });
+      lineChart("chartTemp", rows, [{ key: "temperature_k" }], { digits: 2, empty: "temperature values" });
+      lineChart("chartPressure", rows, [{ key: "pressure_bar" }], { digits: 1, empty: "pressure values" });
+      lineChart("chartPotential", rows, [{ key: "potential_kj_mol" }], { digits: 0, empty: "energy values" });
+      lineChart("chartSteps", rows, [{ key: "steps_per_hour" }], { digits: 0, empty: "step increments" });
+    }
+
+    function renderSamples(rows) {
+      $("samplesBody").innerHTML = rows.slice(-14).reverse().map((r) => `<tr><td>${clock(r.generated_at)}</td><td>${num(r.current_ns, 2)}</td><td>${finite(r.delta_ns) ? "+" + num(r.delta_ns, 3) : "–"}</td><td>${num(r.ns_per_hour, 2)}</td><td>${num(r.temperature_k, 2)}</td><td>${num(r.pressure_bar, 2)}</td></tr>`).join("") || `<tr><td colspan="6">No history samples yet.</td></tr>`;
+    }
+
+    function simMatches(sim) {
+      if (state.filter === "all") return true;
+      if (state.filter === "attention") return ["failed", "stale", "partial"].includes(sim.status);
+      return sim.status === state.filter;
+    }
+    function renderInventory(status) {
+      const sims = (status?.simulations || []).filter(simMatches).slice(0, 80);
+      $("inventoryBody").innerHTML = sims.map((sim) => {
+        const s = activeStage(sim) || {};
+        return `<tr><td>${esc(sim.name || sim.id || sim.path || "simulation")}<br><span class="small">${esc(sim.path || "")}</span></td><td>${esc(sim.status || "–")}</td><td>${esc(s.stage || "–")}</td><td>${pct(s.percent)}</td><td>${ns(s.current_ns)}</td><td>${dateText(sim.updated_at || s.updated_at)}</td></tr>`;
+      }).join("") || `<tr><td colspan="6">No matching simulations.</td></tr>`;
+    }
+
+    function render(status, historyPayload) {
+      const current = activeSampleFromStatus(status);
+      state.history = mergeCurrent(normalizeHistory(historyPayload), current);
+      const activePath = current?.active?.path || status?.summary?.latest_path;
+      state.rows = deriveRows(state.history, activePath);
+      const summary = status?.summary || {};
+      $("sourceRoot").textContent = `${status.source_root || "unknown source"} · ${summary.simulations ?? status.simulations?.length ?? 0} simulations · ${state.rows.length} active-history samples`;
+      $("lastRefresh").textContent = `Last refreshed ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+      const health = $("health");
+      health.className = "chip";
+      if ((summary.attention ?? 0) > 0) { health.classList.add("warn"); health.textContent = `${summary.attention} attention`; }
+      else if ((summary.running ?? 0) > 0) { health.classList.add("good"); health.textContent = `${summary.running} running`; }
+      else { health.textContent = "idle"; }
+      renderActive(status, state.rows);
+      renderStats(status, state.rows);
+      renderStages(status);
+      renderCharts(state.rows);
+      renderSamples(state.rows);
+      renderInventory(status);
+    }
+
+    async function refresh() {
+      $("health").textContent = "loading";
+      const [status, history] = await Promise.all([loadJson("status.json", null), loadJson("history.json", { samples: [] })]);
+      if (!status) {
+        $("health").className = "chip bad";
+        $("health").textContent = "status error";
+        $("sourceRoot").textContent = "Could not load sim-progress/status.json. Check the file exists on GitHub Pages and is valid JSON.";
+        $("active").innerHTML = `<p class="kicker">Load error</p><h2>status.json was not available</h2><p class="subtitle">Open DevTools → Console/Network to see whether this is a 404, invalid JSON, or a caching issue.</p>`;
+        return;
+      }
+      state.status = status;
+      render(status, history);
+    }
+
+    document.querySelectorAll(".tabs button").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".tabs button").forEach((b) => b.classList.remove("active"));
+        button.classList.add("active");
+        state.filter = button.dataset.filter || "all";
+        renderInventory(state.status);
+      });
+    });
+    $("refresh").addEventListener("click", refresh);
+    refresh();
+    setInterval(refresh, 60000);
+  </script>
+</body>
 </html>
