@@ -18,6 +18,12 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+function asciiProgressBar(value, width = 32) {
+  const percent = clamp(Number(value) || 0, 0, 100);
+  const filled = Math.round((percent / 100) * width);
+  return `[${"#".repeat(filled)}${".".repeat(Math.max(0, width - filled))}]`;
+}
+
 function defined(value) {
   return value !== null && value !== undefined && Number.isFinite(Number(value));
 }
@@ -339,16 +345,13 @@ endpoint: ${statusEndpoint()}</pre>
   const eta = cleanEta(active.eta_text) !== "-" ? cleanEta(active.eta_text) : formatDuration(historyActive?.eta_seconds_from_rate);
   const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
   const pid = active.process_id ? `pid ${active.process_id}${active.process_alive ? " live" : ""}` : "pid unknown";
-  const barWidth = 36;
-  const filled = Math.round((percent / 100) * barWidth);
-  const asciiBar = `${"#".repeat(filled)}${".".repeat(Math.max(0, barWidth - filled))}`;
   const runtime = active.runtime || {};
   const mdp = active.mdp || {};
   return `
     <div class="terminal-session">
       <pre><span class="prompt">$</span> gmx-watch --root "${data.source_root || "."}" --tail
 run: ${simulation.name}    status: ${statusLabel(simulation.status)}    phase: ${active.stage || "-"} / ${active.label || "-"}
-progress: [${asciiBar}] ${formatPercent(active.percent)}    ${timeLine}
+progress: ${asciiProgressBar(percent, 36)} ${formatPercent(active.percent)}    ${timeLine}
 step: ${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}    ${pid}    samples: ${history.length}
 speed: ${speed}    eta: ${eta}
 thermo: T=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(3) : "-"} K    P=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(3) : "-"} bar    LINCS=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}
@@ -511,7 +514,7 @@ function simulationCard(simulation) {
           <span class="status ${simulation.status}">${statusLabel(simulation.status)}</span>
         </div>
         <div class="progress-panel">
-          <div class="ring" style="--value: ${percent}"><span>${formatPercent(active.percent)}</span></div>
+          <pre class="ascii-progress">${asciiProgressBar(percent, 28)} ${formatPercent(active.percent)}</pre>
           <div class="detail-grid">
             <div class="detail"><span class="detail-label">stage</span><strong>${active.label || "-"}</strong></div>
             <div class="detail"><span class="detail-label">time</span><strong>${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}</strong></div>
