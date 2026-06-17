@@ -30,9 +30,10 @@ jobs:
         run: |
           set -e
           mkdir -p sim-progress
-          # Fetch status.json from your server.  The API_URL secret should
-          # include the full path, e.g. https://your.example.com/api/status
-          curl -sSL "$API_URL" -o sim-progress/status.json
+          # Fetch status.json from your server using the API_URL secret.  We reference
+          # the secret directly here so that it is substituted at runtime.  The
+          # API_URL should include the full path, e.g. https://your.example.com/api/status
+          curl -sSL "${{ secrets.API_URL }}" -o sim-progress/status.json
       - name: Update history.json
         run: |
           python - <<'PY'
