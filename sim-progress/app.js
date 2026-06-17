@@ -2,7 +2,9 @@ const state = {
   filter: "all",
   status: null,
   history: [],
-  derived: [],
+  clientHistory: [],
+  timer: null,
+  refreshMs: 5000,
 };
 
 const STAGES = ["em", "nvt", "npt", "md"];
@@ -44,6 +46,59 @@ function formatPercent(value) {
   if (numeric >= 99.95) return "100%";
   if (numeric < 1) return `${numeric.toFixed(2)}%`;
   return `${numeric.toFixed(1)}%`;
+}
+
+function formatNumber(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  return new Intl.NumberFormat().format(Number(value));
+}
+
+function formatScientific(value, decimals = 3) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  return Number(value).toExponential(decimals);
+}
+
+function formatEnergy(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  const numeric = Number(value);
+  if (Math.abs(numeric) >= 100000) return `${(numeric / 1000000).toFixed(3)}e6`;
+  return formatNumber(Math.round(numeric));
+}
+
+function formatRate(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  const numeric = Number(value);
+  if (Math.abs(numeric) >= 100) return numeric.toFixed(1);
+  if (Math.abs(numeric) >= 10) return numeric.toFixed(2);
+  return numeric.toFixed(3);
+}
+
+function formatBytes(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  let numeric = Number(value);
+  let unit = units[0];
+  for (let index = 0; index < units.length; index += 1) {
+    unit = units[index];
+    if (Math.abs(numeric) < 1024 || index === units.length - 1) break;
+    numeric /= 1024;
+  }
+  return unit === "B" ? `${Math.round(numeric)} B` : `${numeric.toFixed(1)} ${unit}`;
+}
+
+function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined || Number.isNaN(Number(seconds))) return "-";
+  let remaining = Math.max(0, Math.round(Number(seconds)));
+  const days = Math.floor(remaining / 86400);
+  remaining -= days * 86400;
+  const hours = Math.floor(remaining / 3600);
+  remaining -= hours * 3600;
+  const minutes = Math.floor(remaining / 60);
+  const secs = remaining - minutes * 60;
+  if (days) return `${days}d ${hours}h`;
+  if (hours) return `${hours}h ${minutes}m`;
+  if (minutes) return `${minutes}m ${secs}s`;
+  return `${secs}s`;
 }
 
 function formatNs(value) {
@@ -89,6 +144,50 @@ function cleanEta(text) {
   return String(text).replace(/\s+/g, " ").trim();
 }
 
+function stageMapFor(simulation) {
+  return Object.fromEntries((simulation?.stages || []).map((stage) => [stage.stage, stage]));
+}
+
+function stagePercent(simulation, stageName) {
+  const stage = stageMapFor(simulation)[stageName];
+  return stage?.completion_percent ?? stage?.percent ?? null;
+}
+
+function fileBytes(files, name) {
+  return files?.[name]?.bytes ?? null;
+}
+
+function totalFileBytes(files) {
+  if (!files) return null;
+  const values = Object.values(files).map((item) => item?.bytes).filter((value) => defined(value));
+  return values.length ? values.reduce((sum, value) => sum + Number(value), 0) : null;
+}
+
+function statusLabel(status) {
+  const labels = {
+    running: "running",
+    complete: "done",
+    partial: "partial",
+    stale: "stale",
+    failed: "failed",
+    unknown: "unknown",
+  };
+  return labels[status] || status || "unknown";
+}
+
+function isStaticHost() {
+  const host = window.location.hostname;
+  return host.endsWith("github.io") || (host === "localhost" && !window.location.port);
+}
+
+function statusEndpoint() {
+  return isStaticHost() ? "status.json" : "/api/status";
+}
+
+function historyEndpoint() {
+  return isStaticHost() ? "history.json" : null;
+}
+
 function cacheBust(url) {
   const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}t=${Date.now()}`;
@@ -103,61 +202,109 @@ function activeSimulation(status = state.status) {
   return simulations.find((sim) => sim.status === "running") || simulations[0] || null;
 }
 
-function activeStage(simulation) {
-  return simulation?.active_stage || null;
-}
-
-function normalPath(value) {
-  return String(value || "").replace(/^\/+/, "").replace(/^gromacs_run\//, "");
-}
-
-function samePath(a, b) {
-  const aa = normalPath(a);
-  const bb = normalPath(b);
-  if (!aa || !bb) return false;
-  return aa === bb || aa.endsWith(`/${bb}`) || bb.endsWith(`/${aa}`);
-}
-
-function snapshotFromStatus(status) {
-  const sim = activeSimulation(status);
-  const stage = activeStage(sim);
+function snapshotToTelemetry(data) {
+  const { simulation, active } = getActive(data);
+  const stagePercents = Object.fromEntries((simulation?.stages || []).map((stage) => [stage.stage, stage.completion_percent ?? stage.percent ?? null]));
   return {
-    generated_at: status?.generated_at || new Date().toISOString(),
-    source_root: status?.source_root || null,
-    running: status?.summary?.running ?? null,
-    attention: status?.summary?.attention ?? null,
-    complete: status?.summary?.complete ?? null,
-    simulations: status?.summary?.simulations ?? status?.simulations?.length ?? null,
-    latest_path: status?.summary?.latest_path || sim?.path || null,
-    active: stage ? {
-      name: sim?.name || sim?.id || "simulation",
-      path: sim?.path || sim?.id || null,
-      status: sim?.status || stage.status || "unknown",
-      stage: stage.stage || null,
-      label: stage.label || null,
-      percent: num(stage.percent),
-      current_step: num(stage.current_step),
-      total_steps: num(stage.total_steps),
-      current_ns: num(stage.current_ns),
-      total_ns: num(stage.total_ns),
-      eta_text: stage.eta_text || null,
-      performance_ns_per_day: num(stage.performance_ns_per_day),
-      temperature_k: num(stage.temperature_k),
-      pressure_bar: num(stage.pressure_bar),
-      potential_kj_mol: num(stage.potential_kj_mol),
-      total_energy_kj_mol: num(stage.total_energy_kj_mol),
-      process_id: stage.process_id ?? null,
-      process_alive: stage.process_alive ?? null,
-      log_path: stage.log_path || null,
-      age_seconds: num(stage.age_seconds ?? sim?.age_seconds),
-      updated_at: stage.updated_at || sim?.updated_at || null,
+    generated_at: data?.generated_at || new Date().toISOString(),
+    source_root: data?.source_root || "-",
+    running: data?.summary?.running ?? 0,
+    attention: data?.summary?.attention ?? 0,
+    complete: data?.summary?.complete ?? 0,
+    simulations: data?.summary?.simulations ?? data?.simulations?.length ?? 0,
+    latest_path: data?.summary?.latest_path || simulation?.path || "-",
+    files: simulation?.files || {},
+    stage_percents: stagePercents,
+    active: active ? {
+      name: simulation?.name || "-",
+      path: simulation?.path || "-",
+      status: simulation?.status || "unknown",
+      stage: active.stage || "-",
+      label: active.label || "-",
+      percent: active.percent ?? null,
+      current_step: active.current_step ?? null,
+      total_steps: active.total_steps ?? null,
+      current_ns: active.current_ns ?? null,
+      total_ns: active.total_ns ?? null,
+      eta_text: active.eta_text || null,
+      performance_ns_per_day: active.performance_ns_per_day ?? null,
+      temperature_k: active.temperature_k ?? null,
+      pressure_bar: active.pressure_bar ?? null,
+      pressure_coupling_bar: active.pressure_coupling_bar ?? null,
+      potential_kj_mol: active.potential_kj_mol ?? null,
+      kinetic_energy_kj_mol: active.kinetic_energy_kj_mol ?? null,
+      total_energy_kj_mol: active.total_energy_kj_mol ?? null,
+      conserved_energy_kj_mol: active.conserved_energy_kj_mol ?? null,
+      constraint_rmsd: active.constraint_rmsd ?? null,
+      observables: active.observables || {},
+      observable_labels: active.observable_labels || {},
+      process_id: active.process_id ?? null,
+      process_alive: active.process_alive ?? null,
+      log_path: active.log_path || null,
+      age_seconds: simulation?.age_seconds ?? active.age_seconds ?? null,
+      updated_at: simulation?.updated_at || active.updated_at || null,
     } : null,
   };
 }
 
 function normalizeHistory(payload) {
   if (!payload) return [];
-  if (Array.isArray(payload)) return payload.filter((row) => row?.generated_at).slice(-HISTORY_LIMIT);
+  const samples = Array.isArray(payload) ? payload : payload.samples;
+  if (Array.isArray(samples)) {
+    return samples.filter((sample) => sample && sample.generated_at).slice(-2160);
+  }
+  if (typeof payload === "object") {
+    return Object.entries(payload).flatMap(([path, rows]) => {
+      if (!Array.isArray(rows)) return [];
+      return rows.map((row) => ({
+        generated_at: row.timestamp,
+        latest_path: path,
+        active: row ? {
+          path,
+          current_ns: row.ns,
+          temperature_k: row.temperature_k,
+          pressure_bar: row.pressure_bar,
+          performance_ns_per_day: row.performance_ns_per_day,
+          potential_kj_mol: row.potential_kj_mol,
+        } : null,
+      }));
+    }).filter((sample) => sample.generated_at).slice(-2160);
+  }
+  return [];
+}
+
+function enrichHistory(samples) {
+  const previousByRun = new Map();
+  return samples.map((sample) => {
+    const enriched = {
+      ...sample,
+      active: sample.active ? { ...sample.active } : null,
+    };
+    const active = enriched.active;
+    if (!active) return enriched;
+
+    const time = new Date(enriched.generated_at).getTime();
+    const key = `${active.path || active.name || "run"}::${active.stage || "stage"}`;
+    const previous = previousByRun.get(key);
+    if (previous && Number.isFinite(time) && defined(active.current_ns) && defined(previous.active?.current_ns)) {
+      const previousTime = new Date(previous.generated_at).getTime();
+      const dtSeconds = (time - previousTime) / 1000;
+      const deltaNs = Number(active.current_ns) - Number(previous.active.current_ns);
+      if (dtSeconds > 0 && deltaNs >= 0) {
+        active.wall_speed_ns_per_day = deltaNs / (dtSeconds / 86400);
+      }
+      if (dtSeconds > 0 && defined(active.current_step) && defined(previous.active?.current_step)) {
+        const deltaSteps = Number(active.current_step) - Number(previous.active.current_step);
+        if (deltaSteps >= 0) active.steps_per_second = deltaSteps / dtSeconds;
+      }
+      if (defined(active.total_ns) && defined(active.current_ns) && defined(active.wall_speed_ns_per_day) && active.wall_speed_ns_per_day > 0) {
+        active.eta_seconds_from_rate = ((Number(active.total_ns) - Number(active.current_ns)) / active.wall_speed_ns_per_day) * 86400;
+      }
+    }
+    previousByRun.set(key, enriched);
+    return enriched;
+  });
+}
 
   const samples = Array.isArray(payload.samples) ? payload.samples.filter((row) => row?.generated_at) : [];
 
@@ -189,146 +336,51 @@ function normalizeHistory(payload) {
     const path = sample?.active?.path || sample?.latest_path || "unknown";
     byKey.set(`${sample.generated_at}|${path}`, sample);
   });
-
-  return Array.from(byKey.values())
+  return enrichHistory(Array.from(byTime.values())
     .sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at))
-    .slice(-HISTORY_LIMIT);
+    .slice(-2160));
 }
 
-function mergeCurrentSample(samples, current) {
-  if (!current?.generated_at) return samples;
-  const key = `${current.generated_at}|${current.active?.path || current.latest_path || "unknown"}`;
-  const byKey = new Map(samples.map((sample) => [`${sample.generated_at}|${sample.active?.path || sample.latest_path || "unknown"}`, sample]));
-  byKey.set(key, current);
-  return Array.from(byKey.values())
-    .sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at))
-    .slice(-HISTORY_LIMIT);
-}
-
-function deriveSamples(samples, activePath = null) {
-  const rows = samples
-    .filter((sample) => sample?.active && sample.generated_at)
-    .filter((sample) => !activePath || samePath(sample.active.path || sample.latest_path, activePath))
-    .map((sample) => ({ ...sample, t: new Date(sample.generated_at).getTime() }))
-    .filter((sample) => Number.isFinite(sample.t))
-    .sort((a, b) => a.t - b.t);
-
-  let previous = null;
-  return rows.map((sample) => {
-    const active = sample.active || {};
-    const row = {
-      generated_at: sample.generated_at,
-      t: sample.t,
-      name: active.name || "simulation",
-      path: active.path || sample.latest_path,
-      status: active.status || "unknown",
-      stage: active.stage || null,
-      percent: num(active.percent),
-      current_ns: num(active.current_ns),
-      total_ns: num(active.total_ns),
-      current_step: num(active.current_step),
-      total_step: num(active.total_steps),
-      temperature_k: num(active.temperature_k),
-      pressure_bar: num(active.pressure_bar),
-      potential_kj_mol: num(active.potential_kj_mol),
-      total_energy_kj_mol: num(active.total_energy_kj_mol),
-      log_rate_ns_day: num(active.performance_ns_per_day),
-      eta_text: active.eta_text || null,
-      log_path: active.log_path || null,
-      updated_at: active.updated_at || sample.generated_at,
-      raw: sample,
-    };
-
-    if (previous && samePath(previous.path, row.path)) {
-      const dtHours = (row.t - previous.t) / 36e5;
-      const dNs = finite(row.current_ns) && finite(previous.current_ns) ? row.current_ns - previous.current_ns : null;
-      const dPercent = finite(row.percent) && finite(previous.percent) ? row.percent - previous.percent : null;
-      const dStep = finite(row.current_step) && finite(previous.current_step) ? row.current_step - previous.current_step : null;
-
-      row.dt_hours = dtHours > 0 ? dtHours : null;
-      row.delta_ns = dNs !== null && dNs >= 0 ? dNs : null;
-      row.delta_percent = dPercent !== null && dPercent >= 0 ? dPercent : null;
-      row.delta_step = dStep !== null && dStep >= 0 ? dStep : null;
-      row.ns_per_hour = row.delta_ns !== null && row.dt_hours ? row.delta_ns / row.dt_hours : null;
-      row.ns_per_day_derived = finite(row.ns_per_hour) ? row.ns_per_hour * 24 : null;
-      row.percent_per_hour = row.delta_percent !== null && row.dt_hours ? row.delta_percent / row.dt_hours : null;
-      row.steps_per_hour = row.delta_step !== null && row.dt_hours ? row.delta_step / row.dt_hours : null;
-    } else {
-      row.dt_hours = null;
-      row.delta_ns = null;
-      row.delta_percent = null;
-      row.delta_step = null;
-      row.ns_per_hour = null;
-      row.ns_per_day_derived = null;
-      row.percent_per_hour = null;
-      row.steps_per_hour = null;
-    }
-
-    previous = row;
-    return row;
-  });
-}
-
-function latestValid(rows, key) {
-  for (let i = rows.length - 1; i >= 0; i -= 1) {
-    if (finite(rows[i][key])) return Number(rows[i][key]);
-  }
-  return null;
-}
-
-function mean(values) {
-  const valid = values.filter(finite).map(Number);
-  if (!valid.length) return null;
-  return valid.reduce((a, b) => a + b, 0) / valid.length;
-}
-
-function std(values) {
-  const valid = values.filter(finite).map(Number);
-  if (valid.length < 2) return null;
-  const m = mean(valid);
-  const variance = valid.reduce((acc, value) => acc + (value - m) ** 2, 0) / (valid.length - 1);
-  return Math.sqrt(variance);
-}
-
-function rollingMean(rows, key, count = 6) {
-  return mean(rows.slice(-count).map((row) => row[key]));
-}
-
-function estimateFinish(row, rateNsHour) {
-  if (!row || !finite(row.total_ns) || !finite(row.current_ns) || !finite(rateNsHour) || rateNsHour <= 0) return null;
-  const remainingNs = Math.max(0, row.total_ns - row.current_ns);
-  const hours = remainingNs / rateNsHour;
-  return { remainingNs, hours, date: new Date(Date.now() + hours * 36e5) };
-}
-
-function renderActivePanel(status, rows) {
-  const sim = activeSimulation(status);
-  const stage = activeStage(sim);
-  const latest = rows[rows.length - 1];
-  if (!sim || !stage) {
-    $("#activePanel").innerHTML = `
-      <div>
-        <p class="kicker">No active log</p>
-        <h2 class="active-title">No simulation detected</h2>
-        <p class="subtle">Expected status.json to contain simulations with active_stage entries.</p>
+function activeHero(data, history = []) {
+  const { simulation, active } = getActive(data);
+  if (!simulation || !active) {
+    return `
+      <div class="hero-copy">
+        <span class="eyebrow">idle</span>
+        <h2>NO LOG STREAM</h2>
+        <p>Expected files: em.log, nvt.log, npt.log, md.log or *.run.log under the scan root.</p>
+      </div>
+      <div class="hero-progress">
+        <div class="hero-ring" style="--value: 0"><span>0%</span></div>
+        <div class="hero-stats">
+          <div><span>endpoint</span><strong>${statusEndpoint()}</strong></div>
+          <div><span>mode</span><strong>${isStaticHost() ? "github pages snapshot" : "local live api"}</strong></div>
+        </div>
       </div>
     `;
     return;
   }
 
-  const percent = clamp(num(stage.percent) ?? 0, 0, 100);
-  const rollingRate = rollingMean(rows, "ns_per_hour", 6);
-  const finish = estimateFinish(latest, rollingRate);
-  const pid = stage.process_id ? `pid ${stage.process_id}${stage.process_alive ? " live" : ""}` : "pid unknown";
-
-  $("#activePanel").innerHTML = `
-    <div>
-      <p class="kicker">${escapeHtml(statusText(sim.status))} / ${escapeHtml(stage.stage || "stage unknown")}</p>
-      <h2 class="active-title">${escapeHtml(sim.name || sim.id || "simulation")}</h2>
-      <div class="active-meta">
-        <span>${escapeHtml(stage.label || "current stage")}</span>
-        <span>${escapeHtml(pid)}</span>
-        <span>${escapeHtml(stage.log_path || "log path unavailable")}</span>
+  const percent = clamp(active.percent ?? 0, 0, 100);
+  const historyActive = [...history].reverse().find((sample) => sample.active?.path === simulation.path || sample.active?.name === simulation.name)?.active;
+  const liveRate = active.performance_ns_per_day ?? historyActive?.wall_speed_ns_per_day;
+  const speed = defined(liveRate) ? `${formatRate(liveRate)} ns/day` : "-";
+  const eta = cleanEta(active.eta_text) !== "-" ? cleanEta(active.eta_text) : formatDuration(historyActive?.eta_seconds_from_rate);
+  const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
+  const pid = active.process_id ? `pid ${active.process_id}${active.process_alive ? " live" : ""}` : "pid unknown";
+  return `
+    <div class="hero-copy">
+      <span class="eyebrow">${statusLabel(simulation.status)} :: ${active.stage || "stage?"}</span>
+      <h2>${simulation.name}</h2>
+      <p>${active.label || "current stage"} :: ${timeLine} :: ${pid}</p>
+    </div>
+    <div class="hero-progress">
+      <div class="hero-ring" style="--value: ${percent}"><span>${formatPercent(active.percent)}</span></div>
+      <div class="hero-stats">
+        <div><span>eta</span><strong>${eta}</strong></div>
+        <div><span>speed</span><strong>${speed}</strong></div>
+        <div><span>gpu</span><strong>${active.runtime?.gpu_0 || active.runtime?.gpu_support || "-"}</strong></div>
+        <div><span>log</span><strong>${active.log_path || "-"}</strong></div>
       </div>
     </div>
     <div class="progress-block">
@@ -347,18 +399,28 @@ function updateStats(status, rows) {
   const finish = estimateFinish(latest, rate);
   const progressSub = stage.stage ? `${stage.stage} / ${stage.label || "stage"}` : "current stage";
 
-  $("#statProgress").textContent = formatPercent(stage.percent);
-  $("#statProgressSub").textContent = progressSub;
-  $("#statNs").textContent = `${formatNs(stage.current_ns)} / ${formatNs(stage.total_ns)}`;
-  $("#statNsSub").textContent = stage.current_step ? `${formatNumber(stage.current_step, 0)} / ${formatNumber(stage.total_steps, 0)} steps` : "ns completed";
-  $("#statNsHour").textContent = formatRate(rate);
-  $("#statEta").textContent = finish ? formatDuration(finish.hours) : cleanEta(stage.eta_text);
-  $("#statEtaSub").textContent = finish ? finish.date.toLocaleString([], { weekday: "short", hour: "2-digit", minute: "2-digit", month: "short", day: "numeric" }) : "GROMACS ETA";
-  $("#statTemp").textContent = finite(stage.temperature_k) ? `${Number(stage.temperature_k).toFixed(2)}` : "–";
-  $("#statPressure").textContent = finite(stage.pressure_bar) ? `${Number(stage.pressure_bar).toFixed(2)}` : "–";
-  $("#statEnergy").textContent = finite(stage.potential_kj_mol) ? Number(stage.potential_kj_mol).toExponential(3) : "–";
-  $("#statSamples").textContent = `${rows.length}`;
-  $("#lastUpdated").textContent = `updated ${formatDateTime(status?.generated_at)}`;
+  const lines = [
+    `[${formatClock(data?.generated_at)}] status=${statusLabel(simulation?.status)} endpoint=${statusEndpoint()} samples=${history.length}`,
+    `scan_root=${data?.source_root || "-"}`,
+  ];
+
+  if (simulation && active) {
+    const live = newest?.active || {};
+    lines.push(`active=${simulation.name}`);
+    lines.push(`stage=${active.stage || "-"} label="${active.label || "-"}" progress=${formatPercent(active.percent)} step=${formatNumber(active.current_step)}/${formatNumber(active.total_steps)}`);
+    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${cleanEta(active.eta_text)}"`);
+    lines.push(`thermo temp=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(2) : "-"} K pressure=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(2) : "-"} bar potential=${defined(active.potential_kj_mol) ? Number(active.potential_kj_mol).toExponential(3) : "-"} kJ/mol constraint=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}`);
+    lines.push(`runtime gpu="${active.runtime?.gpu_0 || "-"}" pme="${active.runtime?.gpu_task_mapping || "-"}" threads="${active.runtime?.openmp_threads || "-"}"`);
+    lines.push(`mdp dt=${active.mdp?.dt || "-"} ps nsteps=${active.mdp?.nsteps || "-"} nstlog=${active.mdp?.nstlog || "-"} nstenergy=${active.mdp?.nstenergy || "-"} tcoupl=${active.mdp?.tcoupl || "-"}`);
+    lines.push(`process pid=${active.process_id || "-"} alive=${active.process_alive === null || active.process_alive === undefined ? "unknown" : String(active.process_alive)} log=${active.log_path || "-"}`);
+  }
+  if (deltaPercent !== null || deltaStep !== null) {
+    lines.push(`delta_since_last_sample=${deltaPercent === null ? "-" : `${deltaPercent >= 0 ? "+" : ""}${deltaPercent.toFixed(3)}%`} steps=${deltaStep === null ? "-" : `${deltaStep >= 0 ? "+" : ""}${formatNumber(deltaStep)}`}`);
+  }
+  if (data?.summary) {
+    lines.push(`queue simulations=${data.summary.simulations} running=${data.summary.running} attention=${data.summary.attention} complete=${data.summary.complete}`);
+  }
+  return lines.join("\n");
 }
 
 function renderStages(status) {
@@ -436,20 +498,24 @@ function renderLineChart(target, rows, options) {
   const xTicks = [validRows[0], validRows[Math.floor(validRows.length / 2)], validRows[validRows.length - 1]];
   const xLabels = xTicks.map((row) => `<text class="tick-label" x="${x(row.t)}" y="${height - 14}" text-anchor="middle">${formatClock(row.generated_at)}</text>`).join("");
 
-  const paths = series.map((s, idx) => {
-    const points = validRows.filter((row) => finite(row[s.key]));
-    const d = points.map((row, i) => `${i === 0 ? "M" : "L"}${x(row.t).toFixed(2)},${y(row[s.key]).toFixed(2)}`).join(" ");
-    const point = points[points.length - 1];
-    return `
-      <path class="data-line ${idx ? "secondary" : ""}" d="${d}"/>
-      <circle class="data-point" cx="${x(point.t)}" cy="${y(point[s.key])}" r="3"/>
-      <text class="point-label" x="${x(point.t) - 5}" y="${y(point[s.key]) - 9}" text-anchor="end">${formatNumber(point[s.key], options.yDigits ?? 1)}${s.suffix || ""}</text>
-    `;
+  const paths = series.map((item, index) => {
+    const classNames = ["chart-line", "chart-line secondary", "chart-line tertiary", "chart-line quaternary"];
+    const className = classNames[index] || "chart-line";
+    const pointRows = rows.filter((row) => defined(item.value(row)));
+    const path = linePath(pointRows, x, (row) => y(item.value(row)));
+    const circles = pointRows.slice(-32).map((row) => `<circle class="point" cx="${x(row).toFixed(2)}" cy="${y(item.value(row)).toFixed(2)}" r="2.4"></circle>`).join("");
+    const area = index === 0 ? `<path class="chart-area" d="${areaPath(pointRows, x, (row) => y(item.value(row)), height - margin.bottom)}"></path>` : "";
+    return `${area}<path class="${className}" d="${path}"></path>${circles}`;
   }).join("");
 
-  const primary = series[0];
-  const areaPoints = validRows.filter((row) => finite(row[primary.key]));
-  const area = areaPoints.length > 1 ? `<path class="data-area" d="${areaPoints.map((row, i) => `${i === 0 ? "M" : "L"}${x(row.t).toFixed(2)},${y(row[primary.key]).toFixed(2)}`).join(" ")} L${x(areaPoints.at(-1).t).toFixed(2)},${height - margin.bottom} L${x(areaPoints[0].t).toFixed(2)},${height - margin.bottom} Z"/>` : "";
+  const latestLabels = series.map((item, index) => {
+    const reversed = [...rows].reverse().find((row) => defined(item.value(row)));
+    if (!reversed) return "";
+    const value = Number(item.value(reversed));
+    const legendClasses = ["", "secondary", "tertiary", "quaternary"];
+    const className = legendClasses[index] || "";
+    return `<span class="${className}">${item.label}: ${value.toFixed(decimals)}${suffix}</span>`;
+  }).join("");
 
   const legend = series.map((s, idx) => `<text class="legend" x="${margin.left + idx * 150}" y="14">${escapeHtml(s.label || s.key)}</text>`).join("");
 
@@ -465,58 +531,11 @@ function renderLineChart(target, rows, options) {
   `;
 }
 
-function renderCharts(rows) {
-  renderLineChart("#chartProgress", rows, {
-    label: "Progress over time",
-    emptyLabel: "progress values",
-    minY: 0,
-    maxY: 100,
-    yDigits: 0,
-    series: [{ key: "percent", label: "Percent", suffix: "%" }],
-  });
-
-  renderLineChart("#chartNs", rows, {
-    label: "Trajectory time",
-    emptyLabel: "trajectory values",
-    yDigits: 2,
-    series: [{ key: "current_ns", label: "Current ns" }],
-  });
-
-  renderLineChart("#chartRate", rows, {
-    label: "Derived throughput",
-    emptyLabel: "consecutive ns values",
-    yDigits: 2,
-    series: [{ key: "ns_per_hour", label: "ns/hour" }],
-  });
-
-  renderLineChart("#chartTemp", rows, {
-    label: "Temperature",
-    emptyLabel: "temperature values",
-    yDigits: 1,
-    series: [{ key: "temperature_k", label: "Temperature K" }],
-  });
-
-  renderLineChart("#chartPressure", rows, {
-    label: "Pressure",
-    emptyLabel: "pressure values",
-    yDigits: 1,
-    series: [{ key: "pressure_bar", label: "Pressure bar" }],
-  });
-
-  renderLineChart("#chartPotential", rows, {
-    label: "Potential energy",
-    emptyLabel: "energy values",
-    yDigits: 0,
-    series: [{ key: "potential_kj_mol", label: "Potential" }],
-  });
-
-  renderLineChart("#chartSteps", rows, {
-    label: "Step throughput",
-    emptyLabel: "step increments",
-    yDigits: 0,
-    height: 220,
-    series: [{ key: "steps_per_hour", label: "Steps/hour" }],
-  });
+function stageCell(stageName, stage) {
+  if (!stage) {
+    return `<div class="stage unknown"><strong>${stageName.toUpperCase()}</strong><span>-</span></div>`;
+  }
+  return `<div class="stage ${stage.status}"><strong>${stage.label}</strong><span>${formatPercent(stage.completion_percent ?? stage.percent)}</span></div>`;
 }
 
 function renderRecentRows(rows) {
@@ -533,26 +552,148 @@ function renderRecentRows(rows) {
   `).join("") || `<tr><td colspan="6">No history samples available yet.</td></tr>`;
 }
 
-function renderDiagnostics(status, rows) {
-  const latest = rows[rows.length - 1] || {};
-  const rates = rows.slice(-12).map((row) => row.ns_per_hour).filter(finite).map(Number);
-  const temps = rows.slice(-12).map((row) => row.temperature_k).filter(finite).map(Number);
-  const pressures = rows.slice(-12).map((row) => row.pressure_bar).filter(finite).map(Number);
-  const rate = rollingMean(rows, "ns_per_hour", 6);
-  const finish = estimateFinish(latest, rate);
-  const sim = activeSimulation(status);
-  const stage = activeStage(sim) || {};
+function renderStageMatrix(data) {
+  const simulations = data?.simulations || [];
+  if (!simulations.length) return `<div class="empty-plot">No simulation stages found.</div>`;
+  return simulations.slice(0, 40).map((simulation) => {
+    const stageMap = Object.fromEntries((simulation.stages || []).map((stage) => [stage.stage, stage]));
+    const cells = STAGES.map((name) => {
+      const stage = stageMap[name];
+      return `<div class="stage-box ${stage?.status || "unknown"}"><strong>${name}</strong><span>${stage ? formatPercent(stage.completion_percent ?? stage.percent) : "-"}</span></div>`;
+    }).join("");
+    return `<div class="stage-row"><div class="stage-name"><strong>${simulation.name}</strong><span>${simulation.path}</span></div>${cells}</div>`;
+  }).join("");
+}
 
-  const diagnostics = [
-    ["Active path", sim?.path || "–"],
-    ["Log file", stage.log_path || "–"],
-    ["Process", stage.process_id ? `${stage.process_id} / ${stage.process_alive ? "alive" : "not alive"}` : "–"],
-    ["Rate mean", finite(mean(rates)) ? `${formatNumber(mean(rates), 2)} ns/h` : "–"],
-    ["Rate SD", finite(std(rates)) ? `${formatNumber(std(rates), 2)} ns/h` : "–"],
-    ["Temp range", temps.length ? `${formatNumber(Math.min(...temps), 2)}–${formatNumber(Math.max(...temps), 2)} K` : "–"],
-    ["Pressure range", pressures.length ? `${formatNumber(Math.min(...pressures), 2)}–${formatNumber(Math.max(...pressures), 2)} bar` : "–"],
-    ["Remaining", finish ? `${formatNs(finish.remainingNs)} / ${formatDuration(finish.hours)}` : "–"],
-    ["GROMACS ETA", cleanEta(stage.eta_text)],
+function renderPhaseRibbon(data) {
+  const { simulation } = getActive(data);
+  if (!simulation) return `<div class="empty-plot">No active phase data.</div>`;
+  return STAGES.map((name) => {
+    const stage = stageMapFor(simulation)[name];
+    const percent = clamp(stage?.completion_percent ?? stage?.percent ?? 0, 0, 100);
+    return `
+      <div class="phase-track ${name}">
+        <strong>${name}</strong>
+        <div class="phase-bar" style="--value: ${percent}"><i></i></div>
+        <span>${stage ? formatPercent(stage.completion_percent ?? stage.percent) : "-"}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderKeyValueRows(rows) {
+  const visibleRows = rows.filter(([, value]) => value !== null && value !== undefined && value !== "");
+  if (!visibleRows.length) return `<div class="empty-plot">No values parsed yet.</div>`;
+  return visibleRows.map(([key, value]) => `<div class="stat-row"><span>${key}</span><strong>${value}</strong></div>`).join("");
+}
+
+function renderObservables(data) {
+  const { active } = getActive(data);
+  const observables = active?.observables || {};
+  const labels = active?.observable_labels || {};
+  const preferred = [
+    "temperature_k",
+    "pressure_bar",
+    "pressure_coupling_bar",
+    "constraint_rmsd",
+    "potential_kj_mol",
+    "kinetic_energy_kj_mol",
+    "total_energy_kj_mol",
+    "conserved_energy_kj_mol",
+    "bond_kj_mol",
+    "angle_kj_mol",
+    "proper_dih_kj_mol",
+    "improper_dih_kj_mol",
+    "cmap_dih_kj_mol",
+    "lj_14_kj_mol",
+    "coulomb_14_kj_mol",
+    "lj_sr_kj_mol",
+    "coulomb_sr_kj_mol",
+    "coulomb_recip_kj_mol",
+    "dispersion_correction_kj_mol",
+  ];
+  const rows = preferred
+    .filter((key) => Object.prototype.hasOwnProperty.call(observables, key))
+    .map((key) => {
+      const value = observables[key];
+      let formatted = formatScientific(value, 4);
+      if (key === "temperature_k") formatted = `${Number(value).toFixed(3)} K`;
+      if (key.includes("pressure")) formatted = `${Number(value).toFixed(3)} bar`;
+      if (key === "constraint_rmsd") formatted = Number(value).toExponential(3);
+      if (key.endsWith("kj_mol")) formatted = `${formatScientific(value, 4)} kJ/mol`;
+      return [labels[key] || key, formatted];
+    });
+  return renderKeyValueRows(rows);
+}
+
+function renderRuntime(data) {
+  const { active } = getActive(data);
+  const runtime = active?.runtime || {};
+  const rows = [
+    ["GROMACS", runtime.gromacs_version],
+    ["command", runtime.command_line],
+    ["hardware", runtime.hardware_summary],
+    ["cpu", runtime.cpu_brand],
+    ["gpu", runtime.gpu_0],
+    ["gpu mapping", runtime.gpu_task_mapping],
+    ["gpu kernels", runtime.gpu_kernels],
+    ["gpu update", runtime.gpu_update],
+    ["pme", runtime.pme_summary],
+    ["mpi", runtime.mpi_threads || runtime.mpi_library],
+    ["openmp", runtime.openmp_threads || runtime.openmp_support],
+    ["simd", runtime.simd],
+    ["cuda", runtime.cuda_driver && runtime.cuda_runtime ? `${runtime.cuda_driver} driver / ${runtime.cuda_runtime} runtime` : runtime.cuda_driver],
+  ];
+  return renderKeyValueRows(rows);
+}
+
+function renderMdp(data) {
+  const { active } = getActive(data);
+  const mdp = active?.mdp || {};
+  const rows = [
+    ["integrator", mdp.integrator],
+    ["dt", mdp.dt ? `${mdp.dt} ps` : null],
+    ["nsteps", mdp.nsteps],
+    ["nstlog", mdp.nstlog],
+    ["nstenergy", mdp.nstenergy],
+    ["nstxout-compressed", mdp["nstxout-compressed"]],
+    ["tcoupl", mdp.tcoupl],
+    ["tc-grps", mdp["tc-grps"]],
+    ["pcoupl", mdp.pcoupl],
+    ["pcoupltype", mdp.pcoupltype],
+    ["constraints", mdp.constraints || mdp["constraint-algorithm"]],
+    ["coulombtype", mdp.coulombtype],
+    ["vdw-type", mdp["vdw-type"]],
+    ["pbc", mdp.pbc],
+  ];
+  return renderKeyValueRows(rows);
+}
+
+function renderStats(data, history) {
+  const { simulation, active } = getActive(data);
+  const latest = [...history].reverse().find((sample) => sample.active)?.active || {};
+  const files = simulation?.files || {};
+  const rows = [
+    ["mode", isStaticHost() ? "GitHub Pages snapshot" : "local live API"],
+    ["endpoint", statusEndpoint()],
+    ["generated", data?.generated_at || "-"],
+    ["active run", simulation?.name || "-"],
+    ["stage", active?.label || "-"],
+    ["status", statusLabel(simulation?.status)],
+    ["progress", formatPercent(active?.percent)],
+    ["ns", `${formatNs(active?.current_ns)} / ${formatNs(active?.total_ns)}`],
+    ["steps", `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`],
+    ["speed", defined(active?.performance_ns_per_day) ? `${Number(active.performance_ns_per_day).toFixed(2)} ns/day` : "-"],
+    ["wall speed", defined(latest.wall_speed_ns_per_day) ? `${formatRate(latest.wall_speed_ns_per_day)} ns/day` : "-"],
+    ["sample eta", formatDuration(latest.eta_seconds_from_rate)],
+    ["temperature", defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(2)} K` : "-"],
+    ["pressure", defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(2)} bar` : "-"],
+    ["potential", defined(active?.potential_kj_mol) ? `${Number(active.potential_kj_mol).toExponential(4)} kJ/mol` : "-"],
+    ["kinetic", defined(active?.kinetic_energy_kj_mol) ? `${Number(active.kinetic_energy_kj_mol).toExponential(4)} kJ/mol` : "-"],
+    ["conserved", defined(active?.conserved_energy_kj_mol) ? `${Number(active.conserved_energy_kj_mol).toExponential(4)} kJ/mol` : "-"],
+    ["constraint rmsd", defined(active?.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(3) : "-"],
+    ["artifact total", formatBytes(totalFileBytes(files))],
+    ["samples", String(history.length)],
   ];
 
   $("#diagnostics").innerHTML = diagnostics.map(([key, value]) => `
@@ -560,11 +701,66 @@ function renderDiagnostics(status, rows) {
   `).join("");
 }
 
-function simulationMatches(sim) {
-  if (state.filter === "all") return true;
-  if (state.filter === "attention") return ["failed", "stale", "partial"].includes(sim.status);
-  return sim.status === state.filter;
-}
+function renderPlots(history) {
+  const activeSamples = history.filter((sample) => sample.active);
+  $("#plotPercent").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [{ label: "progress", value: (sample) => sample.active?.percent }],
+    yMin: 0,
+    yMax: 100,
+    suffix: "%",
+    decimals: 0,
+  });
+  $("#plotSpeed").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "gmx ns/day", value: (sample) => sample.active?.performance_ns_per_day },
+      { label: "wall ns/day", value: (sample) => sample.active?.wall_speed_ns_per_day },
+      { label: "ksteps/s", value: (sample) => defined(sample.active?.steps_per_second) ? sample.active.steps_per_second / 1000 : null },
+    ],
+    suffix: "",
+    decimals: 2,
+  });
+  $("#plotTempPressure").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "temperature K", value: (sample) => sample.active?.temperature_k },
+      { label: "pressure bar", value: (sample) => sample.active?.pressure_bar },
+    ],
+    suffix: "",
+    decimals: 1,
+  });
+  $("#plotEnergy").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "potential", value: (sample) => sample.active?.potential_kj_mol },
+      { label: "total", value: (sample) => sample.active?.total_energy_kj_mol },
+      { label: "kinetic", value: (sample) => sample.active?.kinetic_energy_kj_mol },
+      { label: "conserved", value: (sample) => sample.active?.conserved_energy_kj_mol },
+    ],
+    suffix: "",
+    decimals: 0,
+  });
+  $("#plotConstraint").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "constraint rmsd", value: (sample) => sample.active?.constraint_rmsd },
+      { label: "pressure DC", value: (sample) => sample.active?.pressure_coupling_bar },
+    ],
+    suffix: "",
+    decimals: 3,
+  });
+  $("#plotArtifacts").innerHTML = makeLineChart({
+    samples: history,
+    series: [
+      { label: "xtc MB", value: (sample) => defined(fileBytes(sample.files, "md.xtc")) ? fileBytes(sample.files, "md.xtc") / 1048576 : null },
+      { label: "edr MB", value: (sample) => defined(fileBytes(sample.files, "md.edr")) ? fileBytes(sample.files, "md.edr") / 1048576 : null },
+      { label: "log MB", value: (sample) => defined(fileBytes(sample.files, "md.log")) ? fileBytes(sample.files, "md.log") / 1048576 : null },
+      { label: "cpt MB", value: (sample) => defined(fileBytes(sample.files, "md.cpt")) ? fileBytes(sample.files, "md.cpt") / 1048576 : null },
+    ],
+    suffix: "",
+    decimals: 1,
+  });
 
 function renderSimulationRows(status) {
   const sims = (status?.simulations || []).filter(simulationMatches).slice(0, 80);
@@ -599,14 +795,42 @@ function updateHealth(status) {
 }
 
 function render() {
-  const status = state.status;
-  if (!status) return;
-  const sim = activeSimulation(status);
-  const activePath = sim?.path || status?.summary?.latest_path || null;
-  state.derived = deriveSamples(state.history, activePath);
+  const data = state.data;
+  if (!data) return;
+  const current = snapshotToTelemetry(data);
+  const history = mergeHistory(state.history, state.clientHistory, current);
+  const { simulation, active } = getActive(data);
+  const latestActive = [...history].reverse().find((sample) => sample.active)?.active || {};
 
-  $("#sourceRoot").textContent = `${status.source_root || "unknown source"} · ${status?.summary?.simulations ?? status?.simulations?.length ?? 0} simulations`;
-  $("#refreshState").textContent = `Last refreshed ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+  $("#sourceRoot").textContent = data.source_root || "-";
+  $("#activeHero").innerHTML = activeHero(data, history);
+  $("#runningCount").textContent = String(data.summary?.running ?? 0);
+  $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
+  $("#activeEta").textContent = cleanEta(data.summary?.active_eta ?? active?.eta_text);
+  $("#speedStat").textContent = defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : "-";
+  $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
+  $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
+  $("#stepStat").textContent = `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`;
+  $("#samplesCount").textContent = String(history.length);
+  $("#emPercent").textContent = formatPercent(stagePercent(simulation, "em"));
+  $("#nvtPercent").textContent = formatPercent(stagePercent(simulation, "nvt"));
+  $("#nptPercent").textContent = formatPercent(stagePercent(simulation, "npt"));
+  $("#mdPercent").textContent = formatPercent(stagePercent(simulation, "md"));
+  $("#wallRateStat").textContent = defined(latestActive.wall_speed_ns_per_day) ? `${formatRate(latestActive.wall_speed_ns_per_day)}` : "-";
+  $("#artifactStat").textContent = formatBytes(totalFileBytes(simulation?.files));
+  $("#clockState").textContent = formatClock(new Date().toISOString());
+  $("#generatedAt").textContent = formatClock(data.generated_at);
+  $("#commitState").textContent = isStaticHost() ? "status.json + history.json" : "live /api/status";
+  $("#lastRefresh").textContent = `refreshed ${formatClock(data.generated_at)} :: browser ${formatClock(new Date().toISOString())}`;
+  $("#nsStat").textContent = simulation && active ? `${simulation.name} :: ${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "no active run";
+  $("#terminalLines").textContent = terminalLog(data, history);
+  $("#statsTable").innerHTML = renderStats(data, history);
+  $("#observablesTable").innerHTML = renderObservables(data);
+  $("#runtimeTable").innerHTML = renderRuntime(data);
+  $("#mdpTable").innerHTML = renderMdp(data);
+  $("#phaseRibbon").innerHTML = renderPhaseRibbon(data);
+  $("#stageMatrix").innerHTML = renderStageMatrix(data);
+  renderPlots(history);
 
   updateHealth(status);
   renderActivePanel(status, state.derived);
@@ -630,17 +854,23 @@ async function loadJson(path, fallback = null) {
 }
 
 async function refresh() {
-  $("#healthState").textContent = "loading";
-  const [status, historyPayload] = await Promise.all([
-    loadJson("status.json", null),
-    loadJson("history.json", { samples: [] }),
-  ]);
-
-  if (!status) {
-    $("#healthState").className = "status-chip bad";
-    $("#healthState").textContent = "status error";
-    $("#sourceRoot").textContent = "Could not load sim-progress/status.json";
-    return;
+  setHealth("updating", null);
+  try {
+    const endpoint = statusEndpoint();
+    const response = await fetch(cacheBust(endpoint), { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    state.data = await response.json();
+    if (!isStaticHost()) {
+      state.clientHistory.push(snapshotToTelemetry(state.data));
+      state.clientHistory = state.clientHistory.slice(-2160);
+    } else {
+      await loadHistory();
+    }
+    setHealth(endpoint === "status.json" ? "snapshot" : "live", true);
+    render();
+  } catch (error) {
+    setHealth("offline", false);
+    console.error(error);
   }
 
   state.status = status;
@@ -663,4 +893,4 @@ function setupEvents() {
 
 setupEvents();
 refresh();
-setInterval(refresh, 60_000);
+state.timer = setInterval(refresh, state.refreshMs);

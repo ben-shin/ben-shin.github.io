@@ -182,19 +182,56 @@
 
     <section id="active" class="panel" aria-label="Active simulation"></section>
 
-    <section id="stats" class="stats" aria-label="Summary statistics"></section>
+      <section class="terminal-grid" aria-label="Telemetry summary">
+        <article class="metric"><span>RUNNING</span><strong id="runningCount">-</strong><em>active mdrun jobs</em></article>
+        <article class="metric"><span>ACTIVE</span><strong id="activePercent">-</strong><em>current stage progress</em></article>
+        <article class="metric"><span>SPEED</span><strong id="speedStat">-</strong><em>ns/day from log</em></article>
+        <article class="metric"><span>ETA</span><strong id="activeEta">-</strong><em>GROMACS estimate</em></article>
+        <article class="metric"><span>TEMP</span><strong id="tempStat">-</strong><em>latest K</em></article>
+        <article class="metric"><span>PRESSURE</span><strong id="pressureStat">-</strong><em>latest bar</em></article>
+        <article class="metric"><span>STEP</span><strong id="stepStat">-</strong><em>current / total</em></article>
+        <article class="metric"><span>SAMPLES</span><strong id="samplesCount">-</strong><em>history points</em></article>
+        <article class="metric"><span>EM</span><strong id="emPercent">-</strong><em>minimization</em></article>
+        <article class="metric"><span>NVT</span><strong id="nvtPercent">-</strong><em>constant volume</em></article>
+        <article class="metric"><span>NPT</span><strong id="nptPercent">-</strong><em>constant pressure</em></article>
+        <article class="metric"><span>MD</span><strong id="mdPercent">-</strong><em>production</em></article>
+        <article class="metric"><span>WALL RATE</span><strong id="wallRateStat">-</strong><em>from 5s samples</em></article>
+        <article class="metric"><span>ARTIFACTS</span><strong id="artifactStat">-</strong><em>latest files</em></article>
+      </section>
+
+      <section class="plot-card wide" aria-label="Phase progress">
+        <div class="panel-title"><span>phase_progress.bin</span><b>em / nvt / npt / md</b></div>
+        <div id="phaseRibbon" class="phase-ribbon"></div>
+      </section>
 
     <section id="stages" class="stage-grid" aria-label="Stage summary"></section>
 
-    <section class="charts" aria-label="Telemetry plots">
-      <article class="chart-card wide"><div class="chart-head"><h2>Progress over time</h2><span>%</span></div><div id="chartProgress" class="chart"></div></article>
-      <article class="chart-card"><div class="chart-head"><h2>Trajectory time</h2><span>ns</span></div><div id="chartNs" class="chart"></div></article>
-      <article class="chart-card"><div class="chart-head"><h2>Derived throughput</h2><span>ns/hour</span></div><div id="chartRate" class="chart"></div></article>
-      <article class="chart-card"><div class="chart-head"><h2>Temperature</h2><span>K</span></div><div id="chartTemp" class="chart"></div></article>
-      <article class="chart-card"><div class="chart-head"><h2>Pressure</h2><span>bar</span></div><div id="chartPressure" class="chart"></div></article>
-      <article class="chart-card"><div class="chart-head"><h2>Potential energy</h2><span>kJ/mol</span></div><div id="chartPotential" class="chart"></div></article>
-      <article class="chart-card"><div class="chart-head"><h2>Step throughput</h2><span>steps/hour</span></div><div id="chartSteps" class="chart"></div></article>
-    </section>
+      <section class="plot-grid" aria-label="Live telemetry plots">
+        <article class="plot-card wide">
+          <div class="panel-title"><span>progress_over_time.dat</span><b id="progressRange">-</b></div>
+          <div id="plotPercent" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>performance_ns_day.xvg</span><b>ns/day</b></div>
+          <div id="plotSpeed" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>thermo_trace.xvg</span><b>K / bar</b></div>
+          <div id="plotTempPressure" class="plot"></div>
+        </article>
+        <article class="plot-card wide">
+          <div class="panel-title"><span>energy_trace.xvg</span><b>kJ/mol</b></div>
+          <div id="plotEnergy" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>constraint_rmsd.xvg</span><b>LINCS</b></div>
+          <div id="plotConstraint" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>artifact_growth.tsv</span><b>MB</b></div>
+          <div id="plotArtifacts" class="plot"></div>
+        </article>
+      </section>
 
     <section class="tables">
       <article class="table-card">
@@ -216,10 +253,36 @@
     <div class="footer"><span id="lastRefresh">No refresh yet.</span><span>Static dashboard: one HTML file, status.json, history.json.</span></div>
   </div>
 
-  <script>
-    const state = { status: null, history: [], rows: [], filter: "all" };
-    const STAGE_ORDER = ["em", "nvt", "npt", "md"];
-    const $ = (id) => document.getElementById(id);
+        <article class="plot-card">
+          <div class="panel-title"><span>observables.latest</span><b>energy terms</b></div>
+          <div id="observablesTable" class="stats-table compact"></div>
+        </article>
+
+        <article class="plot-card">
+          <div class="panel-title"><span>runtime.hw</span><b>gpu / cpu / pme</b></div>
+          <div id="runtimeTable" class="stats-table compact"></div>
+        </article>
+
+        <article class="plot-card">
+          <div class="panel-title"><span>mdp.params</span><b>integrator</b></div>
+          <div id="mdpTable" class="stats-table compact"></div>
+        </article>
+
+        <article class="plot-card">
+          <div class="panel-title"><span>filters</span><b id="commitState">snapshot mode</b></div>
+          <nav class="tabs" aria-label="Simulation filters">
+            <button class="tab active" type="button" data-filter="all">all</button>
+            <button class="tab" type="button" data-filter="running">running</button>
+            <button class="tab" type="button" data-filter="attention">attention</button>
+            <button class="tab" type="button" data-filter="complete">done</button>
+          </nav>
+          <section id="simulationList" class="simulation-list" aria-live="polite"></section>
+          <section id="emptyState" class="empty-state" hidden>
+            <h2>No matching simulations</h2>
+          </section>
+        </article>
+      </section>
+    </main>
 
     function n(value) {
       if (value === null || value === undefined || value === "") return null;
