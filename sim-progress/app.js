@@ -3,6 +3,8 @@ const state = {
   data: null,
   history: [],
   clientHistory: [],
+  viz: null,
+  vizGeneratedAt: null,
   timer: null,
   refreshMs: 5000,
 };
@@ -182,6 +184,10 @@ function statusEndpoint() {
 function historyEndpoint() {
   if (window.location.protocol === "file:") return "../out/history.json";
   return isStaticHost() ? "history.json" : "/api/history";
+}
+
+function vizMetadataEndpoint() {
+  return "viz/md_preview.json";
 }
 
 function cacheBust(url) {
@@ -682,6 +688,39 @@ function renderStats(data, history) {
   return rows.map(([key, value]) => `<div class="stat-row"><span>${key}</span><strong>${value}</strong></div>`).join("");
 }
 
+function renderViz() {
+  const video = $("#vizVideo");
+  const meta = $("#vizMeta");
+  const stateLabel = $("#vizState");
+  const viz = state.viz;
+  if (!video || !meta || !stateLabel) return;
+  if (!viz) {
+    stateLabel.textContent = "waiting";
+    video.removeAttribute("src");
+    meta.textContent = [
+      "status: no preview video yet",
+      "cadence: stats every 300s, video every 1800s",
+      "expected: viz/md_preview.mp4 + viz/md_preview.json",
+    ].join("\n");
+    return;
+  }
+  stateLabel.textContent = `${formatClock(viz.generated_at)} :: ${formatBytes(viz.mp4_bytes)}`;
+  if (viz.generated_at !== state.vizGeneratedAt) {
+    state.vizGeneratedAt = viz.generated_at;
+    video.poster = cacheBust("viz/md_preview.png");
+    video.src = cacheBust("viz/md_preview.mp4");
+    video.load();
+  }
+  meta.textContent = [
+    `generated=${viz.generated_at || "-"}`,
+    `window=${defined(viz.start_ns) && defined(viz.end_ns) ? `${Number(viz.start_ns).toFixed(2)}-${Number(viz.end_ns).toFixed(2)} ns` : "-"}`,
+    `frames=${viz.frames ?? "-"} atoms/frame=${viz.atoms_per_frame ?? "-"}`,
+    `duration=${defined(viz.duration_seconds) ? `${Number(viz.duration_seconds).toFixed(1)} s` : "-"} fps=${viz.fps ?? "-"}`,
+    `size=${formatBytes(viz.mp4_bytes)} renderer=${viz.renderer || "-"}`,
+    `cadence=stats:300s video:1800s`,
+  ].join("\n");
+}
+
 function renderPlots(history) {
   const activeSamples = history.filter((sample) => sample.active);
   $("#plotPercent").innerHTML = makeLineChart({
@@ -838,6 +877,7 @@ function render() {
   $("#mdpTable").innerHTML = renderMdp(data);
   $("#phaseRibbon").innerHTML = renderPhaseRibbon(data);
   $("#stageMatrix").innerHTML = renderStageMatrix(data);
+  renderViz();
   renderPlots(history);
 
   const simulations = (data.simulations || []).filter(simulationMatches);
@@ -855,6 +895,20 @@ async function loadHistory() {
     state.history = normalizeHistory(payload);
   } catch (error) {
     console.debug("history unavailable", error);
+  }
+}
+
+async function loadVizMetadata() {
+  try {
+    const response = await fetch(cacheBust(vizMetadataEndpoint()), { cache: "no-store" });
+    if (!response.ok) {
+      state.viz = null;
+      return;
+    }
+    state.viz = await response.json();
+  } catch (error) {
+    state.viz = null;
+    console.debug("viz preview unavailable", error);
   }
 }
 
@@ -877,6 +931,7 @@ async function refresh() {
       state.clientHistory = state.clientHistory.slice(-2160);
     }
     await loadHistory();
+    await loadVizMetadata();
     setHealth(endpoint === "status.json" ? "snapshot" : "live", true);
     render();
   } catch (error) {

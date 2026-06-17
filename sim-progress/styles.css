@@ -276,6 +276,32 @@ main {
   line-height: 1.48;
 }
 
+.viz-panel {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1px;
+  background: var(--line);
+}
+
+#vizVideo {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  background: #000;
+}
+
+#vizMeta {
+  min-height: 96px;
+  margin: 0;
+  padding: 8px;
+  color: var(--green-soft);
+  background: var(--panel);
+  font-size: 0.72rem;
+  line-height: 1.48;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .plot-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -678,6 +704,9 @@ footer {
     grid-template-columns: 1fr;
     border-top: 0;
     border-left: 1px solid var(--line);
+  }
+  .viz-panel {
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
   }
 }
 
