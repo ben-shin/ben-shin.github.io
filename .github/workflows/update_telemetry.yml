@@ -83,4 +83,6 @@ jobs:
           git commit -m "Update simulation progress via scheduled workflow"
           # Push using the personal access token
           # Use the personal access token for pushing. Specify the token in the URL to avoid using the default GITHUB_TOKEN.
-          git push https://${PAT}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
+          # Set the remote URL to use the PAT for authentication and push to the current ref
+          git remote set-url origin https://$PAT@github.com/${{ github.repository }}.git
+          git push origin HEAD:${{ github.ref }}
