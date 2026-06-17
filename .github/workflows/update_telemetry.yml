@@ -2,30 +2,21 @@ name: Update Simulation Progress
 
 # Grant the workflow permission to update repository contents.  Without this
 # `contents: write` permission, the default `GITHUB_TOKEN` may only have
-# read access, which prevents pushing changes back to the repository.  See
-# GitHub's documentation on workflow permissions for more details【359719011947102†L1171-L1184】.
+# read access, which prevents pushing changes back to the repository【359719011947102†L1171-L1184】.
 permissions:
   contents: write
 
 on:
   schedule:
-    # Adjust the cron schedule to suit your needs; the example below runs every
-    # 10 minutes.  Note that GitHub Pages has a soft limit of 10 builds per hour
-    # unless you build via Actions【350758863010898†L105-L107】.
     - cron: '*/10 * * * *'
-  workflow_dispatch:  # Allows manual triggering of the workflow
+  workflow_dispatch:
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    # Use the same token for checkout and push.  When the `token` input is
-    # provided to actions/checkout, it configures Git to use that token for
-    # all subsequent git operations, including pushes【648927039738649†L154-L167】.
-    # This avoids the need to rewrite the remote URL manually and ensures your
-    # personal access token (PAT) is actually used instead of the default
-    # github‑actions[bot] token.  If you prefer to rely on the default
-    # `GITHUB_TOKEN`, you can remove this token input entirely, provided your
-    # repository’s workflow permissions are set to ‘read and write’.
+    # Use the same token for checkout and push. When the `token` input is provided
+    # to actions/checkout, it configures git to use that token for all subsequent
+    # git operations, including pushes【648927039738649†L154-L167】.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -39,47 +30,49 @@ jobs:
         run: |
           set -e
           mkdir -p sim-progress
-          # Fetch status.json from your server using the API_URL secret.  We reference
-          # the secret directly here so that it is substituted at runtime.  The
-          # API_URL should include the full path, e.g. https://your.example.com/api/status
+          # Fetch status.json from your server using the API_URL secret.
           curl -sSL "${{ secrets.API_URL }}" -o sim-progress/status.json
       - name: Update history.json
         run: |
           python <<'PY'
-            import json
-            import os
-            import datetime
+import json
+import os
+import datetime
 
-            dest = 'sim-progress'
-            status_path = os.path.join(dest, 'status.json')
-            hist_path = os.path.join(dest, 'history.json')
-            with open(status_path) as f:
-                status = json.load(f)
-            history = {}
-            if os.path.exists(hist_path):
-                try:
-                    with open(hist_path) as f:
-                        history = json.load(f) or {}
-                except Exception:
-                    history = {}
-            timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
-            for sim in status.get('simulations', []):
-                sid = sim.get('id') or sim.get('path') or 'unknown'
-                stage = sim.get('active_stage') or {}
-                entry = {
-                    'timestamp': timestamp,
-                    'ns': stage.get('current_ns'),
-                    'temperature_k': stage.get('temperature_k'),
-                    'pressure_bar': stage.get('pressure_bar'),
-                    'performance_ns_per_day': stage.get('performance_ns_per_day'),
-                    'potential_kj_mol': stage.get('potential_kj_mol'),
-                }
-                history.setdefault(sid, []).append(entry)
-                # Keep only the last 200 entries per simulation to avoid growing the file indefinitely
-                if len(history[sid]) > 200:
-                    history[sid] = history[sid][-200:]
-            with open(hist_path, 'w') as f:
-                json.dump(history, f, separators=(',', ':'))
+dest = 'sim-progress'
+status_path = os.path.join(dest, 'status.json')
+hist_path = os.path.join(dest, 'history.json')
+
+with open(status_path) as f:
+    status = json.load(f)
+
+history = {}
+if os.path.exists(hist_path):
+    try:
+        with open(hist_path) as f:
+            history = json.load(f) or {}
+    except Exception:
+        history = {}
+
+timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
+
+for sim in status.get('simulations', []):
+    sid = sim.get('id') or sim.get('path') or 'unknown'
+    stage = sim.get('active_stage') or {}
+    entry = {
+        'timestamp': timestamp,
+        'ns': stage.get('current_ns'),
+        'temperature_k': stage.get('temperature_k'),
+        'pressure_bar': stage.get('pressure_bar'),
+        'performance_ns_per_day': stage.get('performance_ns_per_day'),
+        'potential_kj_mol': stage.get('potential_kj_mol'),
+    }
+    history.setdefault(sid, []).append(entry)
+    if len(history[sid]) > 200:
+        history[sid] = history[sid][-200:]
+
+with open(hist_path, 'w') as f:
+    json.dump(history, f, separators=(',', ':'))
           PY
       - name: Commit and push changes
         run: |
