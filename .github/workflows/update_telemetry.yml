@@ -1,11 +1,11 @@
 name: Update Simulation Progress
 
-# This workflow fetches the latest simulation status from an external endpoint
-# and publishes it to the `sim-progress` folder of this repository.  It runs
-# on a schedule and on manual dispatch.  The `API_URL` secret should point
-# to your exposed `server.py` endpoint, e.g. https://<your-domain>/api/status.
-# A personal access token with `repo` scope must be stored as the `PAT` secret
-# to allow pushing changes back to the repository.
+# Grant the workflow permission to update repository contents.  Without this
+# `contents: write` permission, the default `GITHUB_TOKEN` may only have
+# read access, which prevents pushing changes back to the repository.  See
+# GitHub's documentation on workflow permissions for more details【359719011947102†L1171-L1184】.
+permissions:
+  contents: write
 
 on:
   schedule:
@@ -13,15 +13,24 @@ on:
     # 10 minutes.  Note that GitHub Pages has a soft limit of 10 builds per hour
     # unless you build via Actions【350758863010898†L105-L107】.
     - cron: '*/10 * * * *'
-  workflow_dispatch:
-    # Allows manual triggering of the workflow
+  workflow_dispatch:  # Allows manual triggering of the workflow
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    # Use the same token for checkout and push.  When the `token` input is
+    # provided to actions/checkout, it configures Git to use that token for
+    # all subsequent git operations, including pushes【648927039738649†L154-L167】.  This
+    # avoids the need to rewrite the remote URL manually and ensures your
+    # personal access token (PAT) is actually used instead of the default
+    # github‑actions[bot] token.  If you prefer to rely on the default
+    # `GITHUB_TOKEN`, you can remove this token input entirely, provided your
+    # repository’s workflow permissions are set to ‘read and write’.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -37,40 +46,40 @@ jobs:
       - name: Update history.json
         run: |
           python <<'PY'
-          import json, os, datetime, sys
-          dest = 'sim-progress'
-          status_path = os.path.join(dest, 'status.json')
-          hist_path = os.path.join(dest, 'history.json')
-          with open(status_path) as f:
-              status = json.load(f)
-          history = {}
-          if os.path.exists(hist_path):
-              try:
-                  with open(hist_path) as f:
-                      history = json.load(f) or {}
-              except Exception:
-                  history = {}
-          timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
-          for sim in status.get('simulations', []):
-              sid = sim.get('id') or sim.get('path') or 'unknown'
-              stage = sim.get('active_stage') or {}
-              entry = {
-                  'timestamp': timestamp,
-                  'ns': stage.get('current_ns'),
-                  'temperature_k': stage.get('temperature_k'),
-                  'pressure_bar': stage.get('pressure_bar'),
-                  'performance_ns_per_day': stage.get('performance_ns_per_day'),
-                  'potential_kj_mol': stage.get('potential_kj_mol'),
-              }
-              history.setdefault(sid, []).append(entry)
-              if len(history[sid]) > 200:
-                  history[sid] = history[sid][-200:]
-          with open(hist_path, 'w') as f:
-              json.dump(history, f, separators=(',', ':'))
-          PY
+import json, os, datetime
+
+dest = 'sim-progress'
+status_path = os.path.join(dest, 'status.json')
+hist_path = os.path.join(dest, 'history.json')
+with open(status_path) as f:
+    status = json.load(f)
+history = {}
+if os.path.exists(hist_path):
+    try:
+        with open(hist_path) as f:
+            history = json.load(f) or {}
+    except Exception:
+        history = {}
+timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
+for sim in status.get('simulations', []):
+    sid = sim.get('id') or sim.get('path') or 'unknown'
+    stage = sim.get('active_stage') or {}
+    entry = {
+        'timestamp': timestamp,
+        'ns': stage.get('current_ns'),
+        'temperature_k': stage.get('temperature_k'),
+        'pressure_bar': stage.get('pressure_bar'),
+        'performance_ns_per_day': stage.get('performance_ns_per_day'),
+        'potential_kj_mol': stage.get('potential_kj_mol'),
+    }
+    history.setdefault(sid, []).append(entry)
+    # Keep only the last 200 entries per simulation to avoid growing the file indefinitely
+    if len(history[sid]) > 200:
+        history[sid] = history[sid][-200:]
+with open(hist_path, 'w') as f:
+    json.dump(history, f, separators=(',', ':'))
+PY
       - name: Commit and push changes
-        env:
-          PAT: ${{ secrets.PAT }}
         run: |
           set -e
           git config user.name "github-actions"
@@ -81,8 +90,4 @@ jobs:
             exit 0
           fi
           git commit -m "Update simulation progress via scheduled workflow"
-          # Push using the personal access token
-          # Use the personal access token for pushing. Specify the token in the URL to avoid using the default GITHUB_TOKEN.
-          # Set the remote URL to use the PAT for authentication and push to the current ref
-          git remote set-url origin https://$PAT@github.com/${{ github.repository }}.git
-          git push origin HEAD:${{ github.ref }}
+          git push
