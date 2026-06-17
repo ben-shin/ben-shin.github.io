@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f7f6f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Simulation Progress">
+    <title>Simulation Progress</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="page-header">
+      <div>
+        <p class="kicker">GROMACS telemetry</p>
+        <h1>Simulation progress</h1>
+        <p id="sourceRoot" class="subtle">Loading status.json…</p>
+      </div>
+      <div class="header-meta">
+        <span id="healthState" class="status-chip">loading</span>
+        <button id="refreshButton" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="activePanel" class="panel active-panel" aria-label="Active simulation"></section>
+
+      <section class="stat-grid" aria-label="Summary statistics">
+        <article class="stat"><span>Progress</span><strong id="statProgress">–</strong><em id="statProgressSub">current stage</em></article>
+        <article class="stat"><span>Trajectory</span><strong id="statNs">–</strong><em id="statNsSub">ns completed</em></article>
+        <article class="stat"><span>Derived rate</span><strong id="statNsHour">–</strong><em>from history.json</em></article>
+        <article class="stat"><span>Projected finish</span><strong id="statEta">–</strong><em id="statEtaSub">from derived rate</em></article>
+        <article class="stat"><span>Temperature</span><strong id="statTemp">–</strong><em>K, latest frame</em></article>
+        <article class="stat"><span>Pressure</span><strong id="statPressure">–</strong><em>bar, latest frame</em></article>
+        <article class="stat"><span>Energy</span><strong id="statEnergy">–</strong><em>potential kJ/mol</em></article>
+        <article class="stat"><span>Sampling</span><strong id="statSamples">–</strong><em>history points</em></article>
+      </section>
+
+      <section class="panel" aria-label="Stage overview">
+        <div class="section-title">
+          <div>
+            <h2>Run state</h2>
+            <p>Stage completion and current log source.</p>
+          </div>
+          <span id="lastUpdated">–</span>
+        </div>
+        <div id="stageGrid" class="stage-grid"></div>
+      </section>
+
+      <section class="chart-grid" aria-label="Progress plots">
+        <article class="panel chart-wide">
+          <div class="section-title"><h2>Progress over time</h2><span>%</span></div>
+          <div id="chartProgress" class="chart"></div>
+        </article>
+        <article class="panel">
+          <div class="section-title"><h2>Trajectory time</h2><span>ns</span></div>
+          <div id="chartNs" class="chart"></div>
+        </article>
+        <article class="panel">
+          <div class="section-title"><h2>Derived throughput</h2><span>ns/hour</span></div>
+          <div id="chartRate" class="chart"></div>
+        </article>
+        <article class="panel">
+          <div class="section-title"><h2>Temperature</h2><span>K</span></div>
+          <div id="chartTemp" class="chart"></div>
+        </article>
+        <article class="panel">
+          <div class="section-title"><h2>Pressure</h2><span>bar</span></div>
+          <div id="chartPressure" class="chart"></div>
+        </article>
+        <article class="panel">
+          <div class="section-title"><h2>Potential energy</h2><span>kJ/mol</span></div>
+          <div id="chartPotential" class="chart"></div>
+        </article>
+        <article class="panel chart-wide">
+          <div class="section-title"><h2>Step throughput</h2><span>steps/hour</span></div>
+          <div id="chartSteps" class="chart short"></div>
+        </article>
+      </section>
+
+      <section class="two-column">
+        <article class="panel">
+          <div class="section-title">
+            <div>
+              <h2>Recent samples</h2>
+              <p>Each row is derived from consecutive entries in history.json.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>ns</th>
+                  <th>Δns</th>
+                  <th>ns/h</th>
+                  <th>Temp</th>
+                  <th>Pressure</th>
+                </tr>
+              </thead>
+              <tbody id="recentRows"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="section-title">
+            <div>
+              <h2>Diagnostics</h2>
+              <p>Quick checks for whether the simulation is moving cleanly.</p>
+            </div>
+          </div>
+          <dl id="diagnostics" class="diagnostics"></dl>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <div>
+            <h2>Simulation inventory</h2>
+            <p>Filtered status table from status.json.</p>
+          </div>
+          <nav class="tabs" aria-label="Simulation filters">
+            <button class="tab active" type="button" data-filter="all">All</button>
+            <button class="tab" type="button" data-filter="running">Running</button>
+            <button class="tab" type="button" data-filter="attention">Attention</button>
+            <button class="tab" type="button" data-filter="complete">Complete</button>
+          </nav>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Simulation</th>
+                <th>Status</th>
+                <th>Stage</th>
+                <th>Progress</th>
+                <th>Current ns</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody id="simulationRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span id="refreshState">No refresh yet.</span>
+      <span>Static dashboard: HTML, CSS, JS, status.json, history.json.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
