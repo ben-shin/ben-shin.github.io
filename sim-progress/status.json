@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-06-17T11:52:35",
+  "generated_at": "2026-06-17T11:56:21",
   "source_root": "/home/benshin/gromacs_run",
   "summary": {
     "simulations": 8,
     "running": 1,
     "attention": 1,
     "complete": 6,
-    "active_percent": 30.308,
-    "active_eta": "Thu Jun 18 13:03:35 2026",
+    "active_percent": 30.492,
+    "active_eta": "Thu Jun 18 13:03:01 2026",
     "latest_path": "PBP/holo/AMX/WT"
   },
   "simulations": [
@@ -20,23 +20,23 @@
         "stage": "md",
         "label": "Production",
         "status": "running",
-        "current_step": 37885000,
+        "current_step": 38115000,
         "total_steps": 125000000,
-        "current_ps": 75770.0,
+        "current_ps": 76230.0,
         "total_ps": 250000.0,
-        "current_ns": 75.77,
+        "current_ns": 76.23,
         "total_ns": 250.0,
-        "percent": 30.308,
-        "eta_text": "Thu Jun 18 13:03:35 2026",
+        "percent": 30.492,
+        "eta_text": "Thu Jun 18 13:03:01 2026",
         "performance_ns_per_day": null,
-        "temperature_k": 310.319,
-        "pressure_bar": 88.6557,
-        "potential_kj_mol": -2553390.0,
-        "total_energy_kj_mol": -2064380.0,
+        "temperature_k": 311.393,
+        "pressure_bar": 7.6858,
+        "potential_kj_mol": -2549930.0,
+        "total_energy_kj_mol": -2059220.0,
         "process_id": 1009357,
         "process_alive": true,
-        "mtime": 1781693554.378276,
-        "updated_at": "2026-06-17T11:52:34",
+        "mtime": 1781693780.3411603,
+        "updated_at": "2026-06-17T11:56:20",
         "age_seconds": 0,
         "log_path": "PBP/holo/AMX/WT/logs/md.run.log",
         "all_logs": [
@@ -66,7 +66,7 @@
           "process_alive": false,
           "mtime": 1781653809.9453325,
           "updated_at": "2026-06-17T00:50:09",
-          "age_seconds": 39744,
+          "age_seconds": 39970,
           "log_path": "PBP/holo/AMX/WT/em.log",
           "all_logs": [
             "PBP/holo/AMX/WT/em.log",
@@ -94,7 +94,7 @@
           "process_alive": false,
           "mtime": 1781654049.2867646,
           "updated_at": "2026-06-17T00:54:09",
-          "age_seconds": 39505,
+          "age_seconds": 39731,
           "log_path": "PBP/holo/AMX/WT/nvt.log",
           "all_logs": [
             "PBP/holo/AMX/WT/logs/nvt.run.log",
@@ -122,7 +122,7 @@
           "process_alive": false,
           "mtime": 1781654111.5831938,
           "updated_at": "2026-06-17T00:55:11",
-          "age_seconds": 39443,
+          "age_seconds": 39669,
           "log_path": "PBP/holo/AMX/WT/npt.log",
           "all_logs": [
             "PBP/holo/AMX/WT/logs/npt.run.log",
@@ -133,23 +133,23 @@
           "stage": "md",
           "label": "Production",
           "status": "running",
-          "current_step": 37885000,
+          "current_step": 38115000,
           "total_steps": 125000000,
-          "current_ps": 75770.0,
+          "current_ps": 76230.0,
           "total_ps": 250000.0,
-          "current_ns": 75.77,
+          "current_ns": 76.23,
           "total_ns": 250.0,
-          "percent": 30.308,
-          "eta_text": "Thu Jun 18 13:03:35 2026",
+          "percent": 30.492,
+          "eta_text": "Thu Jun 18 13:03:01 2026",
           "performance_ns_per_day": null,
-          "temperature_k": 310.319,
-          "pressure_bar": 88.6557,
-          "potential_kj_mol": -2553390.0,
-          "total_energy_kj_mol": -2064380.0,
+          "temperature_k": 311.393,
+          "pressure_bar": 7.6858,
+          "potential_kj_mol": -2549930.0,
+          "total_energy_kj_mol": -2059220.0,
           "process_id": 1009357,
           "process_alive": true,
-          "mtime": 1781693554.378276,
-          "updated_at": "2026-06-17T11:52:34",
+          "mtime": 1781693780.3411603,
+          "updated_at": "2026-06-17T11:56:20",
           "age_seconds": 0,
           "log_path": "PBP/holo/AMX/WT/logs/md.run.log",
           "all_logs": [
@@ -158,7 +158,7 @@
           ]
         }
       ],
-      "updated_at": "2026-06-17T11:52:34",
+      "updated_at": "2026-06-17T11:56:20",
       "age_seconds": 1
     },
     {
@@ -187,7 +187,7 @@
         "process_alive": false,
         "mtime": 1776717065.4930215,
         "updated_at": "2026-04-20T21:31:05",
-        "age_seconds": 4976489,
+        "age_seconds": 4976715,
         "log_path": "PBP/apo/WT/md.log",
         "all_logs": [
           "PBP/apo/WT/md.log"
@@ -215,7 +215,7 @@
           "process_alive": false,
           "mtime": 1770840544.266167,
           "updated_at": "2026-02-11T20:09:04",
-          "age_seconds": 10853010,
+          "age_seconds": 10853236,
           "log_path": "PBP/apo/WT/em.log",
           "all_logs": [
             "PBP/apo/WT/em.log"
@@ -242,7 +242,7 @@
           "process_alive": false,
           "mtime": 1770840703.4624553,
           "updated_at": "2026-02-11T20:11:43",
-          "age_seconds": 10852851,
+          "age_seconds": 10853077,
           "log_path": "PBP/apo/WT/nvt.log",
           "all_logs": [
             "PBP/apo/WT/nvt.log"
@@ -269,7 +269,7 @@
           "process_alive": false,
           "mtime": 1770840906.9005837,
           "updated_at": "2026-02-11T20:15:06",
-          "age_seconds": 10852648,
+          "age_seconds": 10852874,
           "log_path": "PBP/apo/WT/npt.log",
           "all_logs": [
             "PBP/apo/WT/npt.log"
@@ -296,7 +296,7 @@
           "process_alive": false,
           "mtime": 1776717065.4930215,
           "updated_at": "2026-04-20T21:31:05",
-          "age_seconds": 4976489,
+          "age_seconds": 4976715,
           "log_path": "PBP/apo/WT/md.log",
           "all_logs": [
             "PBP/apo/WT/md.log"
@@ -304,7 +304,7 @@
         }
       ],
       "updated_at": "2026-04-20T21:31:05",
-      "age_seconds": 4976490
+      "age_seconds": 4976716
     },
     {
       "id": "PBP/apo/analysis",
@@ -332,7 +332,7 @@
         "process_alive": false,
         "mtime": 1776324357.8409758,
         "updated_at": "2026-04-16T08:25:57",
-        "age_seconds": 5369197,
+        "age_seconds": 5369423,
         "log_path": "PBP/apo/analysis/md.log",
         "all_logs": [
           "PBP/apo/analysis/md.log"
@@ -360,7 +360,7 @@
           "process_alive": false,
           "mtime": 1776324357.8409758,
           "updated_at": "2026-04-16T08:25:57",
-          "age_seconds": 5369197,
+          "age_seconds": 5369423,
           "log_path": "PBP/apo/analysis/md.log",
           "all_logs": [
             "PBP/apo/analysis/md.log"
@@ -368,7 +368,7 @@
         }
       ],
       "updated_at": "2026-04-16T08:25:57",
-      "age_seconds": 5369198
+      "age_seconds": 5369424
     },
     {
       "id": "PBP/apo/T553K",
@@ -396,7 +396,7 @@
         "process_alive": false,
         "mtime": 1772039257.818612,
         "updated_at": "2026-02-25T17:07:37",
-        "age_seconds": 9654297,
+        "age_seconds": 9654523,
         "log_path": "PBP/apo/T553K/md.log",
         "all_logs": [
           "PBP/apo/T553K/md.log"
@@ -424,7 +424,7 @@
           "process_alive": false,
           "mtime": 1771850811.9078043,
           "updated_at": "2026-02-23T12:46:51",
-          "age_seconds": 9842743,
+          "age_seconds": 9842969,
           "log_path": "PBP/apo/T553K/em.log",
           "all_logs": [
             "PBP/apo/T553K/em.log"
@@ -451,7 +451,7 @@
           "process_alive": false,
           "mtime": 1771851200.9834878,
           "updated_at": "2026-02-23T12:53:20",
-          "age_seconds": 9842354,
+          "age_seconds": 9842580,
           "log_path": "PBP/apo/T553K/nvt.log",
           "all_logs": [
             "PBP/apo/T553K/nvt.log"
@@ -478,7 +478,7 @@
           "process_alive": false,
           "mtime": 1771851313.9013033,
           "updated_at": "2026-02-23T12:55:13",
-          "age_seconds": 9842241,
+          "age_seconds": 9842467,
           "log_path": "PBP/apo/T553K/npt.log",
           "all_logs": [
             "PBP/apo/T553K/npt.log"
@@ -505,7 +505,7 @@
           "process_alive": false,
           "mtime": 1772039257.818612,
           "updated_at": "2026-02-25T17:07:37",
-          "age_seconds": 9654297,
+          "age_seconds": 9654523,
           "log_path": "PBP/apo/T553K/md.log",
           "all_logs": [
             "PBP/apo/T553K/md.log"
@@ -513,7 +513,7 @@
         }
       ],
       "updated_at": "2026-02-25T17:07:37",
-      "age_seconds": 9654298
+      "age_seconds": 9654524
     },
     {
       "id": "PBP/apo/G600D",
@@ -541,7 +541,7 @@
         "process_alive": false,
         "mtime": 1771816598.66046,
         "updated_at": "2026-02-23T03:16:38",
-        "age_seconds": 9876957,
+        "age_seconds": 9877183,
         "log_path": "PBP/apo/G600D/md.log",
         "all_logs": [
           "PBP/apo/G600D/md.log"
@@ -569,7 +569,7 @@
           "process_alive": false,
           "mtime": 1771441634.0284026,
           "updated_at": "2026-02-18T19:07:14",
-          "age_seconds": 10251921,
+          "age_seconds": 10252147,
           "log_path": "PBP/apo/G600D/em.log",
           "all_logs": [
             "PBP/apo/G600D/em.log"
@@ -596,7 +596,7 @@
           "process_alive": false,
           "mtime": 1771630127.4065197,
           "updated_at": "2026-02-20T23:28:47",
-          "age_seconds": 10063428,
+          "age_seconds": 10063654,
           "log_path": "PBP/apo/G600D/nvt.log",
           "all_logs": [
             "PBP/apo/G600D/nvt.log"
@@ -623,7 +623,7 @@
           "process_alive": false,
           "mtime": 1771630231.8086457,
           "updated_at": "2026-02-20T23:30:31",
-          "age_seconds": 10063324,
+          "age_seconds": 10063550,
           "log_path": "PBP/apo/G600D/npt.log",
           "all_logs": [
             "PBP/apo/G600D/npt.log"
@@ -650,7 +650,7 @@
           "process_alive": false,
           "mtime": 1771816598.66046,
           "updated_at": "2026-02-23T03:16:38",
-          "age_seconds": 9876957,
+          "age_seconds": 9877183,
           "log_path": "PBP/apo/G600D/md.log",
           "all_logs": [
             "PBP/apo/G600D/md.log"
@@ -658,7 +658,7 @@
         }
       ],
       "updated_at": "2026-02-23T03:16:38",
-      "age_seconds": 9876957
+      "age_seconds": 9877183
     },
     {
       "id": "PBP/apo/P601L",
@@ -686,7 +686,7 @@
         "process_alive": false,
         "mtime": 1771628558.8920221,
         "updated_at": "2026-02-20T23:02:38",
-        "age_seconds": 10064996,
+        "age_seconds": 10065222,
         "log_path": "PBP/apo/P601L/md.log",
         "all_logs": [
           "PBP/apo/P601L/md.log"
@@ -714,7 +714,7 @@
           "process_alive": false,
           "mtime": 1771266158.4432347,
           "updated_at": "2026-02-16T18:22:38",
-          "age_seconds": 10427397,
+          "age_seconds": 10427623,
           "log_path": "PBP/apo/P601L/em.log",
           "all_logs": [
             "PBP/apo/P601L/em.log"
@@ -741,7 +741,7 @@
           "process_alive": false,
           "mtime": 1771271285.6363535,
           "updated_at": "2026-02-16T19:48:05",
-          "age_seconds": 10422270,
+          "age_seconds": 10422495,
           "log_path": "PBP/apo/P601L/nvt.log",
           "all_logs": [
             "PBP/apo/P601L/nvt.log"
@@ -768,7 +768,7 @@
           "process_alive": false,
           "mtime": 1771277481.104903,
           "updated_at": "2026-02-16T21:31:21",
-          "age_seconds": 10416074,
+          "age_seconds": 10416300,
           "log_path": "PBP/apo/P601L/npt.log",
           "all_logs": [
             "PBP/apo/P601L/npt.log"
@@ -795,7 +795,7 @@
           "process_alive": false,
           "mtime": 1771628558.8920221,
           "updated_at": "2026-02-20T23:02:38",
-          "age_seconds": 10064996,
+          "age_seconds": 10065222,
           "log_path": "PBP/apo/P601L/md.log",
           "all_logs": [
             "PBP/apo/P601L/md.log"
@@ -803,7 +803,7 @@
         }
       ],
       "updated_at": "2026-02-20T23:02:38",
-      "age_seconds": 10064997
+      "age_seconds": 10065223
     },
     {
       "id": "PBP/apo/DM",
@@ -831,7 +831,7 @@
         "process_alive": false,
         "mtime": 1771310077.3826108,
         "updated_at": "2026-02-17T06:34:37",
-        "age_seconds": 10383477,
+        "age_seconds": 10383703,
         "log_path": "PBP/apo/DM/md.log",
         "all_logs": [
           "PBP/apo/DM/md.log"
@@ -859,7 +859,7 @@
           "process_alive": false,
           "mtime": 1770888173.7916875,
           "updated_at": "2026-02-12T09:22:53",
-          "age_seconds": 10805381,
+          "age_seconds": 10805607,
           "log_path": "PBP/apo/DM/em.log",
           "all_logs": [
             "PBP/apo/DM/em.log"
@@ -886,7 +886,7 @@
           "process_alive": false,
           "mtime": 1770888287.770777,
           "updated_at": "2026-02-12T09:24:47",
-          "age_seconds": 10805267,
+          "age_seconds": 10805493,
           "log_path": "PBP/apo/DM/nvt.log",
           "all_logs": [
             "PBP/apo/DM/nvt.log"
@@ -913,7 +913,7 @@
           "process_alive": false,
           "mtime": 1770888417.890998,
           "updated_at": "2026-02-12T09:26:57",
-          "age_seconds": 10805137,
+          "age_seconds": 10805363,
           "log_path": "PBP/apo/DM/npt.log",
           "all_logs": [
             "PBP/apo/DM/npt.log"
@@ -940,7 +940,7 @@
           "process_alive": false,
           "mtime": 1771310077.3826108,
           "updated_at": "2026-02-17T06:34:37",
-          "age_seconds": 10383477,
+          "age_seconds": 10383703,
           "log_path": "PBP/apo/DM/md.log",
           "all_logs": [
             "PBP/apo/DM/md.log"
@@ -948,7 +948,7 @@
         }
       ],
       "updated_at": "2026-02-17T06:34:37",
-      "age_seconds": 10383478
+      "age_seconds": 10383704
     },
     {
       "id": "examples/masterclass-21-4/data/diala",
@@ -976,7 +976,7 @@
         "process_alive": false,
         "mtime": 1770833291.183092,
         "updated_at": "2026-02-11T18:08:11",
-        "age_seconds": 10860263,
+        "age_seconds": 10860489,
         "log_path": "examples/masterclass-21-4/data/diala/md.log",
         "all_logs": [
           "examples/masterclass-21-4/data/diala/md.log"
@@ -1004,7 +1004,7 @@
           "process_alive": false,
           "mtime": 1770833291.183092,
           "updated_at": "2026-02-11T18:08:11",
-          "age_seconds": 10860263,
+          "age_seconds": 10860489,
           "log_path": "examples/masterclass-21-4/data/diala/md.log",
           "all_logs": [
             "examples/masterclass-21-4/data/diala/md.log"
@@ -1012,7 +1012,7 @@
         }
       ],
       "updated_at": "2026-02-11T18:08:11",
-      "age_seconds": 10860264
+      "age_seconds": 10860490
     }
   ]
 }
