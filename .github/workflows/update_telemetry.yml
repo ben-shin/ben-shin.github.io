@@ -1,8 +1,6 @@
 name: Update Simulation Progress
 
-# Grant the workflow permission to update repository contents.  Without this
-# `contents: write` permission, the default `GITHUB_TOKEN` may only have
-# read access, which prevents pushing changes back to the repository【359719011947102†L1171-L1184】.
+# Grant write permissions to repository contents so the workflow can push changes back
 permissions:
   contents: write
 
@@ -14,66 +12,78 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    # Use the same token for checkout and push. When the `token` input is provided
-    # to actions/checkout, it configures git to use that token for all subsequent
-    # git operations, including pushes【648927039738649†L154-L167】.
     steps:
+      # Check out the repository using your personal access token.  Supplying the
+      # token here ensures git is configured to authenticate with your PAT on
+      # subsequent pushes【648927039738649†L154-L167】.
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.PAT }}
+
+      # Set up the desired Python version.
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+
+      # Fetch the latest status.json from your exposed API endpoint.
       - name: Fetch latest status
         run: |
           set -e
           mkdir -p sim-progress
-          # Fetch status.json from your server using the API_URL secret.
           curl -sSL "${{ secrets.API_URL }}" -o sim-progress/status.json
+
+      # Append the latest metrics to history.json.  Wrapping the code in an
+      # `if True:` block avoids Python's unexpected indent errors even when the
+      # YAML indentation is preserved.
       - name: Update history.json
         run: |
           python <<'PY'
-import json
-import os
-import datetime
+if True:
+    import json
+    import os
+    import datetime
 
-dest = 'sim-progress'
-status_path = os.path.join(dest, 'status.json')
-hist_path = os.path.join(dest, 'history.json')
+    dest = 'sim-progress'
+    status_path = os.path.join(dest, 'status.json')
+    hist_path = os.path.join(dest, 'history.json')
 
-with open(status_path) as f:
-    status = json.load(f)
+    with open(status_path) as f:
+        status = json.load(f)
 
-history = {}
-if os.path.exists(hist_path):
-    try:
-        with open(hist_path) as f:
-            history = json.load(f) or {}
-    except Exception:
-        history = {}
+    history = {}
+    if os.path.exists(hist_path):
+        try:
+            with open(hist_path) as f:
+                history = json.load(f) or {}
+        except Exception:
+            history = {}
 
-timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
+    timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
 
-for sim in status.get('simulations', []):
-    sid = sim.get('id') or sim.get('path') or 'unknown'
-    stage = sim.get('active_stage') or {}
-    entry = {
-        'timestamp': timestamp,
-        'ns': stage.get('current_ns'),
-        'temperature_k': stage.get('temperature_k'),
-        'pressure_bar': stage.get('pressure_bar'),
-        'performance_ns_per_day': stage.get('performance_ns_per_day'),
-        'potential_kj_mol': stage.get('potential_kj_mol'),
-    }
-    history.setdefault(sid, []).append(entry)
-    if len(history[sid]) > 200:
-        history[sid] = history[sid][-200:]
+    for sim in status.get('simulations', []):
+        sid = sim.get('id') or sim.get('path') or 'unknown'
+        stage = sim.get('active_stage') or {}
+        entry = {
+            'timestamp': timestamp,
+            'ns': stage.get('current_ns'),
+            'temperature_k': stage.get('temperature_k'),
+            'pressure_bar': stage.get('pressure_bar'),
+            'performance_ns_per_day': stage.get('performance_ns_per_day'),
+            'potential_kj_mol': stage.get('potential_kj_mol'),
+        }
+        history.setdefault(sid, []).append(entry)
+        if len(history[sid]) > 200:
+            history[sid] = history[sid][-200:]
 
-with open(hist_path, 'w') as f:
-    json.dump(history, f, separators=(',', ':'))
-          PY
+    with open(hist_path, 'w') as f:
+        json.dump(history, f, separators=(',', ':'))
+PY
+
+      # Commit and push any changes back to the repository.  A plain `git push` works
+      # because checkout configured git to authenticate using your PAT.  If there
+      # are no changes, the script exits quietly.
       - name: Commit and push changes
         run: |
           set -e
