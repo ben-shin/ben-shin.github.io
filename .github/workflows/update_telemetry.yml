@@ -1,98 +1,106 @@
 name: Update Simulation Progress
 
-# Grant write permissions to repository contents so the workflow can push changes back
 permissions:
   contents: write
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: "*/10 * * * *"
   workflow_dispatch:
+
+concurrency:
+  group: update-simulation-progress
+  cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
-      # Check out the repository using your personal access token.  Supplying the
-      # token here ensures git is configured to authenticate with your PAT on
-      # subsequent pushes【648927039738649†L154-L167】.
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.PAT }}
+          persist-credentials: true
+          fetch-depth: 0
 
-      # Set up the desired Python version.
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
-      # Fetch the latest status.json from your exposed API endpoint.
       - name: Fetch latest status
         run: |
-          set -e
+          set -euo pipefail
           mkdir -p sim-progress
-          curl -sSL "${{ secrets.API_URL }}" -o sim-progress/status.json
+          curl -fsSL "${{ secrets.API_URL }}" -o sim-progress/status.json
+          python -m json.tool sim-progress/status.json > /dev/null
 
-      # Append the latest metrics to history.json.  Wrapping the code in an
-      # `if True:` block avoids Python's unexpected indent errors even when the
-      # YAML indentation is preserved.
       - name: Update history.json
         run: |
-          python <<'PY'
-if True:
-    import json
-    import os
-    import datetime
+          set -euo pipefail
 
-    dest = 'sim-progress'
-    status_path = os.path.join(dest, 'status.json')
-    hist_path = os.path.join(dest, 'history.json')
+          python - <<'PY'
+          import json
+          import os
+          import datetime
 
-    with open(status_path) as f:
-        status = json.load(f)
+          dest = "sim-progress"
+          status_path = os.path.join(dest, "status.json")
+          hist_path = os.path.join(dest, "history.json")
 
-    history = {}
-    if os.path.exists(hist_path):
-        try:
-            with open(hist_path) as f:
-                history = json.load(f) or {}
-        except Exception:
-            history = {}
+          with open(status_path, "r", encoding="utf-8") as f:
+              status = json.load(f)
 
-    timestamp = status.get('generated_at') or datetime.datetime.utcnow().isoformat(timespec='seconds')
+          history = {}
+          if os.path.exists(hist_path):
+              try:
+                  with open(hist_path, "r", encoding="utf-8") as f:
+                      history = json.load(f) or {}
+              except Exception:
+                  history = {}
 
-    for sim in status.get('simulations', []):
-        sid = sim.get('id') or sim.get('path') or 'unknown'
-        stage = sim.get('active_stage') or {}
-        entry = {
-            'timestamp': timestamp,
-            'ns': stage.get('current_ns'),
-            'temperature_k': stage.get('temperature_k'),
-            'pressure_bar': stage.get('pressure_bar'),
-            'performance_ns_per_day': stage.get('performance_ns_per_day'),
-            'potential_kj_mol': stage.get('potential_kj_mol'),
-        }
-        history.setdefault(sid, []).append(entry)
-        if len(history[sid]) > 200:
-            history[sid] = history[sid][-200:]
+          timestamp = (
+              status.get("generated_at")
+              or datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+          )
 
-    with open(hist_path, 'w') as f:
-        json.dump(history, f, separators=(',', ':'))
-PY
+          simulations = status.get("simulations", [])
 
-      # Commit and push any changes back to the repository.  A plain `git push` works
-      # because checkout configured git to authenticate using your PAT.  If there
-      # are no changes, the script exits quietly.
+          for sim in simulations:
+              sid = sim.get("id") or sim.get("path") or "unknown"
+              stage = sim.get("active_stage") or {}
+
+              entry = {
+                  "timestamp": timestamp,
+                  "ns": stage.get("current_ns"),
+                  "temperature_k": stage.get("temperature_k"),
+                  "pressure_bar": stage.get("pressure_bar"),
+                  "performance_ns_per_day": stage.get("performance_ns_per_day"),
+                  "potential_kj_mol": stage.get("potential_kj_mol"),
+              }
+
+              history.setdefault(sid, []).append(entry)
+              history[sid] = history[sid][-200:]
+
+          with open(hist_path, "w", encoding="utf-8") as f:
+              json.dump(history, f, indent=2)
+              f.write("\n")
+          PY
+
       - name: Commit and push changes
         run: |
-          set -e
+          set -euo pipefail
+
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add sim-progress
+
+          git add sim-progress/status.json sim-progress/history.json
+
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
           fi
-          git commit -m "Update simulation progress via scheduled workflow"
-          git push
+
+          git commit -m "Update simulation progress"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
