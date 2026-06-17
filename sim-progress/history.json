@@ -241,6 +241,14 @@
       "pressure_bar": 37.5435,
       "performance_ns_per_day": null,
       "potential_kj_mol": -2555680.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 93.61,
+      "temperature_k": 309.61,
+      "pressure_bar": 112.376,
+      "performance_ns_per_day": null,
+      "potential_kj_mol": -2552720.0
     }
   ],
   "gromacs_run/PBP/apo/WT": [
@@ -286,6 +294,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 250.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 0.835,
+      "potential_kj_mol": 562143.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 250.0,
       "temperature_k": null,
       "pressure_bar": null,
@@ -341,6 +357,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 115.164,
       "potential_kj_mol": 562143.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 250.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 115.164,
+      "potential_kj_mol": 562143.0
     }
   ],
   "gromacs_run/PBP/apo/T553K": [
@@ -386,6 +410,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 250.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 115.484,
+      "potential_kj_mol": 562158.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 250.0,
       "temperature_k": null,
       "pressure_bar": null,
@@ -441,6 +473,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 115.919,
       "potential_kj_mol": 562150.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 250.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 115.919,
+      "potential_kj_mol": 562150.0
     }
   ],
   "gromacs_run/PBP/apo/P601L": [
@@ -486,6 +526,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 250.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 115.709,
+      "potential_kj_mol": 562154.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 250.0,
       "temperature_k": null,
       "pressure_bar": null,
@@ -541,6 +589,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 99.392,
       "potential_kj_mol": 562141.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 250.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 99.392,
+      "potential_kj_mol": 562141.0
     }
   ],
   "gromacs-2026.0/build/tests/essentialdynamics/flooding2": [
@@ -586,6 +642,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 240.287,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 0.0001,
       "temperature_k": null,
       "pressure_bar": null,
@@ -641,6 +705,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 34.47,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 34.47,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/essentialdynamics/radacc": [
@@ -686,6 +758,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 5e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 127.27,
+      "potential_kj_mol": -9.31323e-10
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 5e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -741,6 +821,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 152.732,
       "potential_kj_mol": -9.31323e-10
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 5e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 152.732,
+      "potential_kj_mol": -9.31323e-10
     }
   ],
   "gromacs-2026.0/build/tests/essentialdynamics/radfix": [
@@ -786,6 +874,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 5e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 128.701,
+      "potential_kj_mol": -9.31323e-10
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 5e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -841,6 +937,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 121.043,
       "potential_kj_mol": -9.31323e-10
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 5e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 121.043,
+      "potential_kj_mol": -9.31323e-10
     }
   ],
   "gromacs-2026.0/build/tests/essentialdynamics/linacc": [
@@ -886,6 +990,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 5e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 122.399,
+      "potential_kj_mol": -9.31323e-10
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 5e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -941,6 +1053,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 136.01,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 136.01,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/walls": [
@@ -986,6 +1106,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 124.855,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -1041,6 +1169,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 179.216,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 179.216,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/urea/update-cpu": [
@@ -1086,6 +1222,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 5e-06,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 21.917,
+      "potential_kj_mol": 489.695
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 5e-06,
       "temperature_k": null,
       "pressure_bar": null,
@@ -1141,6 +1285,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 14.495,
       "potential_kj_mol": 489.696
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 5e-06,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 14.495,
+      "potential_kj_mol": 489.696
     }
   ],
   "gromacs-2026.0/build/tests/complex/urea/nb-cpu": [
@@ -1186,6 +1338,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 5e-06,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 24.32,
+      "potential_kj_mol": 489.695
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 5e-06,
       "temperature_k": null,
       "pressure_bar": null,
@@ -1241,6 +1401,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 26.12,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 26.12,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/tip4p": [
@@ -1286,6 +1454,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 138.205,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -1341,6 +1517,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 32.377,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 32.377,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/tip4p/nb-cpu": [
@@ -1386,6 +1570,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 197.957,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -1441,6 +1633,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 33.256,
       "potential_kj_mol": 1473.96
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 33.256,
+      "potential_kj_mol": 1473.96
     }
   ],
   "gromacs-2026.0/build/tests/complex/sw/nb-cpu": [
@@ -1486,6 +1686,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 83.821,
+      "potential_kj_mol": 1473.95
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -1541,6 +1749,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 2691.786,
       "potential_kj_mol": 75.6552
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0004,
+      "temperature_k": 221.115,
+      "pressure_bar": null,
+      "performance_ns_per_day": 2691.786,
+      "potential_kj_mol": 75.6552
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_geometry_dihedral/update-cpu": [
@@ -1586,6 +1802,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": 317.158,
+      "pressure_bar": 93.7279,
+      "performance_ns_per_day": 109.527,
+      "potential_kj_mol": -34.1228
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": 317.158,
       "pressure_bar": 93.7279,
@@ -1641,6 +1865,14 @@
       "pressure_bar": 93.7274,
       "performance_ns_per_day": 92.667,
       "potential_kj_mol": -34.1226
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": 317.16,
+      "pressure_bar": 93.7274,
+      "performance_ns_per_day": 92.667,
+      "potential_kj_mol": -34.1226
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_geometry_dihedral/nb-cpu": [
@@ -1686,6 +1918,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": 317.158,
+      "pressure_bar": 93.7277,
+      "performance_ns_per_day": 127.274,
+      "potential_kj_mol": -34.1234
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": 317.158,
       "pressure_bar": 93.7277,
@@ -1741,6 +1981,14 @@
       "pressure_bar": 115.785,
       "performance_ns_per_day": 127.776,
       "potential_kj_mol": -31.8008
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": 307.42,
+      "pressure_bar": 115.785,
+      "performance_ns_per_day": 127.776,
+      "potential_kj_mol": -31.8008
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_geometry_angle-axis/update-cpu": [
@@ -1786,6 +2034,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": 307.42,
+      "pressure_bar": 115.784,
+      "performance_ns_per_day": 96.52,
+      "potential_kj_mol": -31.8002
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": 307.42,
       "pressure_bar": 115.784,
@@ -1841,6 +2097,14 @@
       "pressure_bar": 115.782,
       "performance_ns_per_day": 66.371,
       "potential_kj_mol": -31.8004
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": 307.42,
+      "pressure_bar": 115.782,
+      "performance_ns_per_day": 66.371,
+      "potential_kj_mol": -31.8004
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_geometry_angle/update-cpu": [
@@ -1886,6 +2150,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": 309.268,
+      "pressure_bar": 93.4817,
+      "performance_ns_per_day": 93.421,
+      "potential_kj_mol": -32.3268
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": 309.268,
       "pressure_bar": 93.4817,
@@ -1941,6 +2213,14 @@
       "pressure_bar": 93.4812,
       "performance_ns_per_day": 83.949,
       "potential_kj_mol": -32.3273
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": 309.267,
+      "pressure_bar": 93.4812,
+      "performance_ns_per_day": 83.949,
+      "potential_kj_mol": -32.3273
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_geometry_angle/nb-cpu": [
@@ -1986,6 +2266,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": 309.268,
+      "pressure_bar": 93.482,
+      "performance_ns_per_day": 117.544,
+      "potential_kj_mol": -32.3275
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": 309.268,
       "pressure_bar": 93.482,
@@ -2041,6 +2329,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 166.302,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 166.302,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_cylinder/update-cpu": [
@@ -2086,6 +2382,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 135.012,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2141,6 +2445,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 129.269,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 129.269,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/pull_cylinder": [
@@ -2186,6 +2498,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 85.012,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2241,6 +2561,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 185.119,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 185.119,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/pr-vrescale/nb-cpu": [
@@ -2286,6 +2614,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 175.327,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2341,6 +2677,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 137.731,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 137.731,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/pr-vrescale": [
@@ -2386,6 +2730,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 112.478,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2441,6 +2793,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 80.514,
       "potential_kj_mol": 3206.65
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 80.514,
+      "potential_kj_mol": 3206.65
     }
   ],
   "gromacs-2026.0/build/tests/complex/position-restraints": [
@@ -2486,6 +2846,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 71.171,
+      "potential_kj_mol": 3206.65
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2541,6 +2909,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 101.919,
       "potential_kj_mol": 3206.65
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 101.919,
+      "potential_kj_mol": 3206.65
     }
   ],
   "gromacs-2026.0/build/tests/complex/orientation-restraints/nb-cpu": [
@@ -2586,6 +2962,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 80.99,
+      "potential_kj_mol": 1.6497
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2641,6 +3025,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 77.751,
       "potential_kj_mol": 1.6497
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 77.751,
+      "potential_kj_mol": 1.6497
     }
   ],
   "gromacs-2026.0/build/tests/complex/octahedron/update-cpu": [
@@ -2686,6 +3078,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 90.117,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2741,6 +3141,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 105.721,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 105.721,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/octahedron": [
@@ -2786,6 +3194,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 121.364,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2841,6 +3257,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 152.406,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 5.9999999999999995e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 152.406,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nst_mismatch/nb-cpu": [
@@ -2886,6 +3310,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 5.9999999999999995e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 239.368,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 5.9999999999999995e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -2941,6 +3373,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 162.693,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 5.9999999999999995e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 162.693,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_vsite": [
@@ -2986,6 +3426,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 95.293,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 0.0001,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3041,6 +3489,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 425.407,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 425.407,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_rzero/nb-cpu": [
@@ -3086,6 +3542,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 182.528,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3141,6 +3605,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 127.853,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 127.853,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_rzero": [
@@ -3186,6 +3658,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 127.209,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3241,6 +3721,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 174.463,
       "potential_kj_mol": -21245.2
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 174.463,
+      "potential_kj_mol": -21245.2
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_rf/update-cpu": [
@@ -3286,6 +3774,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 88.311,
+      "potential_kj_mol": -21245.2
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3341,6 +3837,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 111.05,
       "potential_kj_mol": -21245.2
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 111.05,
+      "potential_kj_mol": -21245.2
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_pme_order6/nb-cpu": [
@@ -3386,6 +3890,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 135.34,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3441,6 +3953,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 108.225,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 108.225,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_pme_order6": [
@@ -3486,6 +4006,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 98.922,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3541,6 +4069,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 109.187,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 109.187,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_pme_order5": [
@@ -3586,6 +4122,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 87.057,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3641,6 +4185,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 59.527,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 59.527,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_pme/nb-cpu": [
@@ -3686,6 +4238,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 148.154,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3741,6 +4301,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 135.675,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 135.675,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn_pme": [
@@ -3786,6 +4354,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 61.92,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3841,6 +4417,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 62.58,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 62.58,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-vdw-potential-switch-argon": [
@@ -3886,6 +4470,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 146.765,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -3941,6 +4533,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 88.109,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 88.109,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-vdw-potential-switch-argon/nb-cpu": [
@@ -3986,6 +4586,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 210.831,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4041,6 +4649,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 100.482,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 100.482,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-vdw-potential-switch/nb-cpu": [
@@ -4086,6 +4702,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 154.546,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4141,6 +4765,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 81.279,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 81.279,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-vdw-force-switch/update-cpu": [
@@ -4186,6 +4818,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 133.131,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4241,6 +4881,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 81.178,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 81.178,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-ljpme-LB-geometric": [
@@ -4286,6 +4934,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 83.07,
+      "potential_kj_mol": 32.8646
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4341,6 +4997,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 126.622,
       "potential_kj_mol": 32.8645
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 126.622,
+      "potential_kj_mol": 32.8645
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-ljpme-LB/nb-cpu": [
@@ -4386,6 +5050,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 65.516,
+      "potential_kj_mol": 32.8646
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4441,6 +5113,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 50.072,
       "potential_kj_mol": 32.8645
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 50.072,
+      "potential_kj_mol": 32.8645
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-ljpme-geometric/update-cpu": [
@@ -4486,6 +5166,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 98.469,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4541,6 +5229,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 107.329,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 107.329,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-ljpme-geometric/nb-cpu": [
@@ -4586,6 +5282,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 138.505,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4641,6 +5345,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 19.749,
       "potential_kj_mol": 187.941
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 19.749,
+      "potential_kj_mol": 187.941
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-free-energy-vv/nb-cpu": [
@@ -4686,6 +5398,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 31.52,
+      "potential_kj_mol": 187.941
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 1e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4741,6 +5461,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 18.033,
       "potential_kj_mol": 187.05
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 18.033,
+      "potential_kj_mol": 187.05
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-free-energy/update-cpu": [
@@ -4786,6 +5514,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 29.049,
+      "potential_kj_mol": 187.05
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 1e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4841,6 +5577,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 25.198,
       "potential_kj_mol": 187.05
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 1e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 25.198,
+      "potential_kj_mol": 187.05
     }
   ],
   "gromacs-2026.0/build/tests/complex/nbnxn-energy-groups": [
@@ -4886,6 +5630,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 150.264,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -4941,6 +5693,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 433.755,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 433.755,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/nacl/update-cpu": [
@@ -4986,6 +5746,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 262.334,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 0.0001,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5041,6 +5809,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 193.907,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 193.907,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/field/update-cpu": [
@@ -5086,6 +5862,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 1e-05,
+      "temperature_k": 231.453,
+      "pressure_bar": null,
+      "performance_ns_per_day": 32.199,
+      "potential_kj_mol": -12299.3
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 1e-05,
       "temperature_k": 231.453,
       "pressure_bar": null,
@@ -5141,6 +5925,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 31.847,
       "potential_kj_mol": -12299.3
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 1e-05,
+      "temperature_k": 231.449,
+      "pressure_bar": null,
+      "performance_ns_per_day": 31.847,
+      "potential_kj_mol": -12299.3
     }
   ],
   "gromacs-2026.0/build/tests/complex/field/nb-cpu": [
@@ -5186,6 +5978,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 1e-05,
+      "temperature_k": 231.449,
+      "pressure_bar": null,
+      "performance_ns_per_day": 46.92,
+      "potential_kj_mol": -12299.3
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 1e-05,
       "temperature_k": 231.449,
       "pressure_bar": null,
@@ -5241,6 +6041,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 53.552,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 53.552,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/ethyleenglycol/nb-cpu": [
@@ -5286,6 +6094,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 92.038,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5341,6 +6157,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 45.714,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 45.714,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/distance_restraints": [
@@ -5386,6 +6210,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 70.329,
+      "potential_kj_mol": 202.742
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5441,6 +6273,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 129.185,
       "potential_kj_mol": 202.742
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 129.185,
+      "potential_kj_mol": 202.742
     }
   ],
   "gromacs-2026.0/build/tests/complex/distance_restraints/update-cpu": [
@@ -5486,6 +6326,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 76.067,
+      "potential_kj_mol": 202.742
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5541,6 +6389,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 66.589,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 66.589,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/dd121/nb-cpu": [
@@ -5586,6 +6442,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 1.091,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 0.0001,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5641,6 +6505,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 1.38,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0001,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 1.38,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/butane": [
@@ -5686,6 +6558,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 43.429,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5741,6 +6621,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 2362.512,
       "potential_kj_mol": 116.068
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 0.0004,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 2362.512,
+      "potential_kj_mol": 116.068
     }
   ],
   "gromacs-2026.0/build/tests/complex/butane/nb-cpu": [
@@ -5786,6 +6674,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 98.307,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -5841,6 +6737,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 76.891,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 76.891,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/argon": [
@@ -5886,6 +6790,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 4e-05,
+      "temperature_k": 111.695,
+      "pressure_bar": null,
+      "performance_ns_per_day": 244.303,
+      "potential_kj_mol": 0.0
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 4e-05,
       "temperature_k": 111.695,
       "pressure_bar": null,
@@ -5941,6 +6853,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 78.264,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 78.264,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/aminoacids": [
@@ -5986,6 +6906,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 77.318,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": 2e-05,
       "temperature_k": null,
       "pressure_bar": null,
@@ -6041,6 +6969,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 95.971,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 2e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 95.971,
+      "potential_kj_mol": null
     }
   ],
   "gromacs-2026.0/build/tests/complex/acetonitrilRF": [
@@ -6091,6 +7027,14 @@
       "pressure_bar": null,
       "performance_ns_per_day": 183.45,
       "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
+      "ns": 4e-05,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": 183.45,
+      "potential_kj_mol": null
     }
   ],
   "gromacs_run/examples/masterclass-21-4/data/diala": [
@@ -6136,6 +7080,14 @@
     },
     {
       "timestamp": "2026-06-17T14:15:16",
+      "ns": null,
+      "temperature_k": null,
+      "pressure_bar": null,
+      "performance_ns_per_day": null,
+      "potential_kj_mol": null
+    },
+    {
+      "timestamp": "2026-06-17T14:25:51",
       "ns": null,
       "temperature_k": null,
       "pressure_bar": null,
