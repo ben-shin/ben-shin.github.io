@@ -307,6 +307,16 @@ function formatEstimatedEtaFromRate(seconds) {
   return duration === "-" ? "-" : `${duration} @ current wall rate`;
 }
 
+function formatStageEta(stage, fallbackSeconds = null) {
+  if (!stage) return "-";
+  if (stage.status === "complete") return "complete";
+  if (stage.status === "stale") return `stale @ ${formatPercent(stage.percent)}`;
+  if (stage.status === "failed") return "failed";
+  if (stage.status === "queued") return "queued";
+  if (cleanEta(stage.eta_text) !== "-" || stage.eta_at) return formatEta(stage.eta_at, stage.eta_text);
+  return formatEstimatedEtaFromRate(fallbackSeconds);
+}
+
 function stageMapFor(simulation) {
   return Object.fromEntries((simulation?.stages || []).map((stage) => [stage.stage, stage]));
 }
@@ -485,6 +495,7 @@ function snapshotToTelemetry(data) {
       total_ns: active.total_ns ?? null,
       eta_text: active.eta_text || null,
       eta_at: active.eta_at || null,
+      status_detail: active.status_detail || null,
       performance_ns_per_day: active.performance_ns_per_day ?? null,
       temperature_k: active.temperature_k ?? null,
       pressure_bar: active.pressure_bar ?? null,
@@ -639,7 +650,7 @@ endpoint: ${statusEndpoint()}</pre>
   const historyActive = [...history].reverse().find((sample) => sample.active?.path === simulation.path || sample.active?.name === simulation.name)?.active;
   const liveRate = active.performance_ns_per_day ?? historyActive?.wall_speed_ns_per_day;
   const speed = defined(liveRate) ? `${formatRate(liveRate)} ns/day` : "-";
-  const eta = cleanEta(active.eta_text) !== "-" || active.eta_at ? formatEta(active.eta_at, active.eta_text) : formatEstimatedEtaFromRate(historyActive?.eta_seconds_from_rate);
+  const eta = formatStageEta(active, historyActive?.eta_seconds_from_rate);
   const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
   const pid = active.process_id ? `pid ${active.process_id}${active.process_alive ? " live" : ""}` : "pid unknown";
   const runtime = active.runtime || {};
@@ -651,6 +662,7 @@ run: ${simulation.name}    status: ${statusLabel(simulation.status)}    phase: $
 progress: ${asciiProgressBar(percent, 36)} ${formatPercent(active.percent)}    ${timeLine}
 step: ${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}    ${pid}    samples: ${history.length}
 speed: ${speed}    eta: ${eta}
+state: ${active.status_detail || statusLabel(active.status)}
 thermo: T=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(3) : "-"} K    P=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(3) : "-"} bar    LINCS=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}
 energy: Pot=${defined(active.potential_kj_mol) ? Number(active.potential_kj_mol).toExponential(4) : "-"}    Kin=${defined(active.kinetic_energy_kj_mol) ? Number(active.kinetic_energy_kj_mol).toExponential(4) : "-"}    Tot=${defined(active.total_energy_kj_mol) ? Number(active.total_energy_kj_mol).toExponential(4) : "-"}
 gpu: ${runtime.gpu_0 || runtime.gpu_support || "-"}    map=${runtime.gpu_task_mapping || "-"}    omp=${runtime.openmp_threads || "-"}
@@ -686,7 +698,8 @@ function terminalLog(data, history) {
     const live = newest?.active || {};
     lines.push(`active=${simulation.name}`);
     lines.push(`stage=${active.stage || "-"} label="${active.label || "-"}" progress=${formatPercent(active.percent)} step=${formatNumber(active.current_step)}/${formatNumber(active.total_steps)}`);
-    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${formatEta(active.eta_at, active.eta_text)}"`);
+    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${formatStageEta(active, live.eta_seconds_from_rate)}"`);
+    if (active.status_detail) lines.push(`state_detail="${active.status_detail}"`);
     lines.push(`thermo temp=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(2) : "-"} K pressure=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(2) : "-"} bar potential=${defined(active.potential_kj_mol) ? Number(active.potential_kj_mol).toExponential(3) : "-"} kJ/mol constraint=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}`);
     lines.push(`runtime gpu="${active.runtime?.gpu_0 || "-"}" pme="${active.runtime?.gpu_task_mapping || "-"}" threads="${active.runtime?.openmp_threads || "-"}"`);
     lines.push(`mdp dt=${active.mdp?.dt || "-"} ps nsteps=${active.mdp?.nsteps || "-"} nstlog=${active.mdp?.nstlog || "-"} nstenergy=${active.mdp?.nstenergy || "-"} tcoupl=${active.mdp?.tcoupl || "-"}`);
@@ -816,7 +829,7 @@ function simulationCard(simulation) {
             <div class="detail"><span class="detail-label">stage</span><strong>${active.label || "-"}</strong></div>
             <div class="detail"><span class="detail-label">time</span><strong>${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}</strong></div>
             <div class="detail"><span class="detail-label">step</span><strong>${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}</strong></div>
-            <div class="detail"><span class="detail-label">eta</span><strong>${formatEta(active.eta_at, active.eta_text)}</strong></div>
+            <div class="detail"><span class="detail-label">eta</span><strong>${formatStageEta(active)}</strong></div>
             <div class="detail"><span class="detail-label">speed</span><strong>${performance}</strong></div>
             <div class="detail"><span class="detail-label">updated</span><strong>${formatAge(simulation.age_seconds)}</strong></div>
             <div class="detail"><span class="detail-label">temp</span><strong>${temperature}</strong></div>
@@ -964,6 +977,7 @@ function renderJobLedger(simulations, emptyText) {
     const speed = defined(active.performance_ns_per_day) ? `${formatRate(active.performance_ns_per_day)} ns/day` : "-";
     const ns = defined(active.current_ns) || defined(active.total_ns) ? `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "-";
     const queueInput = active.input_path ? `<span>input=${active.input_path}</span>` : "";
+    const detail = active.status_detail ? ` :: ${active.status_detail}` : "";
     return `
       <div class="job-row ${simulation.status}">
         <div>
@@ -971,7 +985,7 @@ function renderJobLedger(simulations, emptyText) {
           <span>${simulation.path}</span>
           ${queueInput}
         </div>
-        <code>${statusLabel(simulation.status)} :: ${active.stage || "-"} :: ${formatPercent(active.percent)}</code>
+        <code>${statusLabel(simulation.status)} :: ${active.stage || "-"} :: ${formatPercent(active.percent)}${detail}</code>
         <code>${ns} :: ${speed} :: files=${formatBytes(files)} :: age=${formatAge(simulation.age_seconds)}</code>
         <code>${stageStatusSummary(simulation)}</code>
       </div>
@@ -1007,7 +1021,8 @@ function renderStats(data, history) {
     ["status", statusLabel(simulation?.status)],
     ["progress", formatPercent(active?.percent)],
     ["progress/hr", defined(latest.progress_percent_per_hour) ? `${formatRate(latest.progress_percent_per_hour)} %/hr` : "-"],
-    ["viewer eta", formatEta(active?.eta_at, active?.eta_text)],
+    ["viewer eta", formatStageEta(active, latest.eta_seconds_from_rate)],
+    ["state detail", active?.status_detail || "-"],
     ["ns", `${formatNs(active?.current_ns)} / ${formatNs(active?.total_ns)}`],
     ["ns remaining", formatNs(latest.ns_remaining ?? (defined(active?.total_ns) && defined(active?.current_ns) ? Number(active.total_ns) - Number(active.current_ns) : null))],
     ["steps", `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`],
@@ -1280,7 +1295,7 @@ function render() {
   $("#queuedCount").textContent = String(data.summary?.queued ?? 0);
   $("#completeCount").textContent = String(data.summary?.complete ?? 0);
   $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
-  $("#activeEta").textContent = formatEta(active?.eta_at ?? data.summary?.active_eta_at, active?.eta_text ?? data.summary?.active_eta);
+  $("#activeEta").textContent = active ? formatStageEta(active, latestActive.eta_seconds_from_rate) : formatEta(data.summary?.active_eta_at, data.summary?.active_eta);
   $("#speedStat").textContent = defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : "-";
   $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
