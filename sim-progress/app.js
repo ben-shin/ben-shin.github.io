@@ -10,8 +10,6 @@ const state = {
 };
 
 const STAGES = ["em", "nvt", "npt", "md"];
-const DISPLAY_TIME_ZONE = "Europe/Paris";
-const DISPLAY_TIME_ZONE_NAME = "Central European";
 const ETA_SOURCE_TIME_ZONE = "Europe/London";
 const TARGET_TEMP_K = 310;
 const TARGET_PRESSURE_BAR = 1;
@@ -132,7 +130,6 @@ function formatClock(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleTimeString("en-GB", {
-    timeZone: DISPLAY_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -145,7 +142,6 @@ function formatShortTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleTimeString("en-GB", {
-    timeZone: DISPLAY_TIME_ZONE,
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -157,7 +153,6 @@ function formatDateTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString("en-GB", {
-    timeZone: DISPLAY_TIME_ZONE,
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -188,25 +183,6 @@ function timeZoneOffsetMinutes(date, timeZone) {
     Number(values.second),
   );
   return Math.round((asUtc - date.getTime()) / 60000);
-}
-
-function timeZoneAbbreviation(value = new Date()) {
-  const date = new Date(value);
-  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
-  const parts = new Intl.DateTimeFormat("en-GB", {
-    timeZone: DISPLAY_TIME_ZONE,
-    timeZoneName: "short",
-    hour: "2-digit",
-  }).formatToParts(safeDate);
-  const label = parts.find((part) => part.type === "timeZoneName")?.value;
-  if (label && /^CE[ST]$/.test(label)) return label;
-  return timeZoneOffsetMinutes(safeDate, DISPLAY_TIME_ZONE) >= 120 ? "CEST" : "CET";
-}
-
-function displayTimeZoneLabel(value = new Date()) {
-  const abbreviation = timeZoneAbbreviation(value);
-  const season = abbreviation === "CEST" ? "Summer Time" : "Time";
-  return `${DISPLAY_TIME_ZONE_NAME} ${season} (${abbreviation})`;
 }
 
 function viewerTimeZoneLabel(value = new Date()) {
@@ -583,7 +559,7 @@ function terminalLog(data, history) {
     : null;
 
   const lines = [
-    `[${formatClock(data?.generated_at)} ${displayTimeZoneLabel(data?.generated_at)}] status=${statusLabel(simulation?.status)} endpoint=${statusEndpoint()} samples=${history.length}`,
+    `[${formatClock(data?.generated_at)} ${viewerTimeZoneLabel(data?.generated_at)}] status=${statusLabel(simulation?.status)} endpoint=${statusEndpoint()} samples=${history.length}`,
     `scan_root=${data?.source_root || "-"}`,
   ];
 
@@ -862,7 +838,7 @@ function renderStats(data, history) {
   const rows = [
     ["mode", isStaticHost() ? "GitHub Pages snapshot" : "local live API"],
     ["endpoint", statusEndpoint()],
-    ["display tz", displayTimeZoneLabel(data?.generated_at)],
+    ["viewer tz", viewerTimeZoneLabel(data?.generated_at)],
     ["generated", formatDateTime(data?.generated_at)],
     ["active run", simulation?.name || "-"],
     ["stage", active?.label || "-"],
@@ -909,7 +885,7 @@ function renderViz() {
     ].join("\n");
     return;
   }
-  stateLabel.textContent = `${formatClock(viz.generated_at)} ${displayTimeZoneLabel(viz.generated_at)} :: ${formatBytes(viz.mp4_bytes)}`;
+  stateLabel.textContent = `${formatClock(viz.generated_at)} ${viewerTimeZoneLabel(viz.generated_at)} :: ${formatBytes(viz.mp4_bytes)}`;
   if (viz.generated_at !== state.vizGeneratedAt) {
     state.vizGeneratedAt = viz.generated_at;
     video.poster = cacheBust("viz/md_preview.png");
@@ -917,7 +893,7 @@ function renderViz() {
     video.load();
   }
   meta.textContent = [
-    `generated=${formatDateTime(viz.generated_at)} ${displayTimeZoneLabel(viz.generated_at)}`,
+    `generated=${formatDateTime(viz.generated_at)} ${viewerTimeZoneLabel(viz.generated_at)}`,
     `window=${defined(viz.start_ns) && defined(viz.end_ns) ? `${Number(viz.start_ns).toFixed(2)}-${Number(viz.end_ns).toFixed(2)} ns` : "-"}`,
     `frames=${viz.frames ?? "-"} atoms/frame=${viz.atoms_per_frame ?? "-"}`,
     `duration=${defined(viz.duration_seconds) ? `${Number(viz.duration_seconds).toFixed(1)} s` : "-"} fps=${viz.fps ?? "-"}`,
@@ -1124,7 +1100,7 @@ function renderPlots(history) {
 
   const first = activeSamples[0]?.generated_at;
   const last = activeSamples[activeSamples.length - 1]?.generated_at;
-  $("#progressRange").textContent = first && last ? `${formatShortTime(first)} -> ${formatShortTime(last)} ${displayTimeZoneLabel(last)}` : "-";
+  $("#progressRange").textContent = first && last ? `${formatShortTime(first)} -> ${formatShortTime(last)} ${viewerTimeZoneLabel(last)}` : "-";
 }
 
 function render() {
@@ -1151,10 +1127,10 @@ function render() {
   $("#mdPercent").textContent = formatPercent(stagePercent(simulation, "md"));
   $("#wallRateStat").textContent = defined(latestActive.wall_speed_ns_per_day) ? `${formatRate(latestActive.wall_speed_ns_per_day)}` : "-";
   $("#artifactStat").textContent = formatBytes(totalFileBytes(simulation?.files));
-  $("#clockState").textContent = `${formatClock(new Date().toISOString())} ${displayTimeZoneLabel(new Date())}`;
-  $("#generatedAt").textContent = `${formatClock(data.generated_at)} ${displayTimeZoneLabel(data.generated_at)}`;
+  $("#clockState").textContent = `${formatClock(new Date().toISOString())} ${viewerTimeZoneLabel(new Date())}`;
+  $("#generatedAt").textContent = `${formatClock(data.generated_at)} ${viewerTimeZoneLabel(data.generated_at)}`;
   $("#commitState").textContent = isStaticHost() ? "status.json + history.json" : "live /api/status";
-  $("#lastRefresh").textContent = `refreshed ${formatClock(data.generated_at)} ${displayTimeZoneLabel(data.generated_at)} :: browser ${formatClock(new Date().toISOString())} ${displayTimeZoneLabel(new Date())}`;
+  $("#lastRefresh").textContent = `refreshed ${formatClock(data.generated_at)} ${viewerTimeZoneLabel(data.generated_at)} :: browser ${formatClock(new Date().toISOString())} ${viewerTimeZoneLabel(new Date())}`;
   $("#nsStat").textContent = simulation && active ? `${simulation.name} :: ${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "no active run";
   $("#terminalLines").textContent = terminalLog(data, history);
   $("#statsTable").innerHTML = renderStats(data, history);
