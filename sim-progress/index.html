@@ -86,8 +86,20 @@
           <div id="plotSpeed" class="plot"></div>
         </article>
         <article class="plot-card">
+          <div class="panel-title"><span>eta_countdown.xvg</span><b>hours / ns</b></div>
+          <div id="plotEta" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>progress_velocity.tsv</span><b>%/hr / ratio</b></div>
+          <div id="plotProgressRate" class="plot"></div>
+        </article>
+        <article class="plot-card">
           <div class="panel-title"><span>temperature_zoom.xvg</span><b>K</b></div>
           <div id="plotTemperature" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>thermostat_error.xvg</span><b>T-310K</b></div>
+          <div id="plotThermoError" class="plot"></div>
         </article>
         <article class="plot-card">
           <div class="panel-title"><span>thermo_trace.xvg</span><b>K / bar</b></div>
@@ -97,9 +109,17 @@
           <div class="panel-title"><span>pressure_control.xvg</span><b>bar</b></div>
           <div id="plotPressureControl" class="plot"></div>
         </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>barostat_error.xvg</span><b>P-1bar</b></div>
+          <div id="plotBarostatError" class="plot"></div>
+        </article>
         <article class="plot-card wide">
           <div class="panel-title"><span>energy_trace.xvg</span><b>kJ/mol</b></div>
           <div id="plotEnergy" class="plot"></div>
+        </article>
+        <article class="plot-card wide">
+          <div class="panel-title"><span>energy_drift.xvg</span><b>delta / 1e3</b></div>
+          <div id="plotEnergyDrift" class="plot"></div>
         </article>
         <article class="plot-card wide">
           <div class="panel-title"><span>bonded_terms.xvg</span><b>bond / angle / dihedral</b></div>
@@ -116,6 +136,14 @@
         <article class="plot-card">
           <div class="panel-title"><span>artifact_growth.tsv</span><b>MB</b></div>
           <div id="plotArtifacts" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>io_write_rate.tsv</span><b>MB/min</b></div>
+          <div id="plotIoRate" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>sampler_health.tsv</span><b>dt / age / MB</b></div>
+          <div id="plotSamplerHealth" class="plot"></div>
         </article>
       </section>
 

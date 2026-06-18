@@ -691,6 +691,290 @@ footer {
   font-size: 0.68rem;
 }
 
+@media (max-width: 600px) {
+  body {
+    font-size: 11px;
+    line-height: 1.32;
+    overflow-x: hidden;
+  }
+
+  .app-header {
+    gap: 6px;
+    padding: calc(4px + env(safe-area-inset-top)) 5px 4px;
+  }
+
+  h1 { font-size: 0.72rem; }
+
+  .terminal-prefix,
+  .source-root {
+    max-width: 74vw;
+    font-size: 0.55rem;
+  }
+
+  .icon-button {
+    width: 29px;
+    height: 29px;
+  }
+
+  .icon-button svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  main {
+    padding: 4px 4px 38px;
+  }
+
+  .terminal-session pre {
+    max-height: 128px;
+    padding: 6px;
+    overflow: auto;
+    font-size: 0.57rem;
+    line-height: 1.32;
+  }
+
+  .terminal-session .hero-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .terminal-session .hero-stats div {
+    padding: 5px 4px;
+  }
+
+  .terminal-session .hero-stats span,
+  .metric span,
+  .detail-label,
+  .stat-row span {
+    font-size: 0.48rem;
+  }
+
+  .terminal-session .hero-stats strong {
+    font-size: 0.58rem;
+  }
+
+  .terminal-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin-top: 4px;
+  }
+
+  .metric {
+    min-height: 40px;
+    padding: 4px;
+  }
+
+  .metric strong {
+    margin-top: 2px;
+    font-size: 0.62rem;
+    line-height: 1.05;
+  }
+
+  .metric em {
+    display: none;
+  }
+
+  .console-panel,
+  .plot-card {
+    margin-top: 4px;
+  }
+
+  .panel-title {
+    min-height: 21px;
+    gap: 4px;
+    padding: 3px 5px;
+    font-size: 0.5rem;
+  }
+
+  .panel-title b {
+    max-width: 42%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #terminalLines {
+    min-height: 0;
+    max-height: 82px;
+    padding: 5px;
+    overflow: auto;
+    font-size: 0.54rem;
+    line-height: 1.25;
+  }
+
+  #vizVideo {
+    max-height: 148px;
+  }
+
+  #vizMeta {
+    min-height: 0;
+    max-height: 62px;
+    padding: 5px;
+    overflow: auto;
+    font-size: 0.52rem;
+    line-height: 1.25;
+  }
+
+  .plot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .plot {
+    min-height: 92px;
+    padding: 2px;
+  }
+
+  .plot svg {
+    height: 92px;
+  }
+
+  .tick-label {
+    font-size: 8px;
+  }
+
+  .legend {
+    display: none;
+  }
+
+  .empty-plot {
+    min-height: 92px;
+    padding: 6px;
+    font-size: 0.54rem;
+  }
+
+  .phase-ribbon {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3px;
+    padding: 4px;
+  }
+
+  .phase-track {
+    grid-template-columns: 28px minmax(0, 1fr) 35px;
+    gap: 4px;
+  }
+
+  .phase-track strong,
+  .phase-track span {
+    font-size: 0.52rem;
+  }
+
+  .phase-bar {
+    min-height: 7px;
+  }
+
+  .stage-matrix {
+    max-height: 104px;
+    padding: 4px;
+    overflow: auto;
+  }
+
+  .stage-row {
+    grid-template-columns: minmax(96px, 1fr) repeat(4, 48px);
+    min-width: 300px;
+  }
+
+  .stage-name,
+  .stage-box {
+    min-height: 32px;
+    padding: 4px;
+  }
+
+  .stage-name strong,
+  .stage-box span {
+    font-size: 0.54rem;
+  }
+
+  .stage-name span,
+  .stage-box strong {
+    font-size: 0.48rem;
+  }
+
+  .stats-and-runs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .stats-table {
+    max-height: 170px;
+    padding: 2px 4px 4px;
+    overflow: auto;
+  }
+
+  .stat-row {
+    grid-template-columns: 1fr;
+    gap: 1px;
+    padding: 3px 0;
+  }
+
+  .stat-row strong {
+    font-size: 0.52rem;
+    line-height: 1.2;
+  }
+
+  .tabs {
+    gap: 1px;
+    padding: 4px;
+  }
+
+  .tab {
+    min-height: 24px;
+    font-size: 0.5rem;
+  }
+
+  .simulation-list {
+    gap: 4px;
+    padding: 0 4px 4px;
+  }
+
+  .simulation-main {
+    padding: 5px;
+  }
+
+  .title-block h2 {
+    font-size: 0.62rem;
+  }
+
+  .title-block p,
+  .detail strong,
+  .ascii-progress,
+  .stage span {
+    font-size: 0.52rem;
+  }
+
+  .status {
+    min-width: 44px;
+    min-height: 19px;
+    padding: 2px 4px;
+    font-size: 0.48rem;
+  }
+
+  .progress-panel {
+    gap: 4px;
+    margin-top: 4px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  .stage {
+    min-height: 30px;
+    padding: 4px;
+  }
+
+  .stage strong {
+    font-size: 0.48rem;
+  }
+
+  footer {
+    min-height: 28px;
+    padding: 4px 5px calc(4px + env(safe-area-inset-bottom));
+    font-size: 0.5rem;
+  }
+}
+
 @media (min-width: 660px) {
   .health-pill { display: inline-flex; }
   .terminal-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
