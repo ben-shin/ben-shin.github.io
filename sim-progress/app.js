@@ -10,6 +10,10 @@ const state = {
 };
 
 const STAGES = ["em", "nvt", "npt", "md"];
+const DISPLAY_TIME_ZONE = "Europe/London";
+const DISPLAY_TIME_ZONE_LABEL = "Europe/London";
+const TARGET_TEMP_K = 310;
+const TARGET_PRESSURE_BAR = 1;
 const $ = (selector) => document.querySelector(selector);
 
 if (window.location.protocol === "file:") {
@@ -112,19 +116,55 @@ function formatClock(value) {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  return date.toLocaleTimeString("en-GB", {
+    timeZone: DISPLAY_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 function formatShortTime(value) {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString("en-GB", {
+    timeZone: DISPLAY_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString("en-GB", {
+    timeZone: DISPLAY_TIME_ZONE,
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 function cleanEta(text) {
   if (!text) return "-";
   return String(text).replace(/\s+/g, " ").trim();
+}
+
+function formatEta(text) {
+  const cleaned = cleanEta(text);
+  return cleaned === "-" ? "-" : `${cleaned} ${DISPLAY_TIME_ZONE_LABEL}`;
+}
+
+function formatEstimatedEtaFromRate(seconds) {
+  const duration = formatDuration(seconds);
+  return duration === "-" ? "-" : `${duration} @ current wall rate`;
 }
 
 function stageMapFor(simulation) {
@@ -292,27 +332,64 @@ function enrichHistory(samples) {
     const time = new Date(enriched.generated_at).getTime();
     const key = `${active.path || active.name || "run"}::${active.stage || "stage"}`;
     const previous = previousByRun.get(key);
-    if (previous && Number.isFinite(time) && defined(active.current_ns) && defined(previous.active?.current_ns)) {
+    const artifactBytes = totalFileBytes(enriched.files);
+    if (defined(artifactBytes)) {
+      active.artifact_total_mb = Number(artifactBytes) / 1048576;
+    }
+    if (defined(active.total_ns) && defined(active.current_ns)) {
+      active.ns_remaining = Math.max(0, Number(active.total_ns) - Number(active.current_ns));
+    }
+    if (defined(active.wall_speed_ns_per_day) && defined(active.performance_ns_per_day) && Number(active.performance_ns_per_day) > 0) {
+      active.wall_to_gmx_ratio = Number(active.wall_speed_ns_per_day) / Number(active.performance_ns_per_day);
+    }
+    if (previous && Number.isFinite(time)) {
       const previousTime = new Date(previous.generated_at).getTime();
       const dtSeconds = (time - previousTime) / 1000;
-      const deltaNs = Number(active.current_ns) - Number(previous.active.current_ns);
-      if (dtSeconds > 0 && deltaNs > 0) {
-        active.wall_speed_ns_per_day = deltaNs / (dtSeconds / 86400);
-        lastPositiveRateByRun.set(key, active.wall_speed_ns_per_day);
-      } else if (lastPositiveRateByRun.has(key)) {
-        active.wall_speed_ns_per_day = lastPositiveRateByRun.get(key);
-      }
-      if (dtSeconds > 0 && defined(active.current_step) && defined(previous.active?.current_step)) {
-        const deltaSteps = Number(active.current_step) - Number(previous.active.current_step);
-        if (deltaSteps > 0) {
-          active.steps_per_second = deltaSteps / dtSeconds;
-          lastPositiveStepRateByRun.set(key, active.steps_per_second);
-        } else if (lastPositiveStepRateByRun.has(key)) {
-          active.steps_per_second = lastPositiveStepRateByRun.get(key);
+      if (dtSeconds > 0) {
+        active.sample_interval_seconds = dtSeconds;
+        if (defined(active.percent) && defined(previous.active?.percent)) {
+          active.progress_percent_per_hour = (Number(active.percent) - Number(previous.active.percent)) / (dtSeconds / 3600);
+        }
+        if (defined(artifactBytes) && defined(totalFileBytes(previous.files))) {
+          active.artifact_mb_per_min = (Number(artifactBytes) - Number(totalFileBytes(previous.files))) / 1048576 / (dtSeconds / 60);
+        }
+
+        const fileRates = {};
+        ["md.xtc", "md.edr", "md.log", "md.cpt"].forEach((name) => {
+          const currentBytes = fileBytes(enriched.files, name);
+          const previousBytes = fileBytes(previous.files, name);
+          if (defined(currentBytes) && defined(previousBytes)) {
+            fileRates[name] = (Number(currentBytes) - Number(previousBytes)) / 1048576 / (dtSeconds / 60);
+          }
+        });
+        if (Object.keys(fileRates).length) {
+          active.file_rates_mb_min = fileRates;
+        }
+
+        if (defined(active.current_ns) && defined(previous.active?.current_ns)) {
+          const deltaNs = Number(active.current_ns) - Number(previous.active.current_ns);
+          if (deltaNs > 0) {
+            active.wall_speed_ns_per_day = deltaNs / (dtSeconds / 86400);
+            lastPositiveRateByRun.set(key, active.wall_speed_ns_per_day);
+          } else if (lastPositiveRateByRun.has(key)) {
+            active.wall_speed_ns_per_day = lastPositiveRateByRun.get(key);
+          }
+        }
+        if (defined(active.current_step) && defined(previous.active?.current_step)) {
+          const deltaSteps = Number(active.current_step) - Number(previous.active.current_step);
+          if (deltaSteps > 0) {
+            active.steps_per_second = deltaSteps / dtSeconds;
+            lastPositiveStepRateByRun.set(key, active.steps_per_second);
+          } else if (lastPositiveStepRateByRun.has(key)) {
+            active.steps_per_second = lastPositiveStepRateByRun.get(key);
+          }
         }
       }
       if (defined(active.total_ns) && defined(active.current_ns) && defined(active.wall_speed_ns_per_day) && active.wall_speed_ns_per_day > 0) {
         active.eta_seconds_from_rate = ((Number(active.total_ns) - Number(active.current_ns)) / active.wall_speed_ns_per_day) * 86400;
+      }
+      if (defined(active.wall_speed_ns_per_day) && defined(active.performance_ns_per_day) && Number(active.performance_ns_per_day) > 0) {
+        active.wall_to_gmx_ratio = Number(active.wall_speed_ns_per_day) / Number(active.performance_ns_per_day);
       }
     }
     previousByRun.set(key, enriched);
@@ -348,7 +425,7 @@ endpoint: ${statusEndpoint()}</pre>
   const historyActive = [...history].reverse().find((sample) => sample.active?.path === simulation.path || sample.active?.name === simulation.name)?.active;
   const liveRate = active.performance_ns_per_day ?? historyActive?.wall_speed_ns_per_day;
   const speed = defined(liveRate) ? `${formatRate(liveRate)} ns/day` : "-";
-  const eta = cleanEta(active.eta_text) !== "-" ? cleanEta(active.eta_text) : formatDuration(historyActive?.eta_seconds_from_rate);
+  const eta = cleanEta(active.eta_text) !== "-" ? formatEta(active.eta_text) : formatEstimatedEtaFromRate(historyActive?.eta_seconds_from_rate);
   const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
   const pid = active.process_id ? `pid ${active.process_id}${active.process_alive ? " live" : ""}` : "pid unknown";
   const runtime = active.runtime || {};
@@ -387,7 +464,7 @@ function terminalLog(data, history) {
     : null;
 
   const lines = [
-    `[${formatClock(data?.generated_at)}] status=${statusLabel(simulation?.status)} endpoint=${statusEndpoint()} samples=${history.length}`,
+    `[${formatClock(data?.generated_at)} ${DISPLAY_TIME_ZONE_LABEL}] status=${statusLabel(simulation?.status)} endpoint=${statusEndpoint()} samples=${history.length}`,
     `scan_root=${data?.source_root || "-"}`,
   ];
 
@@ -395,7 +472,7 @@ function terminalLog(data, history) {
     const live = newest?.active || {};
     lines.push(`active=${simulation.name}`);
     lines.push(`stage=${active.stage || "-"} label="${active.label || "-"}" progress=${formatPercent(active.percent)} step=${formatNumber(active.current_step)}/${formatNumber(active.total_steps)}`);
-    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${cleanEta(active.eta_text)}"`);
+    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${formatEta(active.eta_text)}"`);
     lines.push(`thermo temp=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(2) : "-"} K pressure=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(2) : "-"} bar potential=${defined(active.potential_kj_mol) ? Number(active.potential_kj_mol).toExponential(3) : "-"} kJ/mol constraint=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}`);
     lines.push(`runtime gpu="${active.runtime?.gpu_0 || "-"}" pme="${active.runtime?.gpu_task_mapping || "-"}" threads="${active.runtime?.openmp_threads || "-"}"`);
     lines.push(`mdp dt=${active.mdp?.dt || "-"} ps nsteps=${active.mdp?.nsteps || "-"} nstlog=${active.mdp?.nstlog || "-"} nstenergy=${active.mdp?.nstenergy || "-"} tcoupl=${active.mdp?.tcoupl || "-"}`);
@@ -525,7 +602,7 @@ function simulationCard(simulation) {
             <div class="detail"><span class="detail-label">stage</span><strong>${active.label || "-"}</strong></div>
             <div class="detail"><span class="detail-label">time</span><strong>${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}</strong></div>
             <div class="detail"><span class="detail-label">step</span><strong>${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}</strong></div>
-            <div class="detail"><span class="detail-label">eta</span><strong>${cleanEta(active.eta_text)}</strong></div>
+            <div class="detail"><span class="detail-label">eta</span><strong>${formatEta(active.eta_text)}</strong></div>
             <div class="detail"><span class="detail-label">speed</span><strong>${performance}</strong></div>
             <div class="detail"><span class="detail-label">updated</span><strong>${formatAge(simulation.age_seconds)}</strong></div>
             <div class="detail"><span class="detail-label">temp</span><strong>${temperature}</strong></div>
@@ -666,23 +743,31 @@ function renderStats(data, history) {
   const rows = [
     ["mode", isStaticHost() ? "GitHub Pages snapshot" : "local live API"],
     ["endpoint", statusEndpoint()],
-    ["generated", data?.generated_at || "-"],
+    ["display tz", DISPLAY_TIME_ZONE_LABEL],
+    ["generated", formatDateTime(data?.generated_at)],
     ["active run", simulation?.name || "-"],
     ["stage", active?.label || "-"],
     ["status", statusLabel(simulation?.status)],
     ["progress", formatPercent(active?.percent)],
+    ["progress/hr", defined(latest.progress_percent_per_hour) ? `${formatRate(latest.progress_percent_per_hour)} %/hr` : "-"],
     ["ns", `${formatNs(active?.current_ns)} / ${formatNs(active?.total_ns)}`],
+    ["ns remaining", formatNs(latest.ns_remaining ?? (defined(active?.total_ns) && defined(active?.current_ns) ? Number(active.total_ns) - Number(active.current_ns) : null))],
     ["steps", `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`],
     ["speed", defined(active?.performance_ns_per_day) ? `${Number(active.performance_ns_per_day).toFixed(2)} ns/day` : "-"],
     ["wall speed", defined(latest.wall_speed_ns_per_day) ? `${formatRate(latest.wall_speed_ns_per_day)} ns/day` : "-"],
-    ["sample eta", formatDuration(latest.eta_seconds_from_rate)],
+    ["speed ratio", defined(latest.wall_to_gmx_ratio) ? `${Number(latest.wall_to_gmx_ratio).toFixed(3)} wall/gmx` : "-"],
+    ["sample eta", formatEstimatedEtaFromRate(latest.eta_seconds_from_rate)],
+    ["sample dt", defined(latest.sample_interval_seconds) ? `${Number(latest.sample_interval_seconds).toFixed(1)} s` : "-"],
     ["temperature", defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(2)} K` : "-"],
+    ["T error", defined(active?.temperature_k) ? `${(Number(active.temperature_k) - TARGET_TEMP_K).toFixed(2)} K` : "-"],
     ["pressure", defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(2)} bar` : "-"],
+    ["P error", defined(active?.pressure_bar) ? `${(Number(active.pressure_bar) - TARGET_PRESSURE_BAR).toFixed(2)} bar` : "-"],
     ["potential", defined(active?.potential_kj_mol) ? `${Number(active.potential_kj_mol).toExponential(4)} kJ/mol` : "-"],
     ["kinetic", defined(active?.kinetic_energy_kj_mol) ? `${Number(active.kinetic_energy_kj_mol).toExponential(4)} kJ/mol` : "-"],
     ["conserved", defined(active?.conserved_energy_kj_mol) ? `${Number(active.conserved_energy_kj_mol).toExponential(4)} kJ/mol` : "-"],
     ["constraint rmsd", defined(active?.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(3) : "-"],
     ["artifact total", formatBytes(totalFileBytes(files))],
+    ["artifact rate", defined(latest.artifact_mb_per_min) ? `${formatRate(latest.artifact_mb_per_min)} MB/min` : "-"],
     ["samples", String(history.length)],
   ];
   return rows.map(([key, value]) => `<div class="stat-row"><span>${key}</span><strong>${value}</strong></div>`).join("");
@@ -704,7 +789,7 @@ function renderViz() {
     ].join("\n");
     return;
   }
-  stateLabel.textContent = `${formatClock(viz.generated_at)} :: ${formatBytes(viz.mp4_bytes)}`;
+  stateLabel.textContent = `${formatClock(viz.generated_at)} ${DISPLAY_TIME_ZONE_LABEL} :: ${formatBytes(viz.mp4_bytes)}`;
   if (viz.generated_at !== state.vizGeneratedAt) {
     state.vizGeneratedAt = viz.generated_at;
     video.poster = cacheBust("viz/md_preview.png");
@@ -712,7 +797,7 @@ function renderViz() {
     video.load();
   }
   meta.textContent = [
-    `generated=${viz.generated_at || "-"}`,
+    `generated=${formatDateTime(viz.generated_at)} ${DISPLAY_TIME_ZONE_LABEL}`,
     `window=${defined(viz.start_ns) && defined(viz.end_ns) ? `${Number(viz.start_ns).toFixed(2)}-${Number(viz.end_ns).toFixed(2)} ns` : "-"}`,
     `frames=${viz.frames ?? "-"} atoms/frame=${viz.atoms_per_frame ?? "-"}`,
     `duration=${defined(viz.duration_seconds) ? `${Number(viz.duration_seconds).toFixed(1)} s` : "-"} fps=${viz.fps ?? "-"}`,
@@ -721,8 +806,16 @@ function renderViz() {
   ].join("\n");
 }
 
+function firstActiveValue(samples, key) {
+  const row = samples.find((sample) => defined(sample.active?.[key]));
+  return row ? Number(row.active[key]) : null;
+}
+
 function renderPlots(history) {
   const activeSamples = history.filter((sample) => sample.active);
+  const potential0 = firstActiveValue(activeSamples, "potential_kj_mol");
+  const totalEnergy0 = firstActiveValue(activeSamples, "total_energy_kj_mol");
+  const conserved0 = firstActiveValue(activeSamples, "conserved_energy_kj_mol");
   $("#plotPercent").innerHTML = makeLineChart({
     samples: activeSamples,
     series: [{ label: "progress", value: (sample) => sample.active?.percent }],
@@ -751,14 +844,44 @@ function renderPlots(history) {
     suffix: "",
     decimals: 2,
   });
+  $("#plotEta").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "eta h", value: (sample) => defined(sample.active?.eta_seconds_from_rate) ? sample.active.eta_seconds_from_rate / 3600 : null },
+      { label: "ns left", value: (sample) => sample.active?.ns_remaining },
+    ],
+    yMin: 0,
+    suffix: "",
+    decimals: 2,
+  });
+  $("#plotProgressRate").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "%/hr", value: (sample) => sample.active?.progress_percent_per_hour },
+      { label: "ns/day wall", value: (sample) => sample.active?.wall_speed_ns_per_day },
+      { label: "wall/gmx", value: (sample) => sample.active?.wall_to_gmx_ratio },
+    ],
+    suffix: "",
+    decimals: 3,
+  });
   $("#plotTemperature").innerHTML = makeLineChart({
     samples: activeSamples,
     series: [
       { label: "temperature", value: (sample) => sample.active?.temperature_k },
-      { label: "target 310K", value: () => 310 },
+      { label: "target 310K", value: () => TARGET_TEMP_K },
     ],
     suffix: "",
     decimals: 2,
+  });
+  $("#plotThermoError").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "T-310K", value: (sample) => defined(sample.active?.temperature_k) ? Number(sample.active.temperature_k) - TARGET_TEMP_K : null },
+      { label: "|T-310K|", value: (sample) => defined(sample.active?.temperature_k) ? Math.abs(Number(sample.active.temperature_k) - TARGET_TEMP_K) : null },
+      { label: "target", value: () => 0 },
+    ],
+    suffix: "",
+    decimals: 3,
   });
   $("#plotTempPressure").innerHTML = makeLineChart({
     samples: activeSamples,
@@ -774,10 +897,20 @@ function renderPlots(history) {
     series: [
       { label: "pressure", value: (sample) => sample.active?.pressure_bar },
       { label: "Pres. DC", value: (sample) => sample.active?.pressure_coupling_bar },
-      { label: "target 1 bar", value: () => 1 },
+      { label: "target 1 bar", value: () => TARGET_PRESSURE_BAR },
     ],
     suffix: "",
     decimals: 1,
+  });
+  $("#plotBarostatError").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "P-1bar", value: (sample) => defined(sample.active?.pressure_bar) ? Number(sample.active.pressure_bar) - TARGET_PRESSURE_BAR : null },
+      { label: "PresDC-1", value: (sample) => defined(sample.active?.pressure_coupling_bar) ? Number(sample.active.pressure_coupling_bar) - TARGET_PRESSURE_BAR : null },
+      { label: "target", value: () => 0 },
+    ],
+    suffix: "",
+    decimals: 2,
   });
   $("#plotEnergy").innerHTML = makeLineChart({
     samples: activeSamples,
@@ -789,6 +922,17 @@ function renderPlots(history) {
     ],
     suffix: "",
     decimals: 0,
+  });
+  $("#plotEnergyDrift").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "dPot / 1e3", value: (sample) => defined(sample.active?.potential_kj_mol) && defined(potential0) ? (Number(sample.active.potential_kj_mol) - potential0) / 1000 : null },
+      { label: "dTotal / 1e3", value: (sample) => defined(sample.active?.total_energy_kj_mol) && defined(totalEnergy0) ? (Number(sample.active.total_energy_kj_mol) - totalEnergy0) / 1000 : null },
+      { label: "dConserved / 1e3", value: (sample) => defined(sample.active?.conserved_energy_kj_mol) && defined(conserved0) ? (Number(sample.active.conserved_energy_kj_mol) - conserved0) / 1000 : null },
+      { label: "baseline", value: () => 0 },
+    ],
+    suffix: "",
+    decimals: 2,
   });
   $("#plotBonded").innerHTML = makeLineChart({
     samples: activeSamples,
@@ -835,10 +979,32 @@ function renderPlots(history) {
     suffix: "",
     decimals: 1,
   });
+  $("#plotIoRate").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "xtc MB/min", value: (sample) => sample.active?.file_rates_mb_min?.["md.xtc"] },
+      { label: "edr MB/min", value: (sample) => sample.active?.file_rates_mb_min?.["md.edr"] },
+      { label: "log MB/min", value: (sample) => sample.active?.file_rates_mb_min?.["md.log"] },
+      { label: "cpt MB/min", value: (sample) => sample.active?.file_rates_mb_min?.["md.cpt"] },
+    ],
+    suffix: "",
+    decimals: 3,
+  });
+  $("#plotSamplerHealth").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "sample dt s", value: (sample) => sample.active?.sample_interval_seconds },
+      { label: "log age s", value: (sample) => sample.active?.age_seconds },
+      { label: "artifact MB", value: (sample) => sample.active?.artifact_total_mb },
+    ],
+    yMin: 0,
+    suffix: "",
+    decimals: 1,
+  });
 
   const first = activeSamples[0]?.generated_at;
   const last = activeSamples[activeSamples.length - 1]?.generated_at;
-  $("#progressRange").textContent = first && last ? `${formatShortTime(first)} → ${formatShortTime(last)}` : "-";
+  $("#progressRange").textContent = first && last ? `${formatShortTime(first)} -> ${formatShortTime(last)} ${DISPLAY_TIME_ZONE_LABEL}` : "-";
 }
 
 function render() {
@@ -853,7 +1019,7 @@ function render() {
   $("#activeHero").innerHTML = activeHero(data, history);
   $("#runningCount").textContent = String(data.summary?.running ?? 0);
   $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
-  $("#activeEta").textContent = cleanEta(data.summary?.active_eta ?? active?.eta_text);
+  $("#activeEta").textContent = formatEta(data.summary?.active_eta ?? active?.eta_text);
   $("#speedStat").textContent = defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : "-";
   $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
@@ -865,10 +1031,10 @@ function render() {
   $("#mdPercent").textContent = formatPercent(stagePercent(simulation, "md"));
   $("#wallRateStat").textContent = defined(latestActive.wall_speed_ns_per_day) ? `${formatRate(latestActive.wall_speed_ns_per_day)}` : "-";
   $("#artifactStat").textContent = formatBytes(totalFileBytes(simulation?.files));
-  $("#clockState").textContent = formatClock(new Date().toISOString());
-  $("#generatedAt").textContent = formatClock(data.generated_at);
+  $("#clockState").textContent = `${formatClock(new Date().toISOString())} ${DISPLAY_TIME_ZONE_LABEL}`;
+  $("#generatedAt").textContent = `${formatClock(data.generated_at)} ${DISPLAY_TIME_ZONE_LABEL}`;
   $("#commitState").textContent = isStaticHost() ? "status.json + history.json" : "live /api/status";
-  $("#lastRefresh").textContent = `refreshed ${formatClock(data.generated_at)} :: browser ${formatClock(new Date().toISOString())}`;
+  $("#lastRefresh").textContent = `refreshed ${formatClock(data.generated_at)} ${DISPLAY_TIME_ZONE_LABEL} :: browser ${formatClock(new Date().toISOString())}`;
   $("#nsStat").textContent = simulation && active ? `${simulation.name} :: ${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "no active run";
   $("#terminalLines").textContent = terminalLog(data, history);
   $("#statsTable").innerHTML = renderStats(data, history);
