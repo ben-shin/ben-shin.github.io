@@ -12,8 +12,23 @@ const state = {
 const STAGES = ["em", "nvt", "npt", "md"];
 const DISPLAY_TIME_ZONE = "Europe/Paris";
 const DISPLAY_TIME_ZONE_NAME = "Central European";
+const ETA_SOURCE_TIME_ZONE = "Europe/London";
 const TARGET_TEMP_K = 310;
 const TARGET_PRESSURE_BAR = 1;
+const MONTH_INDEX = {
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  May: 4,
+  Jun: 5,
+  Jul: 6,
+  Aug: 7,
+  Sep: 8,
+  Oct: 9,
+  Nov: 10,
+  Dec: 11,
+};
 const $ = (selector) => document.querySelector(selector);
 
 if (window.location.protocol === "file:") {
@@ -194,14 +209,75 @@ function displayTimeZoneLabel(value = new Date()) {
   return `${DISPLAY_TIME_ZONE_NAME} ${season} (${abbreviation})`;
 }
 
+function viewerTimeZoneLabel(value = new Date()) {
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "local time";
+  const date = new Date(value);
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  const parts = new Intl.DateTimeFormat(undefined, {
+    timeZoneName: "short",
+    hour: "2-digit",
+  }).formatToParts(safeDate);
+  const abbreviation = parts.find((part) => part.type === "timeZoneName")?.value;
+  return abbreviation ? `${abbreviation} (${zone})` : zone;
+}
+
+function formatViewerDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function parseGromacsEtaText(text) {
+  if (!text) return null;
+  const match = String(text).trim().match(/^(?:[A-Za-z]{3}\s+)?([A-Za-z]{3})\s+(\d{1,2})\s+(\d{2}):(\d{2}):(\d{2})\s+(\d{4})$/);
+  if (!match) return null;
+  const month = MONTH_INDEX[match[1]];
+  if (month === undefined) return null;
+  const wallUtc = Date.UTC(
+    Number(match[6]),
+    month,
+    Number(match[2]),
+    Number(match[3]),
+    Number(match[4]),
+    Number(match[5]),
+  );
+  const firstOffset = timeZoneOffsetMinutes(new Date(wallUtc), ETA_SOURCE_TIME_ZONE);
+  let instant = new Date(wallUtc - firstOffset * 60000);
+  const revisedOffset = timeZoneOffsetMinutes(instant, ETA_SOURCE_TIME_ZONE);
+  if (revisedOffset !== firstOffset) {
+    instant = new Date(wallUtc - revisedOffset * 60000);
+  }
+  return Number.isNaN(instant.getTime()) ? null : instant;
+}
+
+function etaInstant(etaAt, etaText) {
+  if (etaAt) {
+    const date = new Date(etaAt);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+  return parseGromacsEtaText(etaText);
+}
+
 function cleanEta(text) {
   if (!text) return "-";
   return String(text).replace(/\s+/g, " ").trim();
 }
 
-function formatEta(text) {
-  const cleaned = cleanEta(text);
-  return cleaned === "-" ? "-" : `${cleaned} ${displayTimeZoneLabel(cleaned)}`;
+function formatEta(etaAt, etaText = etaAt) {
+  const instant = etaInstant(etaAt, etaText);
+  if (instant) {
+    const localText = formatViewerDateTime(instant);
+    if (localText) return `${localText} ${viewerTimeZoneLabel(instant)}`;
+  }
+  const cleaned = cleanEta(etaText);
+  return cleaned === "-" ? "-" : cleaned;
 }
 
 function formatEstimatedEtaFromRate(seconds) {
@@ -313,6 +389,7 @@ function snapshotToTelemetry(data) {
       current_ns: active.current_ns ?? null,
       total_ns: active.total_ns ?? null,
       eta_text: active.eta_text || null,
+      eta_at: active.eta_at || null,
       performance_ns_per_day: active.performance_ns_per_day ?? null,
       temperature_k: active.temperature_k ?? null,
       pressure_bar: active.pressure_bar ?? null,
@@ -467,7 +544,7 @@ endpoint: ${statusEndpoint()}</pre>
   const historyActive = [...history].reverse().find((sample) => sample.active?.path === simulation.path || sample.active?.name === simulation.name)?.active;
   const liveRate = active.performance_ns_per_day ?? historyActive?.wall_speed_ns_per_day;
   const speed = defined(liveRate) ? `${formatRate(liveRate)} ns/day` : "-";
-  const eta = cleanEta(active.eta_text) !== "-" ? formatEta(active.eta_text) : formatEstimatedEtaFromRate(historyActive?.eta_seconds_from_rate);
+  const eta = cleanEta(active.eta_text) !== "-" || active.eta_at ? formatEta(active.eta_at, active.eta_text) : formatEstimatedEtaFromRate(historyActive?.eta_seconds_from_rate);
   const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
   const pid = active.process_id ? `pid ${active.process_id}${active.process_alive ? " live" : ""}` : "pid unknown";
   const runtime = active.runtime || {};
@@ -514,7 +591,7 @@ function terminalLog(data, history) {
     const live = newest?.active || {};
     lines.push(`active=${simulation.name}`);
     lines.push(`stage=${active.stage || "-"} label="${active.label || "-"}" progress=${formatPercent(active.percent)} step=${formatNumber(active.current_step)}/${formatNumber(active.total_steps)}`);
-    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${formatEta(active.eta_text)}"`);
+    lines.push(`time=${formatNs(active.current_ns)}/${formatNs(active.total_ns)} gmx_speed=${defined(active.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-"} ns/day wall_speed=${defined(live.wall_speed_ns_per_day) ? formatRate(live.wall_speed_ns_per_day) : "-"} ns/day eta="${formatEta(active.eta_at, active.eta_text)}"`);
     lines.push(`thermo temp=${defined(active.temperature_k) ? Number(active.temperature_k).toFixed(2) : "-"} K pressure=${defined(active.pressure_bar) ? Number(active.pressure_bar).toFixed(2) : "-"} bar potential=${defined(active.potential_kj_mol) ? Number(active.potential_kj_mol).toExponential(3) : "-"} kJ/mol constraint=${defined(active.constraint_rmsd) ? Number(active.constraint_rmsd).toExponential(2) : "-"}`);
     lines.push(`runtime gpu="${active.runtime?.gpu_0 || "-"}" pme="${active.runtime?.gpu_task_mapping || "-"}" threads="${active.runtime?.openmp_threads || "-"}"`);
     lines.push(`mdp dt=${active.mdp?.dt || "-"} ps nsteps=${active.mdp?.nsteps || "-"} nstlog=${active.mdp?.nstlog || "-"} nstenergy=${active.mdp?.nstenergy || "-"} tcoupl=${active.mdp?.tcoupl || "-"}`);
@@ -644,7 +721,7 @@ function simulationCard(simulation) {
             <div class="detail"><span class="detail-label">stage</span><strong>${active.label || "-"}</strong></div>
             <div class="detail"><span class="detail-label">time</span><strong>${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}</strong></div>
             <div class="detail"><span class="detail-label">step</span><strong>${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}</strong></div>
-            <div class="detail"><span class="detail-label">eta</span><strong>${formatEta(active.eta_text)}</strong></div>
+            <div class="detail"><span class="detail-label">eta</span><strong>${formatEta(active.eta_at, active.eta_text)}</strong></div>
             <div class="detail"><span class="detail-label">speed</span><strong>${performance}</strong></div>
             <div class="detail"><span class="detail-label">updated</span><strong>${formatAge(simulation.age_seconds)}</strong></div>
             <div class="detail"><span class="detail-label">temp</span><strong>${temperature}</strong></div>
@@ -792,6 +869,7 @@ function renderStats(data, history) {
     ["status", statusLabel(simulation?.status)],
     ["progress", formatPercent(active?.percent)],
     ["progress/hr", defined(latest.progress_percent_per_hour) ? `${formatRate(latest.progress_percent_per_hour)} %/hr` : "-"],
+    ["viewer eta", formatEta(active?.eta_at, active?.eta_text)],
     ["ns", `${formatNs(active?.current_ns)} / ${formatNs(active?.total_ns)}`],
     ["ns remaining", formatNs(latest.ns_remaining ?? (defined(active?.total_ns) && defined(active?.current_ns) ? Number(active.total_ns) - Number(active.current_ns) : null))],
     ["steps", `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`],
@@ -1061,7 +1139,7 @@ function render() {
   $("#activeHero").innerHTML = activeHero(data, history);
   $("#runningCount").textContent = String(data.summary?.running ?? 0);
   $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
-  $("#activeEta").textContent = formatEta(data.summary?.active_eta ?? active?.eta_text);
+  $("#activeEta").textContent = formatEta(active?.eta_at ?? data.summary?.active_eta_at, active?.eta_text ?? data.summary?.active_eta);
   $("#speedStat").textContent = defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : "-";
   $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
