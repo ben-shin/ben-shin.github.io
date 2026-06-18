@@ -137,47 +137,57 @@ function formatAge(seconds) {
   return `${Math.floor(numeric / 86400)}d ago`;
 }
 
+function viewerTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+}
+
+function withViewerTimeZone(options = {}) {
+  const zone = viewerTimeZone();
+  return zone ? { ...options, timeZone: zone } : options;
+}
+
 function formatClock(value) {
   if (!value) return "-";
   const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleTimeString("en-GB", {
+  return date.toLocaleTimeString("en-GB", withViewerTimeZone({
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-  });
+  }));
 }
 
 function formatShortTime(value) {
   if (!value) return "-";
   const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleTimeString("en-GB", {
+  return date.toLocaleTimeString("en-GB", withViewerTimeZone({
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
-  });
+  }));
 }
 
 function formatDateTime(value) {
   if (!value) return "-";
   const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  return date.toLocaleString("en-GB", {
+  return date.toLocaleString("en-GB", withViewerTimeZone({
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
-  });
+  }));
 }
 
 function timeZoneOffsetMinutes(date, timeZone) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
     hour12: false,
+    hourCycle: "h23",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -227,28 +237,29 @@ function parseTimestamp(value) {
 }
 
 function viewerTimeZoneLabel(value = new Date()) {
-  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "local time";
+  const zone = viewerTimeZone();
   const date = parseTimestamp(value);
   const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
-  const parts = new Intl.DateTimeFormat(undefined, {
+  const parts = new Intl.DateTimeFormat(undefined, withViewerTimeZone({
     timeZoneName: "short",
     hour: "2-digit",
-  }).formatToParts(safeDate);
+  })).formatToParts(safeDate);
   const abbreviation = parts.find((part) => part.type === "timeZoneName")?.value;
-  return abbreviation ? `${abbreviation} (${zone})` : zone;
+  if (abbreviation && zone) return `${abbreviation} (${zone})`;
+  return abbreviation || zone || "local time";
 }
 
 function formatViewerDateTime(value) {
   const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString(undefined, withViewerTimeZone({
     year: "numeric",
     month: "short",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  });
+  }));
 }
 
 function parseGromacsEtaText(text) {
