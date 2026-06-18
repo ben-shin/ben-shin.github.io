@@ -497,6 +497,9 @@ function snapshotToTelemetry(data) {
       eta_at: active.eta_at || null,
       status_detail: active.status_detail || null,
       performance_ns_per_day: active.performance_ns_per_day ?? null,
+      wall_speed_ns_per_day: active.wall_speed_ns_per_day ?? null,
+      steps_per_second: active.steps_per_second ?? null,
+      eta_seconds_from_rate: active.eta_seconds_from_rate ?? null,
       temperature_k: active.temperature_k ?? null,
       pressure_bar: active.pressure_bar ?? null,
       pressure_coupling_bar: active.pressure_coupling_bar ?? null,
@@ -648,7 +651,7 @@ endpoint: ${statusEndpoint()}</pre>
 
   const percent = clamp(active.percent ?? 0, 0, 100);
   const historyActive = [...history].reverse().find((sample) => sample.active?.path === simulation.path || sample.active?.name === simulation.name)?.active;
-  const liveRate = active.performance_ns_per_day ?? historyActive?.wall_speed_ns_per_day;
+  const liveRate = active.wall_speed_ns_per_day ?? historyActive?.wall_speed_ns_per_day ?? active.performance_ns_per_day;
   const speed = defined(liveRate) ? `${formatRate(liveRate)} ns/day` : "-";
   const eta = formatStageEta(active, historyActive?.eta_seconds_from_rate);
   const timeLine = `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}`;
@@ -1296,7 +1299,7 @@ function render() {
   $("#completeCount").textContent = String(data.summary?.complete ?? 0);
   $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
   $("#activeEta").textContent = active ? formatStageEta(active, latestActive.eta_seconds_from_rate) : formatEta(data.summary?.active_eta_at, data.summary?.active_eta);
-  $("#speedStat").textContent = defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : "-";
+  $("#speedStat").textContent = defined(active?.wall_speed_ns_per_day) ? formatRate(active.wall_speed_ns_per_day) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-";
   $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
   $("#stepStat").textContent = `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`;
