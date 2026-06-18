@@ -6,12 +6,23 @@ const state = {
   viz: null,
   vizGeneratedAt: null,
   timer: null,
+  historyLoaded: false,
+  historyLoading: false,
+  historyFetchedAt: 0,
+  vizLoading: false,
+  vizFetchedAt: 0,
+  plotTask: null,
+  plotTaskType: null,
+  lastPlotKey: null,
   refreshMs: 5000,
 };
 
 const STAGES = ["em", "nvt", "npt", "md"];
 const ETA_SOURCE_TIME_ZONE = "Europe/London";
 const LEGACY_TIMESTAMP_TIME_ZONE = "Europe/London";
+const STATIC_HISTORY_REFRESH_MS = 5 * 60 * 1000;
+const LIVE_HISTORY_REFRESH_MS = 30 * 1000;
+const VIZ_METADATA_REFRESH_MS = 60 * 1000;
 const TARGET_TEMP_K = 310;
 const TARGET_PRESSURE_BAR = 1;
 const MONTH_INDEX = {
@@ -351,6 +362,77 @@ function vizMetadataEndpoint() {
 function cacheBust(url) {
   const separator = url.includes("?") ? "&" : "?";
   return `${url}${separator}t=${Date.now()}`;
+}
+
+function historyRefreshMs() {
+  return isStaticHost() ? STATIC_HISTORY_REFRESH_MS : LIVE_HISTORY_REFRESH_MS;
+}
+
+function shouldLoadHistory(force = false) {
+  if (force) return true;
+  if (state.historyLoading) return false;
+  if (!state.historyLoaded) return !state.historyFetchedAt || Date.now() - state.historyFetchedAt > 15 * 1000;
+  return Date.now() - state.historyFetchedAt > historyRefreshMs();
+}
+
+function shouldLoadVizMetadata(force = false) {
+  if (force) return true;
+  if (state.vizLoading) return false;
+  return Date.now() - state.vizFetchedAt > VIZ_METADATA_REFRESH_MS;
+}
+
+function chartPointLimit() {
+  if (window.matchMedia?.("(max-width: 600px)")?.matches) return 240;
+  if (window.matchMedia?.("(max-width: 980px)")?.matches) return 420;
+  return 720;
+}
+
+function thinSamples(samples, maxPoints = chartPointLimit()) {
+  if (!Array.isArray(samples) || samples.length <= maxPoints) return samples;
+  if (maxPoints < 2) return samples.slice(-maxPoints);
+  const result = [];
+  const stride = (samples.length - 1) / (maxPoints - 1);
+  let lastIndex = -1;
+  for (let index = 0; index < maxPoints; index += 1) {
+    const sampleIndex = Math.min(samples.length - 1, Math.round(index * stride));
+    if (sampleIndex !== lastIndex) {
+      result.push(samples[sampleIndex]);
+      lastIndex = sampleIndex;
+    }
+  }
+  return result;
+}
+
+function cancelPlotTask() {
+  if (!state.plotTask) return;
+  if (state.plotTaskType === "idle" && window.cancelIdleCallback) {
+    window.cancelIdleCallback(state.plotTask);
+  } else {
+    clearTimeout(state.plotTask);
+  }
+  state.plotTask = null;
+  state.plotTaskType = null;
+}
+
+function scheduleRenderPlots(history) {
+  const first = history[0]?.generated_at || "-";
+  const last = history[history.length - 1]?.generated_at || "-";
+  const key = `${history.length}:${first}:${last}:${chartPointLimit()}`;
+  if (state.lastPlotKey === key) return;
+  state.lastPlotKey = key;
+  cancelPlotTask();
+  const run = () => {
+    state.plotTask = null;
+    state.plotTaskType = null;
+    renderPlots(history);
+  };
+  if (window.requestIdleCallback) {
+    state.plotTaskType = "idle";
+    state.plotTask = window.requestIdleCallback(run, { timeout: 1200 });
+  } else {
+    state.plotTaskType = "timeout";
+    state.plotTask = setTimeout(run, 25);
+  }
 }
 
 function simulationMatches(simulation) {
@@ -932,7 +1014,8 @@ function firstActiveValue(samples, key) {
 }
 
 function renderPlots(history) {
-  const activeSamples = history.filter((sample) => sample.active);
+  const plotHistory = thinSamples(history);
+  const activeSamples = thinSamples(history.filter((sample) => sample.active));
   const potential0 = firstActiveValue(activeSamples, "potential_kj_mol");
   const totalEnergy0 = firstActiveValue(activeSamples, "total_energy_kj_mol");
   const conserved0 = firstActiveValue(activeSamples, "conserved_energy_kj_mol");
@@ -1089,7 +1172,7 @@ function renderPlots(history) {
     decimals: 3,
   });
   $("#plotArtifacts").innerHTML = makeLineChart({
-    samples: history,
+    samples: plotHistory,
     series: [
       { label: "xtc MB", value: (sample) => defined(fileBytes(sample.files, "md.xtc")) ? fileBytes(sample.files, "md.xtc") / 1048576 : null },
       { label: "edr MB", value: (sample) => defined(fileBytes(sample.files, "md.edr")) ? fileBytes(sample.files, "md.edr") / 1048576 : null },
@@ -1164,37 +1247,51 @@ function render() {
   $("#phaseRibbon").innerHTML = renderPhaseRibbon(data);
   $("#stageMatrix").innerHTML = renderStageMatrix(data);
   renderViz();
-  renderPlots(history);
+  scheduleRenderPlots(history);
 
   const simulations = (data.simulations || []).filter(simulationMatches);
   $("#simulationList").innerHTML = simulations.map(simulationCard).join("");
   $("#emptyState").hidden = simulations.length !== 0;
 }
 
-async function loadHistory() {
+async function loadHistory(force = false) {
   const endpoint = historyEndpoint();
-  if (!endpoint) return;
+  if (!endpoint || !shouldLoadHistory(force)) return false;
+  state.historyLoading = true;
+  state.historyFetchedAt = Date.now();
   try {
     const response = await fetch(cacheBust(endpoint), { cache: "no-store" });
-    if (!response.ok) return;
+    if (!response.ok) return false;
     const payload = await response.json();
     state.history = normalizeHistory(payload);
+    state.historyLoaded = true;
+    return true;
   } catch (error) {
     console.debug("history unavailable", error);
+    return false;
+  } finally {
+    state.historyLoading = false;
   }
 }
 
-async function loadVizMetadata() {
+async function loadVizMetadata(force = false) {
+  if (!shouldLoadVizMetadata(force)) return false;
+  state.vizLoading = true;
+  state.vizFetchedAt = Date.now();
   try {
     const response = await fetch(cacheBust(vizMetadataEndpoint()), { cache: "no-store" });
     if (!response.ok) {
       state.viz = null;
-      return;
+      return false;
     }
     state.viz = await response.json();
+    return true;
   } catch (error) {
     state.viz = null;
     console.debug("viz preview unavailable", error);
+    return false;
+  } finally {
+    state.vizLoading = false;
   }
 }
 
@@ -1216,10 +1313,18 @@ async function refresh() {
       state.clientHistory.push(snapshotToTelemetry(state.data));
       state.clientHistory = state.clientHistory.slice(-2160);
     }
-    await loadHistory();
-    await loadVizMetadata();
     setHealth(endpoint === "status.json" ? "snapshot" : "live", true);
     render();
+    const deferred = [];
+    if (shouldLoadHistory()) deferred.push(loadHistory());
+    if (shouldLoadVizMetadata()) deferred.push(loadVizMetadata());
+    if (deferred.length) {
+      Promise.allSettled(deferred).then((results) => {
+        if (results.some((result) => result.status === "fulfilled" && result.value)) {
+          render();
+        }
+      });
+    }
   } catch (error) {
     setHealth("offline", false);
     console.error(error);
