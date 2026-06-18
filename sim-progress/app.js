@@ -11,6 +11,7 @@ const state = {
 
 const STAGES = ["em", "nvt", "npt", "md"];
 const ETA_SOURCE_TIME_ZONE = "Europe/London";
+const LEGACY_TIMESTAMP_TIME_ZONE = "Europe/London";
 const TARGET_TEMP_K = 310;
 const TARGET_PRESSURE_BAR = 1;
 const MONTH_INDEX = {
@@ -127,7 +128,7 @@ function formatAge(seconds) {
 
 function formatClock(value) {
   if (!value) return "-";
-  const date = new Date(value);
+  const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleTimeString("en-GB", {
     hour: "2-digit",
@@ -139,7 +140,7 @@ function formatClock(value) {
 
 function formatShortTime(value) {
   if (!value) return "-";
-  const date = new Date(value);
+  const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleTimeString("en-GB", {
     hour: "2-digit",
@@ -150,7 +151,7 @@ function formatShortTime(value) {
 
 function formatDateTime(value) {
   if (!value) return "-";
-  const date = new Date(value);
+  const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return date.toLocaleString("en-GB", {
     month: "2-digit",
@@ -185,9 +186,38 @@ function timeZoneOffsetMinutes(date, timeZone) {
   return Math.round((asUtc - date.getTime()) / 60000);
 }
 
+function wallTimeToInstant({ year, month, day, hour, minute, second }, timeZone) {
+  const wallUtc = Date.UTC(year, month, day, hour, minute, second);
+  const firstOffset = timeZoneOffsetMinutes(new Date(wallUtc), timeZone);
+  let instant = new Date(wallUtc - firstOffset * 60000);
+  const revisedOffset = timeZoneOffsetMinutes(instant, timeZone);
+  if (revisedOffset !== firstOffset) {
+    instant = new Date(wallUtc - revisedOffset * 60000);
+  }
+  return instant;
+}
+
+function parseTimestamp(value) {
+  if (!value) return new Date(Number.NaN);
+  if (value instanceof Date) return value;
+  if (typeof value !== "string") return new Date(value);
+  const text = value.trim();
+  if (/(?:Z|[+-]\d{2}:?\d{2})$/i.test(text)) return new Date(text);
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return new Date(text);
+  return wallTimeToInstant({
+    year: Number(match[1]),
+    month: Number(match[2]) - 1,
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5]),
+    second: Number(match[6] || 0),
+  }, LEGACY_TIMESTAMP_TIME_ZONE);
+}
+
 function viewerTimeZoneLabel(value = new Date()) {
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "local time";
-  const date = new Date(value);
+  const date = parseTimestamp(value);
   const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
   const parts = new Intl.DateTimeFormat(undefined, {
     timeZoneName: "short",
@@ -198,7 +228,7 @@ function viewerTimeZoneLabel(value = new Date()) {
 }
 
 function formatViewerDateTime(value) {
-  const date = new Date(value);
+  const date = parseTimestamp(value);
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleString(undefined, {
     year: "numeric",
@@ -216,26 +246,20 @@ function parseGromacsEtaText(text) {
   if (!match) return null;
   const month = MONTH_INDEX[match[1]];
   if (month === undefined) return null;
-  const wallUtc = Date.UTC(
-    Number(match[6]),
+  const instant = wallTimeToInstant({
+    year: Number(match[6]),
     month,
-    Number(match[2]),
-    Number(match[3]),
-    Number(match[4]),
-    Number(match[5]),
-  );
-  const firstOffset = timeZoneOffsetMinutes(new Date(wallUtc), ETA_SOURCE_TIME_ZONE);
-  let instant = new Date(wallUtc - firstOffset * 60000);
-  const revisedOffset = timeZoneOffsetMinutes(instant, ETA_SOURCE_TIME_ZONE);
-  if (revisedOffset !== firstOffset) {
-    instant = new Date(wallUtc - revisedOffset * 60000);
-  }
+    day: Number(match[2]),
+    hour: Number(match[3]),
+    minute: Number(match[4]),
+    second: Number(match[5]),
+  }, ETA_SOURCE_TIME_ZONE);
   return Number.isNaN(instant.getTime()) ? null : instant;
 }
 
 function etaInstant(etaAt, etaText) {
   if (etaAt) {
-    const date = new Date(etaAt);
+    const date = parseTimestamp(etaAt);
     if (!Number.isNaN(date.getTime())) return date;
   }
   return parseGromacsEtaText(etaText);
@@ -424,7 +448,7 @@ function enrichHistory(samples) {
     const active = enriched.active;
     if (!active) return enriched;
 
-    const time = new Date(enriched.generated_at).getTime();
+    const time = parseTimestamp(enriched.generated_at).getTime();
     const key = `${active.path || active.name || "run"}::${active.stage || "stage"}`;
     const previous = previousByRun.get(key);
     const artifactBytes = totalFileBytes(enriched.files);
@@ -438,7 +462,7 @@ function enrichHistory(samples) {
       active.wall_to_gmx_ratio = Number(active.wall_speed_ns_per_day) / Number(active.performance_ns_per_day);
     }
     if (previous && Number.isFinite(time)) {
-      const previousTime = new Date(previous.generated_at).getTime();
+      const previousTime = parseTimestamp(previous.generated_at).getTime();
       const dtSeconds = (time - previousTime) / 1000;
       if (dtSeconds > 0) {
         active.sample_interval_seconds = dtSeconds;
@@ -498,7 +522,7 @@ function mergeHistory(staticHistory, clientHistory, current) {
     byTime.set(sample.generated_at, sample);
   });
   return enrichHistory(Array.from(byTime.values())
-    .sort((a, b) => new Date(a.generated_at) - new Date(b.generated_at))
+    .sort((a, b) => parseTimestamp(a.generated_at) - parseTimestamp(b.generated_at))
     .slice(-2160));
 }
 
@@ -593,7 +617,7 @@ function areaPath(points, getX, getY, bottom) {
 
 function makeLineChart({ samples, series, yMin = null, yMax = null, suffix = "", decimals = 1 }) {
   const valid = samples
-    .map((sample) => ({ ...sample, xDate: new Date(sample.generated_at) }))
+    .map((sample) => ({ ...sample, xDate: parseTimestamp(sample.generated_at) }))
     .filter((sample) => !Number.isNaN(sample.xDate.getTime()));
 
   const rows = valid.filter((sample) => series.some((item) => defined(item.value(sample))));
