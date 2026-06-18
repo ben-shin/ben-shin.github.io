@@ -164,12 +164,11 @@ function timeZoneOffsetMinutes(date, timeZone) {
     second: "2-digit",
   }).formatToParts(date);
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  const hour = values.hour === "24" ? 0 : Number(values.hour);
   const asUtc = Date.UTC(
     Number(values.year),
     Number(values.month) - 1,
     Number(values.day),
-    hour,
+    Number(values.hour),
     Number(values.minute),
     Number(values.second),
   );
