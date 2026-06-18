@@ -811,7 +811,8 @@ function simulationCard(simulation) {
   const active = simulation.active_stage || {};
   const percent = clamp(active.percent ?? 0, 0, 100);
   const stageMap = Object.fromEntries((simulation.stages || []).map((stage) => [stage.stage, stage]));
-  const performance = defined(active.performance_ns_per_day) ? `${Number(active.performance_ns_per_day).toFixed(2)} ns/day` : "-";
+  const liveSpeed = active.wall_speed_ns_per_day ?? active.performance_ns_per_day;
+  const performance = defined(liveSpeed) ? `${formatRate(liveSpeed)} ns/day` : "-";
   const temperature = defined(active.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   const pressure = defined(active.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
   const process = active.process_id ? `${active.process_id}${active.process_alive ? " live" : ""}` : "-";
@@ -977,7 +978,8 @@ function renderJobLedger(simulations, emptyText) {
   return simulations.slice(0, 12).map((simulation) => {
     const active = simulation.active_stage || {};
     const files = totalFileBytes(simulation.files);
-    const speed = defined(active.performance_ns_per_day) ? `${formatRate(active.performance_ns_per_day)} ns/day` : "-";
+    const liveSpeed = active.wall_speed_ns_per_day ?? active.performance_ns_per_day;
+    const speed = defined(liveSpeed) ? `${formatRate(liveSpeed)} ns/day` : "-";
     const ns = defined(active.current_ns) || defined(active.total_ns) ? `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "-";
     const queueInput = active.input_path ? `<span>input=${active.input_path}</span>` : "";
     const detail = active.status_detail ? ` :: ${active.status_detail}` : "";
@@ -1029,8 +1031,8 @@ function renderStats(data, history) {
     ["ns", `${formatNs(active?.current_ns)} / ${formatNs(active?.total_ns)}`],
     ["ns remaining", formatNs(latest.ns_remaining ?? (defined(active?.total_ns) && defined(active?.current_ns) ? Number(active.total_ns) - Number(active.current_ns) : null))],
     ["steps", `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`],
-    ["speed", defined(active?.performance_ns_per_day) ? `${Number(active.performance_ns_per_day).toFixed(2)} ns/day` : "-"],
-    ["wall speed", defined(latest.wall_speed_ns_per_day) ? `${formatRate(latest.wall_speed_ns_per_day)} ns/day` : "-"],
+    ["speed", defined(active?.wall_speed_ns_per_day) ? `${formatRate(active.wall_speed_ns_per_day)} ns/day` : defined(latest.wall_speed_ns_per_day) ? `${formatRate(latest.wall_speed_ns_per_day)} ns/day` : "-"],
+    ["gmx perf", defined(active?.performance_ns_per_day) ? `${Number(active.performance_ns_per_day).toFixed(2)} ns/day` : "-"],
     ["speed ratio", defined(latest.wall_to_gmx_ratio) ? `${Number(latest.wall_to_gmx_ratio).toFixed(3)} wall/gmx` : "-"],
     ["sample eta", formatEstimatedEtaFromRate(latest.eta_seconds_from_rate)],
     ["sample dt", defined(latest.sample_interval_seconds) ? `${Number(latest.sample_interval_seconds).toFixed(1)} s` : "-"],
