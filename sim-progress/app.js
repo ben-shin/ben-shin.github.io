@@ -342,6 +342,7 @@ function formatAxisValue(value, decimals, suffix) {
 function statusLabel(status) {
   const labels = {
     running: "running",
+    queued: "queued",
     complete: "done",
     partial: "partial",
     stale: "stale",
@@ -464,6 +465,7 @@ function snapshotToTelemetry(data) {
     generated_at: data?.generated_at || new Date().toISOString(),
     source_root: data?.source_root || "-",
     running: data?.summary?.running ?? 0,
+    queued: data?.summary?.queued ?? 0,
     attention: data?.summary?.attention ?? 0,
     complete: data?.summary?.complete ?? 0,
     simulations: data?.summary?.simulations ?? data?.simulations?.length ?? 0,
@@ -694,7 +696,7 @@ function terminalLog(data, history) {
     lines.push(`delta_since_last_sample=${deltaPercent === null ? "-" : `${deltaPercent >= 0 ? "+" : ""}${deltaPercent.toFixed(3)}%`} steps=${deltaStep === null ? "-" : `${deltaStep >= 0 ? "+" : ""}${formatNumber(deltaStep)}`}`);
   }
   if (data?.summary) {
-    lines.push(`queue simulations=${data.summary.simulations} running=${data.summary.running} attention=${data.summary.attention} complete=${data.summary.complete}`);
+    lines.push(`queue simulations=${data.summary.simulations} running=${data.summary.running} queued=${data.summary.queued ?? 0} attention=${data.summary.attention} complete=${data.summary.complete}`);
   }
   return lines.join("\n");
 }
@@ -948,6 +950,45 @@ function renderMdp(data) {
   return renderKeyValueRows(rows);
 }
 
+function stageStatusSummary(simulation) {
+  const stages = simulation?.stages || [];
+  if (!stages.length) return "-";
+  return stages.map((stage) => `${stage.stage}:${statusLabel(stage.status)}:${formatPercent(stage.completion_percent ?? stage.percent)}`).join(" ");
+}
+
+function renderJobLedger(simulations, emptyText) {
+  if (!simulations.length) return `<div class="empty-plot">${emptyText}</div>`;
+  return simulations.slice(0, 12).map((simulation) => {
+    const active = simulation.active_stage || {};
+    const files = totalFileBytes(simulation.files);
+    const speed = defined(active.performance_ns_per_day) ? `${formatRate(active.performance_ns_per_day)} ns/day` : "-";
+    const ns = defined(active.current_ns) || defined(active.total_ns) ? `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "-";
+    const queueInput = active.input_path ? `<span>input=${active.input_path}</span>` : "";
+    return `
+      <div class="job-row ${simulation.status}">
+        <div>
+          <strong>${simulation.name}</strong>
+          <span>${simulation.path}</span>
+          ${queueInput}
+        </div>
+        <code>${statusLabel(simulation.status)} :: ${active.stage || "-"} :: ${formatPercent(active.percent)}</code>
+        <code>${ns} :: ${speed} :: files=${formatBytes(files)} :: age=${formatAge(simulation.age_seconds)}</code>
+        <code>${stageStatusSummary(simulation)}</code>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderQueuedJobs(data) {
+  const queued = (data?.simulations || []).filter((simulation) => simulation.status === "queued");
+  return renderJobLedger(queued, "No queued jobs detected from stage input/log scan.");
+}
+
+function renderCompleteJobs(data) {
+  const complete = (data?.simulations || []).filter((simulation) => simulation.status === "complete");
+  return renderJobLedger(complete, "No completed jobs detected yet.");
+}
+
 function renderStats(data, history) {
   const { simulation, active } = getActive(data);
   const latest = [...history].reverse().find((sample) => sample.active)?.active || {};
@@ -957,6 +998,10 @@ function renderStats(data, history) {
     ["endpoint", statusEndpoint()],
     ["viewer tz", viewerTimeZoneLabel(data?.generated_at)],
     ["generated", formatDateTime(data?.generated_at)],
+    ["simulations", data.summary?.simulations ?? "-"],
+    ["running", data.summary?.running ?? 0],
+    ["queued", data.summary?.queued ?? 0],
+    ["complete", data.summary?.complete ?? 0],
     ["active run", simulation?.name || "-"],
     ["stage", active?.label || "-"],
     ["status", statusLabel(simulation?.status)],
@@ -1232,6 +1277,8 @@ function render() {
   $("#sourceRoot").textContent = data.source_root || "-";
   $("#activeHero").innerHTML = activeHero(data, history);
   $("#runningCount").textContent = String(data.summary?.running ?? 0);
+  $("#queuedCount").textContent = String(data.summary?.queued ?? 0);
+  $("#completeCount").textContent = String(data.summary?.complete ?? 0);
   $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
   $("#activeEta").textContent = formatEta(active?.eta_at ?? data.summary?.active_eta_at, active?.eta_text ?? data.summary?.active_eta);
   $("#speedStat").textContent = defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : "-";
@@ -1255,6 +1302,8 @@ function render() {
   $("#observablesTable").innerHTML = renderObservables(data);
   $("#runtimeTable").innerHTML = renderRuntime(data);
   $("#mdpTable").innerHTML = renderMdp(data);
+  $("#queuedJobs").innerHTML = renderQueuedJobs(data);
+  $("#completeJobs").innerHTML = renderCompleteJobs(data);
   $("#phaseRibbon").innerHTML = renderPhaseRibbon(data);
   $("#stageMatrix").innerHTML = renderStageMatrix(data);
   renderViz();

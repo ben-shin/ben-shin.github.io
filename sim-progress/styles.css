@@ -486,6 +486,8 @@ main {
 
 .stage-box.running,
 .stage.running { color: var(--green); background: #071407; }
+.stage-box.queued,
+.stage.queued { color: var(--blue); background: #070b16; }
 .stage-box.complete,
 .stage.complete { color: var(--cyan); background: #061014; }
 .stage-box.failed,
@@ -505,6 +507,49 @@ main {
   padding: 4px 8px 8px;
 }
 
+.job-list {
+  display: grid;
+  gap: 1px;
+  max-height: 360px;
+  overflow: auto;
+  padding: 8px;
+  background: var(--line);
+}
+
+.job-row {
+  display: grid;
+  gap: 4px;
+  padding: 7px;
+  background: var(--panel);
+}
+
+.job-row strong,
+.job-row span,
+.job-row code {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.job-row strong {
+  color: var(--text);
+  font-size: 0.74rem;
+}
+
+.job-row span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.62rem;
+}
+
+.job-row code {
+  color: var(--green-soft);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+}
+
+.job-row.queued code { color: var(--blue); }
+.job-row.complete code { color: var(--cyan); }
+
 .stat-row {
   display: grid;
   grid-template-columns: minmax(118px, 0.48fr) minmax(0, 1fr);
@@ -522,7 +567,7 @@ main {
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   padding: 8px;
   background: var(--line);
@@ -595,6 +640,7 @@ main {
 }
 
 .status.running { color: var(--green); }
+.status.queued { color: var(--blue); }
 .status.complete { color: var(--cyan); }
 .status.stale,
 .status.partial { color: var(--amber); }
@@ -899,6 +945,26 @@ footer {
     max-height: 170px;
     padding: 2px 4px 4px;
     overflow: auto;
+  }
+
+  .job-list {
+    max-height: 170px;
+    padding: 4px;
+  }
+
+  .job-row {
+    gap: 2px;
+    padding: 4px;
+  }
+
+  .job-row strong,
+  .job-row code {
+    font-size: 0.52rem;
+    line-height: 1.2;
+  }
+
+  .job-row span {
+    font-size: 0.48rem;
   }
 
   .stat-row {

@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
-    <link rel="stylesheet" href="styles.css?v=tzfix-20260618">
+    <link rel="stylesheet" href="styles.css?v=queue-20260618">
   </head>
   <body>
     <header class="app-header">
@@ -39,6 +39,8 @@
 
       <section class="terminal-grid" aria-label="Telemetry summary">
         <article class="metric"><span>RUNNING</span><strong id="runningCount">-</strong><em>active mdrun jobs</em></article>
+        <article class="metric"><span>QUEUED</span><strong id="queuedCount">-</strong><em>prepared / waiting</em></article>
+        <article class="metric"><span>COMPLETE</span><strong id="completeCount">-</strong><em>finished runs</em></article>
         <article class="metric"><span>ACTIVE</span><strong id="activePercent">-</strong><em>current stage progress</em></article>
         <article class="metric"><span>SPEED</span><strong id="speedStat">-</strong><em>ns/day from log</em></article>
         <article class="metric"><span>ETA</span><strong id="activeEta">-</strong><em>GROMACS estimate</em></article>
@@ -174,10 +176,21 @@
         </article>
 
         <article class="plot-card">
+          <div class="panel-title"><span>queue.pending</span><b>queued jobs</b></div>
+          <div id="queuedJobs" class="job-list"></div>
+        </article>
+
+        <article class="plot-card">
+          <div class="panel-title"><span>complete.archive</span><b>finished jobs</b></div>
+          <div id="completeJobs" class="job-list"></div>
+        </article>
+
+        <article class="plot-card">
           <div class="panel-title"><span>filters</span><b id="commitState">snapshot mode</b></div>
           <nav class="tabs" aria-label="Simulation filters">
             <button class="tab active" type="button" data-filter="all">all</button>
             <button class="tab" type="button" data-filter="running">running</button>
+            <button class="tab" type="button" data-filter="queued">queued</button>
             <button class="tab" type="button" data-filter="attention">attention</button>
             <button class="tab" type="button" data-filter="complete">done</button>
           </nav>
@@ -194,6 +207,6 @@
       <span id="nsStat">-</span>
     </footer>
 
-    <script src="app.js?v=tzfix-20260618"></script>
+    <script src="app.js?v=queue-20260618"></script>
   </body>
 </html>
