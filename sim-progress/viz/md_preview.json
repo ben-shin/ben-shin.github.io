@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-19T14:26:53+02:00",
+  "generated_at": "2026-06-19T14:57:58+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMX/T553K",
-  "start_ns": 140.24,
-  "end_ns": 148.24,
+  "start_ns": 143.77,
+  "end_ns": 151.77,
   "window_ns": 8.0,
   "dt_ps": 25.0,
   "fps": 24,
@@ -13,9 +13,9 @@
   "output_group": "Protein",
   "frames": 161,
   "atoms_per_frame": 571,
-  "mp4_bytes": 2078504,
-  "mp4_mb": 1.982,
-  "thumbnail_bytes": 184884,
+  "mp4_bytes": 2041014,
+  "mp4_mb": 1.946,
+  "thumbnail_bytes": 185214,
   "duration_seconds": 6.708,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -24,9 +24,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 221.265,
-    "fit_seconds": 56.208,
-    "render_seconds": 70.765,
-    "encode_seconds": 18.134
+    "extract_seconds": 203.72,
+    "fit_seconds": 51.867,
+    "render_seconds": 51.343,
+    "encode_seconds": 20.837
   }
 }
