@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-20T20:02:55+02:00",
+  "generated_at": "2026-06-20T20:09:19+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/WT",
-  "start_ns": 37.86,
-  "end_ns": 39.86,
+  "start_ns": 38.64,
+  "end_ns": 40.64,
   "window_ns": 2.0,
   "dt_ps": 100.0,
   "fps": 12,
@@ -13,9 +13,9 @@
   "output_group": "Protein",
   "frames": 21,
   "atoms_per_frame": 571,
-  "mp4_bytes": 244519,
-  "mp4_mb": 0.233,
-  "thumbnail_bytes": 125568,
+  "mp4_bytes": 239545,
+  "mp4_mb": 0.228,
+  "thumbnail_bytes": 121725,
   "duration_seconds": 1.75,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -24,9 +24,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 54.08,
-    "fit_seconds": 9.878,
-    "render_seconds": 0.715,
-    "encode_seconds": 0.917
+    "extract_seconds": 48.047,
+    "fit_seconds": 8.533,
+    "render_seconds": 0.725,
+    "encode_seconds": 0.426
   }
 }
