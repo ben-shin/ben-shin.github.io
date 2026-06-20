@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icon.svg">
-    <link rel="stylesheet" href="styles.css?v=eta-20260620">
+    <link rel="stylesheet" href="styles.css?v=easter-20260620">
   </head>
   <body>
     <header class="app-header">
@@ -76,9 +76,33 @@
       <section class="plot-card wide" aria-label="MD preview video">
         <div class="panel-title"><span>viz/md_preview.mp4</span><b id="vizState">live preview</b></div>
         <div class="viz-panel">
-          <video id="vizVideo" controls muted loop playsinline preload="metadata" poster="viz/md_preview.png"></video>
+          <div class="viz-video-wrap">
+            <video id="vizVideo" controls muted loop playsinline preload="metadata" poster="viz/md_preview.png"></video>
+            <a id="vizDownload" class="viz-download" href="viz/md_preview.mp4" download="md_preview_latest.mp4">download latest mp4</a>
+          </div>
           <pre id="vizMeta">waiting for preview video...</pre>
         </div>
+      </section>
+
+      <section class="easter-grid" aria-label="Dashboard easter eggs">
+        <article id="fapcCompanion" class="plot-card fapc-companion" tabindex="0" role="button" aria-label="FapC Companion">
+          <div class="panel-title"><span>FapC Companion</span><b id="fapcState">watching</b></div>
+          <pre id="fapcMascot" class="fapc-mascot">.-.
+(o o)
+ |=|</pre>
+          <p id="fapcMood" class="fapc-mood">FapC mood: soluble but suspicious</p>
+          <p id="fapcNote" class="fapc-note">telemetry-derived vibes pending</p>
+          <div id="fapcBubble" class="fapc-bubble" hidden></div>
+        </article>
+
+        <article class="plot-card egg-terminal" aria-label="Easter egg terminal">
+          <div class="panel-title"><span>lab_shell</span><b>ben@md-progress</b></div>
+          <div id="eggTerminalOutput" class="egg-terminal-output" aria-live="polite"></div>
+          <form id="eggTerminalForm" class="egg-terminal-form" autocomplete="off">
+            <label for="eggTerminalInput">ben@md-progress:~$</label>
+            <input id="eggTerminalInput" type="text" spellcheck="false" aria-label="Fake terminal command" placeholder="help">
+          </form>
+        </article>
       </section>
 
       <section class="plot-grid" aria-label="Live telemetry plots">
@@ -214,6 +238,6 @@
       <span id="nsStat">-</span>
     </footer>
 
-    <script src="app.js?v=eta-20260620"></script>
+    <script src="app.js?v=easter-20260620"></script>
   </body>
 </html>

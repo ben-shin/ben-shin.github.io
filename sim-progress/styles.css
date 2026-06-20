@@ -290,6 +290,31 @@ main {
   background: #000;
 }
 
+.viz-video-wrap {
+  display: grid;
+  gap: 0;
+  background: #000;
+}
+
+.viz-download {
+  display: block;
+  padding: 7px 8px;
+  border-top: 1px solid var(--line);
+  color: var(--cyan);
+  background: var(--panel);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.viz-download:focus,
+.viz-download:hover {
+  color: #000;
+  background: var(--cyan);
+  outline: none;
+}
+
 #vizMeta {
   min-height: 96px;
   margin: 0;
@@ -1073,4 +1098,234 @@ footer {
 
 @media (min-width: 1260px) {
   .terminal-grid { grid-template-columns: repeat(14, minmax(0, 1fr)); }
+}
+
+.easter-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.fapc-companion {
+  cursor: pointer;
+}
+
+.fapc-companion:focus {
+  outline: 1px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.fapc-mascot {
+  min-height: 62px;
+  margin: 0;
+  padding: 10px 10px 4px;
+  color: var(--green);
+  font-size: 1rem;
+  line-height: 1.18;
+  white-space: pre;
+}
+
+.fapc-mood,
+.fapc-note {
+  margin: 0;
+  padding: 0 10px 8px;
+  color: var(--green-soft);
+  font-size: 0.72rem;
+}
+
+.fapc-note {
+  color: var(--muted);
+}
+
+.fapc-bubble {
+  margin: 0 10px 10px;
+  padding: 8px;
+  border: 1px solid rgba(142, 232, 255, 0.36);
+  background: rgba(0, 0, 0, 0.34);
+  color: var(--cyan);
+  font-size: 0.7rem;
+}
+
+.fapc-escape {
+  animation: fapc-escape 4s ease-in-out;
+}
+
+@keyframes fapc-escape {
+  0%, 100% { transform: translate(0, 0); }
+  30% { transform: translate(18px, -4px); }
+  60% { transform: translate(-12px, 6px); }
+}
+
+.egg-terminal-output {
+  max-height: 210px;
+  min-height: 108px;
+  overflow: auto;
+  padding: 8px;
+  color: var(--green-soft);
+  background: var(--panel);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.egg-terminal-line {
+  margin: 0 0 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.egg-terminal-line.command {
+  color: var(--cyan);
+}
+
+.egg-terminal-line.system {
+  color: var(--amber);
+}
+
+.egg-terminal-form {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--line);
+  background: #000;
+}
+
+.egg-terminal-form label {
+  color: var(--cyan);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.egg-terminal-form input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: var(--green);
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.egg-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.egg-modal {
+  width: min(620px, 100%);
+  max-height: min(86vh, 680px);
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 0 0 1px rgba(124, 255, 155, 0.12), 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+
+.egg-modal header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-2);
+}
+
+.egg-modal h2 {
+  color: var(--green);
+  font-size: 0.85rem;
+}
+
+.egg-modal-close {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line);
+  color: var(--green);
+  background: #000;
+}
+
+.egg-modal-body {
+  padding: 10px;
+  color: var(--green-soft);
+}
+
+.egg-modal-body pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--green-soft);
+}
+
+.egg-access-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.egg-access-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.egg-access-form input {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  color: var(--green);
+  background: #000;
+  font: inherit;
+}
+
+.egg-access-form button {
+  min-height: 34px;
+  border: 1px solid var(--line-strong);
+  color: #000;
+  background: var(--green);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.egg-access-result {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--green-soft);
+  background: rgba(0, 0, 0, 0.22);
+  white-space: pre-wrap;
+}
+
+.egg-toast {
+  position: fixed;
+  right: 12px;
+  bottom: calc(38px + env(safe-area-inset-bottom));
+  z-index: 90;
+  width: min(360px, calc(100vw - 24px));
+  padding: 10px;
+  border: 1px solid var(--line-strong);
+  color: var(--green-soft);
+  background: var(--panel);
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.night-shift-line {
+  margin-top: 8px;
+  color: var(--amber);
+  font-size: 0.68rem;
+}
+
+@media (min-width: 760px) {
+  .easter-grid {
+    grid-template-columns: minmax(220px, 0.35fr) minmax(0, 0.65fr);
+  }
 }
