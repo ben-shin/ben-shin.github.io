@@ -493,8 +493,10 @@ main {
 .stage-box.failed,
 .stage.failed { color: var(--red); background: #160808; }
 .stage-box.stale,
+.stage-box.paused,
 .stage-box.partial,
 .stage.stale,
+.stage.paused,
 .stage.partial { color: var(--amber); background: #151204; }
 
 .stats-and-runs {
@@ -643,6 +645,7 @@ main {
 .status.queued { color: var(--blue); }
 .status.complete { color: var(--cyan); }
 .status.stale,
+.status.paused,
 .status.partial { color: var(--amber); }
 .status.failed { color: var(--red); }
 

@@ -310,6 +310,7 @@ function formatEstimatedEtaFromRate(seconds) {
 function formatStageEta(stage, fallbackSeconds = null) {
   if (!stage) return "-";
   if (stage.status === "complete") return "complete";
+  if (stage.status === "paused") return `paused @ ${formatPercent(stage.percent)}`;
   if (stage.status === "stale") return `stale @ ${formatPercent(stage.percent)}`;
   if (stage.status === "failed") return "failed";
   if (stage.status === "queued") return "queued";
@@ -355,6 +356,7 @@ function statusLabel(status) {
     queued: "queued",
     complete: "done",
     partial: "partial",
+    paused: "paused",
     stale: "stale",
     failed: "failed",
     unknown: "unknown",
@@ -459,7 +461,7 @@ function scheduleRenderPlots(history) {
 
 function simulationMatches(simulation) {
   if (state.filter === "all") return true;
-  if (state.filter === "attention") return ["failed", "stale"].includes(simulation.status);
+  if (state.filter === "attention") return ["failed", "paused", "stale"].includes(simulation.status);
   return simulation.status === state.filter;
 }
 
