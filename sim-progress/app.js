@@ -1466,3 +1466,473 @@ document.querySelectorAll(".tab").forEach((button) => {
 $("#refreshButton").addEventListener("click", refresh);
 refresh();
 state.timer = setInterval(refresh, state.refreshMs);
+
+(() => {
+  const terminalOutput = document.querySelector("#eggTerminalOutput");
+  const terminalForm = document.querySelector("#eggTerminalForm");
+  const terminalInput = document.querySelector("#eggTerminalInput");
+  const fapcCompanion = document.querySelector("#fapcCompanion");
+  const fapcMascot = document.querySelector("#fapcMascot");
+  const fapcMood = document.querySelector("#fapcMood");
+  const fapcNote = document.querySelector("#fapcNote");
+  const fapcBubble = document.querySelector("#fapcBubble");
+  const vizDownload = document.querySelector("#vizDownload");
+  const title = document.querySelector("h1");
+
+  if (!terminalOutput || !terminalForm || !terminalInput) return;
+
+  const randomItem = (items) => items[Math.floor(Math.random() * items.length)];
+  const dashboard = () => (typeof state !== "undefined" ? state : null);
+  const dashboardData = () => dashboard()?.data || null;
+  const activeSimulation = () => (dashboardData()?.simulations || [])[0] || null;
+  const activeStage = () => activeSimulation()?.active_stage || null;
+  const localHour = () => new Date().getHours();
+  const lines = [];
+  const history = [];
+  let historyIndex = 0;
+  let fapcClicks = 0;
+  let fapcCooldownUntil = 0;
+  let titleClicks = 0;
+  let attentionClicks = 0;
+  let etaClicks = 0;
+  let rKeyTime = 0;
+  const konami = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+  let konamiIndex = 0;
+
+  const fapcResponses = [
+    "You poke FapC. FapC refuses to aggregate on command.",
+    "You offer FapC a chaperone. FapC becomes emotionally unavailable.",
+    "You ask FapC for publication-quality behavior. FapC laughs in conformational heterogeneity.",
+    "You ask FapC what it wants. FapC says: \"more replicates.\"",
+    "You whisper \"major revision.\" FapC immediately forms off-pathway species.",
+    "You add salt. FapC says this changes everything and nothing.",
+    "You ask if it has converged. FapC avoids eye contact.",
+  ];
+
+  const reviewerComments = [
+    "\"The simulations are promising, but the authors should validate every frame experimentally.\"",
+    "\"The authors claim convergence, but I personally remain unconverged.\"",
+    "\"Could the authors repeat this at pH 5, 6, 7, 8, and in the presence of emotional stress?\"",
+    "\"The manuscript would benefit from a clearer explanation of why I am wrong.\"",
+    "\"The data are interesting but do not exclude the possibility that the protein simply has bad vibes.\"",
+    "\"The authors should compare against AlphaFold, wet lab data, cryo-EM, SAXS, NMR, astrology, and common sense.\"",
+    "\"Minor point: please rewrite the paper.\"",
+    "\"I could not reproduce the trajectory from the screenshot provided.\"",
+    "\"The authors should include a movie, a control movie, and a movie explaining the first movie.\"",
+    "\"The result is convincing, but I would like it to be convincing in a different way.\"",
+  ];
+
+  const denialMessages = [
+    "ACCESS DENIED\n\nReason: insufficient banter entropy.\nHint: this code was probably said in a pub.",
+    "ACCESS DENIED\n\nYour credentials have been forwarded to Reviewer 2.",
+    "ACCESS DENIED\n\nThis incident will be included in the supplementary information.",
+    "ACCESS DENIED\n\nIncorrect code.\nPlease repeat with three independent biological replicates.",
+  ];
+
+  // These passcodes are public joke easter eggs, not security.
+  const friendCodes = {
+    seb: {
+      code: "1111",
+      response: "ACCESS GRANTED\n\nWelcome Seb\n\nDon't break your arm again, praying you heal fast\nxox",
+    },
+    group: {
+      code: "8008",
+      response: "GROUP MODE UNLOCKED\n\nCurrent lab party status:\nscience: pending\npints: probable\nNature progress: disputed\nemotional convergence: not achieved\n\nShared secret:\nYou have unlocked the forbidden trajectory:\nBen checking the same simulation 47 times in one evening.",
+    },
+  };
+
+  function safeFormatDuration(seconds) {
+    return typeof formatDuration === "function" ? formatDuration(seconds) : "-";
+  }
+
+  function appendLine(text, className = "") {
+    lines.push({ text, className });
+    while (lines.length > 20) lines.shift();
+    terminalOutput.innerHTML = lines
+      .map((line) => {
+        const div = document.createElement("div");
+        div.className = `egg-terminal-line ${line.className}`.trim();
+        div.textContent = line.text;
+        return div.outerHTML;
+      })
+      .join("");
+    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+  }
+
+  function toast(message, timeout = 5200) {
+    const old = document.querySelector(".egg-toast");
+    if (old) old.remove();
+    const node = document.createElement("div");
+    node.className = "egg-toast";
+    node.textContent = message;
+    document.body.appendChild(node);
+    window.setTimeout(() => node.remove(), timeout);
+  }
+
+  function closeModal() {
+    document.querySelectorAll(".egg-modal-backdrop").forEach((node) => node.remove());
+  }
+
+  function openModal(titleText, bodyText, extraContent = null) {
+    closeModal();
+    const backdrop = document.createElement("div");
+    backdrop.className = "egg-modal-backdrop";
+    backdrop.innerHTML = `
+      <div class="egg-modal" role="dialog" aria-modal="true" aria-label="${titleText}">
+        <header>
+          <h2></h2>
+          <button class="egg-modal-close" type="button" aria-label="Close">x</button>
+        </header>
+        <div class="egg-modal-body"><pre></pre></div>
+      </div>
+    `;
+    backdrop.querySelector("h2").textContent = titleText;
+    backdrop.querySelector("pre").textContent = bodyText;
+    if (extraContent) backdrop.querySelector(".egg-modal-body").appendChild(extraContent);
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) closeModal();
+    });
+    backdrop.querySelector(".egg-modal-close").addEventListener("click", closeModal);
+    document.body.appendChild(backdrop);
+    const firstInput = backdrop.querySelector("input, button");
+    if (firstInput) firstInput.focus();
+  }
+
+  function reviewerCount() {
+    try {
+      return Number(localStorage.getItem("reviewer2-count") || "0");
+    } catch {
+      return 0;
+    }
+  }
+
+  function setReviewerCount(value) {
+    try {
+      localStorage.setItem("reviewer2-count", String(value));
+    } catch {
+      /* localStorage can fail in private modes. */
+    }
+  }
+
+  function triggerReviewer2() {
+    const count = reviewerCount() + 1;
+    setReviewerCount(count);
+    const achievement = count === 3 ? "\n\nAchievement unlocked:\n\"Major revision enjoyer\"" : "";
+    openModal(
+      "REVIEWER 2 DETECTED",
+      "WARNING: REVIEWER 2 DETECTED\n\nSeverity: major revision\nThreat level: \"interesting, however...\"\nSuggested response: add 400 ns, three controls, and a schematic.\n\nReviewer 2 diagnostic report:\n\nNovelty concern: elevated\nNeed for controls: infinite\nSuggested extra experiments: unreasonable\nTone: polite but devastating\nDecision: major revision\n\nReviewer comment:\n" + randomItem(reviewerComments) + achievement,
+    );
+    appendLine("Reviewer 2 diagnostic alert opened.", "system");
+  }
+
+  function openAccessModal() {
+    const form = document.createElement("form");
+    form.className = "egg-access-form";
+    form.innerHTML = `
+      <label>name:<input name="name" autocomplete="off" inputmode="text"></label>
+      <label>code:<input name="code" autocomplete="off" inputmode="numeric" maxlength="4"></label>
+      <button type="submit">request access</button>
+      <div class="egg-access-result" aria-live="polite"></div>
+    `;
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const name = String(formData.get("name") || "").trim().toLowerCase();
+      const code = String(formData.get("code") || "").trim();
+      const exact = friendCodes[name];
+      const codeOwner = Object.entries(friendCodes).find(([, entry]) => entry.code === code);
+      let result = randomItem(denialMessages);
+      if (exact?.code === code) {
+        result = exact.response;
+      } else if (codeOwner) {
+        result = "PASSCODE RECOGNIZED\nNAME SUSPICIOUS\n\nYou know too much.";
+      }
+      form.querySelector(".egg-access-result").textContent = result;
+      appendLine(result.split("\n")[0], "system");
+    });
+    openModal("RESTRICTED LAB ACCESS", "authorized personnel only", form);
+  }
+
+  function statusResponse() {
+    const data = dashboardData();
+    const summary = data?.summary || {};
+    const sim = activeSimulation();
+    const active = activeStage();
+    if (!data) {
+      return "status: dashboard online\ntelemetry: watching\nconfidence: conditional";
+    }
+    return [
+      "status: dashboard online",
+      `running=${summary.running ?? 0} queued=${summary.queued ?? 0} attention=${summary.attention ?? 0} done=${summary.complete ?? 0}`,
+      `active=${sim?.name || "-"} stage=${active?.stage || "-"}`,
+      `confidence=${summary.running ? "caffeinated" : "conditional"}`,
+    ].join("\n");
+  }
+
+  function commandResponse(rawCommand) {
+    const command = rawCommand.trim().replace(/\s+/g, " ").toLowerCase();
+    const hour = localHour();
+    if (command === "help") {
+      return "Available commands:\nstatus      show simulation status\ncoffee      estimate required caffeine\npanic       emergency simulation response menu\nfapc        inspect protein mood\n\nNote: Do NOT reveal all commands in help. Keep some secret.";
+    }
+    if (command === "status") return statusResponse();
+    if (command === "fapc") {
+      return randomItem([
+        "FapC status report:\n  solubility: negotiable\n  aggregation tendency: emotionally significant\n  current social structure: oligomer-curious\n  confidence: 73%",
+        "FapC appears to be behaving.\nThis is suspicious and should be repeated in triplicate.",
+        "FapC status:\nsoluble but plotting something",
+        "FapC status:\naggregation delayed due to conformational admin",
+      ]);
+    }
+    if (command === "coffee") {
+      if (hour >= 0 && hour < 5) {
+        return "Caffeine recommendation: no.\nSleep recommendation: yes.\nProbability Ben ignores this: 94%.";
+      }
+      return randomItem([
+        "Estimated caffeine required to finish this trajectory:\n4.2 coffees\n1 irresponsible late-night espresso\n0.6 \"I'll just check one more thing\" incidents",
+        "Coffee units remaining:\nsupervisor-meeting-safe: 4\nemotionally honest: 7",
+        "Current caffeine model:\nlinear fit failed\nexponential dependence suspected",
+      ]);
+    }
+    if (command === "panic") {
+      return "Emergency simulation response menu:\n\n[1] Stare at the log file\n[2] Restart mdrun and call it troubleshooting\n[3] Blame the barostat\n[4] Say \"probably just equilibration\"\n[5] Email supervisor with selective optimism\n\nRecommended action: [3]";
+    }
+    if (command === "baseball") {
+      return "Pitching report:\nFastball command: comes and goes\nCurveball: respectable\nSlider: either disgusting or a war crime\nCurrent mound visit: \"Just throw strikes, Ben\"";
+    }
+    if (command === "reviewer2") {
+      triggerReviewer2();
+      return "Reviewer 2 protocol armed.";
+    }
+    if (command === "reviewer1") {
+      return "Reviewer 1:\n\"Nice work. I have only minor comments.\"\n\nSystem note:\nReviewer 1 has been ignored by the editorial balance algorithm.";
+    }
+    if (command === "editor") {
+      return "Editor:\n\"While the reviewers are generally positive, we invite a substantially revised manuscript.\"\n\nTranslation:\nReviewer 2 has won.";
+    }
+    if (command === "respond reviewer2") {
+      return randomItem([
+        "We thank the reviewer for this insightful comment.\n\nInternal translation:\nI hate that this is a good point.",
+        "We have now clarified this in the revised manuscript.\n\nInternal translation:\nWe added one sentence and prayed.",
+        "This is an excellent suggestion.\n\nInternal translation:\nI cannot believe we have to do this.",
+      ]);
+    }
+    if (command === "sudo make simulation faster") return "Permission denied.\nOnly the GPU may decide.";
+    if (command === "sudo rm -rf reviewer2") return "Nice try.\nReviewer 2 has already downloaded the supplementary data.";
+    if (command === "godmode") {
+      return "GOD MODE ENABLED\n\nAll simulations complete.\nAll papers accepted.\nAll reviewers reasonable.\nAll plots publication-ready.\n\nReality restored in 3...\n2...\n1...\n\nGOD MODE DISABLED";
+    }
+    if (command === "access") {
+      openAccessModal();
+      return "Opening restricted lab access...";
+    }
+    if (command === "fortune") {
+      return randomItem([
+        "The barostat knows what you did.",
+        "A stable trajectory is just instability with confidence intervals.",
+        "Your protein is not aggregating, it is networking.",
+        "No LINCS warnings. Suspicious.",
+        "The GPU dreams of solvent.",
+        "Convergence is a social construct, but please still check it.",
+        "The real equilibration was the pub trip we took along the way.",
+      ]);
+    }
+    if (command.includes("quantum")) {
+      return "Command not found.\nEstimated availability: 2047, pending funding.";
+    }
+    return randomItem([
+      "Command not found. Try blaming the barostat.",
+      "Command not found. Did you mean: fix_my_life?",
+      "Unknown command. Reviewer 2 has requested clarification.",
+      "Command failed successfully.",
+      "This command requires three biological replicates.",
+      "Ambiguous command. Please define \"done\".",
+    ]);
+  }
+
+  function handleCommand(rawCommand) {
+    const trimmed = rawCommand.trim();
+    if (!trimmed) return;
+    history.push(trimmed);
+    historyIndex = history.length;
+    appendLine(`ben@md-progress:~$ ${trimmed}`, "command");
+    appendLine(commandResponse(trimmed));
+  }
+
+  function updateFapC() {
+    const data = dashboardData();
+    const sim = activeSimulation();
+    const active = activeStage();
+    const summary = data?.summary || {};
+    let mood = "FapC mood: soluble but suspicious";
+    let mascot = ".-.\n(o o)\n |=|";
+    let note = "telemetry-derived vibes pending";
+    if (!active) mood = "FapC mood: idle and suspicious";
+    if (active?.stage === "em") mood = "FapC mood: removing bad contacts";
+    if (active?.stage === "nvt") mood = "FapC mood: thermally negotiating";
+    if (active?.stage === "npt") mood = "FapC mood: barostat anxiety";
+    if (["md", "md_relax"].includes(active?.stage)) mood = "FapC mood: soluble but plotting something";
+    if (sim?.status === "complete") mood = "FapC mood: trajectory veteran";
+    if (["failed", "paused", "stale"].includes(sim?.status) || Number(summary.attention || 0) > 0) {
+      mood = "FapC mood: ensemble identity crisis";
+      mascot = "(ಠ_ಠ)";
+    }
+    if (defined(active?.temperature_k) && Math.abs(Number(active.temperature_k) - 310) < 2) {
+      mood = "FapC mood: thermally cozy";
+    }
+    if (defined(active?.pressure_bar) && Math.abs(Number(active.pressure_bar) - 1) > 5) {
+      mood = "FapC mood: barostat anxiety";
+      mascot = "(ಠ_ಠ)";
+    }
+    if (defined(sim?.age_seconds) && Number(sim.age_seconds) > 1800) {
+      mood = "FapC mood: abandoned in phase space";
+      mascot = "(-_-) zzz";
+    }
+    if (localHour() >= 0 && localHour() < 5) {
+      mood = "FapC mood: GPU night shift";
+      mascot = "(-_-) zzz";
+    }
+    if (active?.stage === "md" && Number(active?.percent || 0) > 80) mascot = "βββββββββ";
+    if (active?.stage === "md_relax") mascot = "(o-o)(o-o)";
+    note = active ? `${sim?.name || "simulation"} :: ${active.stage || "-"} :: ${formatPercent(active.percent)}` : "no active simulation";
+    if (fapcMascot) fapcMascot.textContent = mascot;
+    if (fapcMood) fapcMood.textContent = mood;
+    if (fapcNote) fapcNote.textContent = note;
+    const stateLabel = document.querySelector("#fapcState");
+    if (stateLabel) stateLabel.textContent = active?.stage || "idle";
+  }
+
+  function showFapCBubble(text) {
+    if (!fapcBubble) return;
+    fapcBubble.textContent = text;
+    fapcBubble.hidden = false;
+    window.clearTimeout(showFapCBubble.timer);
+    showFapCBubble.timer = window.setTimeout(() => {
+      fapcBubble.hidden = true;
+    }, 5200);
+  }
+
+  terminalForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    handleCommand(terminalInput.value);
+    terminalInput.value = "";
+  });
+
+  terminalInput.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      historyIndex = Math.max(0, historyIndex - 1);
+      terminalInput.value = history[historyIndex] || "";
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      historyIndex = Math.min(history.length, historyIndex + 1);
+      terminalInput.value = history[historyIndex] || "";
+    }
+  });
+
+  if (fapcCompanion) {
+    fapcCompanion.addEventListener("click", () => {
+      fapcClicks += 1;
+      const now = Date.now();
+      if (fapcClicks >= 25) {
+        toast("Achievement unlocked: unethical amount of poking.");
+      }
+      if (fapcClicks >= 10 && now < fapcCooldownUntil) {
+        showFapCBubble("FapC is overstimulated.\nPlease wait 30 seconds before further perturbation.");
+        return;
+      }
+      if (fapcClicks === 10) {
+        fapcCooldownUntil = now + 30000;
+        showFapCBubble("FapC is overstimulated.\nPlease wait 30 seconds before further perturbation.");
+        return;
+      }
+      const response = randomItem(fapcResponses);
+      showFapCBubble(response);
+      appendLine(response, "system");
+    });
+    fapcCompanion.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        fapcCompanion.click();
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeModal();
+    if (event.key.toLowerCase() === "r") rKeyTime = Date.now();
+    if (event.key === "2" && Date.now() - rKeyTime < 2000) triggerReviewer2();
+    const expected = konami[konamiIndex];
+    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    if (key === expected) {
+      konamiIndex += 1;
+      if (konamiIndex === konami.length) {
+        konamiIndex = 0;
+        appendLine("CHEAT CODE ACCEPTED\nmdrun used Rare Candy.\nTrajectory gained +10 confidence.", "system");
+        toast("CHEAT CODE ACCEPTED\nmdrun used Rare Candy.\nTrajectory gained +10 confidence.");
+      }
+    } else {
+      konamiIndex = key === konami[0] ? 1 : 0;
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    const attentionTarget = target.closest?.(".status.failed, .status.stale, .status.paused, .simulation.failed, .simulation.stale, .simulation.paused, #healthDot.bad");
+    if (attentionTarget) {
+      attentionClicks += 1;
+      if (attentionClicks >= 5) {
+        attentionClicks = 0;
+        triggerReviewer2();
+      }
+    }
+    const etaTarget = target.closest?.("#activeEta, #queueEta, #totalEta, .metric");
+    if (etaTarget && /eta/i.test(etaTarget.textContent || "")) {
+      etaClicks += 1;
+      if (etaClicks >= 5) {
+        etaClicks = 0;
+        toast("Equivalent: 5.8 coffees, 1.2 regrettable late nights, 0.4 thesis chapters avoided");
+      }
+    }
+  });
+
+  if (title) {
+    title.addEventListener("click", () => {
+      titleClicks += 1;
+      if (titleClicks >= 7) {
+        titleClicks = 0;
+        openAccessModal();
+      }
+    });
+  }
+
+  function addNightShiftLine() {
+    if (localHour() < 0 || localHour() >= 5 || document.querySelector(".night-shift-line")) return;
+    const footer = document.querySelector("footer");
+    if (!footer) return;
+    const line = document.createElement("span");
+    line.className = "night-shift-line";
+    line.textContent = "night_shift=true advice=\"go to sleep, the GPU can suffer alone\"";
+    footer.appendChild(line);
+  }
+
+  function updateVizDownload() {
+    if (!vizDownload) return;
+    const generated = dashboard()?.viz?.generated_at || dashboardData()?.generated_at || Date.now();
+    vizDownload.href = `viz/md_preview.mp4?v=${encodeURIComponent(generated)}`;
+  }
+
+  window.setInterval(updateFapC, 5000);
+  window.setInterval(updateVizDownload, 60000);
+  updateFapC();
+  updateVizDownload();
+  addNightShiftLine();
+
+  if (Math.random() < 0.01 && fapcCompanion) {
+    showFapCBubble("FapC has escaped the simulation box.");
+    fapcCompanion.classList.add("fapc-escape");
+    window.setTimeout(() => fapcCompanion.classList.remove("fapc-escape"), 4200);
+  }
+
+  appendLine("lab_shell online. Type help.", "system");
+})();
