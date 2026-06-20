@@ -1,22 +1,70 @@
 {
-  "generated_at": "2026-06-20T20:15:55+02:00",
+  "generated_at": "2026-06-20T20:22:08+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/WT",
-  "start_ns": 39.47,
-  "end_ns": 41.47,
-  "window_ns": 2.0,
-  "dt_ps": 100.0,
-  "fps": 12,
+  "start_ns": 40.41,
+  "end_ns": 41.91,
+  "window_ns": 1.5,
+  "dt_ps": 10.0,
+  "fps": 30,
   "width": 960,
   "height": 540,
   "center_group": "Protein",
   "fit_group": "Protein",
-  "output_group": "Protein",
-  "frames": 21,
-  "atoms_per_frame": 571,
-  "mp4_bytes": 236856,
-  "mp4_mb": 0.226,
-  "thumbnail_bytes": 118754,
-  "duration_seconds": 1.75,
+  "output_group": "non-Water",
+  "background": "white",
+  "patches": [
+    {
+      "label": "SXXK 337-343",
+      "residues": "337-343",
+      "rgb": [
+        210,
+        65,
+        65
+      ]
+    },
+    {
+      "label": "SXN 397-401",
+      "residues": "397-401",
+      "rgb": [
+        40,
+        135,
+        215
+      ]
+    },
+    {
+      "label": "KTG/553 548-554",
+      "residues": "548-554",
+      "rgb": [
+        230,
+        155,
+        35
+      ]
+    },
+    {
+      "label": "Loop 555-573",
+      "residues": "555-573",
+      "rgb": [
+        120,
+        75,
+        190
+      ]
+    },
+    {
+      "label": "600/601 594-606",
+      "residues": "594-606",
+      "rgb": [
+        0,
+        150,
+        130
+      ]
+    }
+  ],
+  "frames": 151,
+  "atoms_per_frame": 617,
+  "mp4_bytes": 1171770,
+  "mp4_mb": 1.117,
+  "thumbnail_bytes": 86815,
+  "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
     "mp4": "viz/md_preview.mp4",
@@ -24,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 48.854,
-    "fit_seconds": 9.994,
-    "render_seconds": 0.712,
-    "encode_seconds": 0.484
+    "extract_seconds": 98.761,
+    "fit_seconds": 80.779,
+    "render_seconds": 6.477,
+    "encode_seconds": 0.994
   }
 }
