@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-20T20:22:08+02:00",
+  "generated_at": "2026-06-20T20:30:54+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/WT",
-  "start_ns": 40.41,
-  "end_ns": 41.91,
+  "start_ns": 41.9,
+  "end_ns": 43.4,
   "window_ns": 1.5,
   "dt_ps": 10.0,
   "fps": 30,
@@ -61,9 +61,9 @@
   ],
   "frames": 151,
   "atoms_per_frame": 617,
-  "mp4_bytes": 1171770,
-  "mp4_mb": 1.117,
-  "thumbnail_bytes": 86815,
+  "mp4_bytes": 1199640,
+  "mp4_mb": 1.144,
+  "thumbnail_bytes": 91299,
   "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 98.761,
-    "fit_seconds": 80.779,
-    "render_seconds": 6.477,
-    "encode_seconds": 0.994
+    "extract_seconds": 87.009,
+    "fit_seconds": 72.385,
+    "render_seconds": 5.428,
+    "encode_seconds": 0.961
   }
 }
