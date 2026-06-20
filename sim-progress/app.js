@@ -723,6 +723,7 @@ function terminalLog(data, history) {
   }
   if (data?.summary) {
     lines.push(`queue simulations=${data.summary.simulations} running=${data.summary.running} queued=${data.summary.queued ?? 0} attention=${data.summary.attention} complete=${data.summary.complete}`);
+    lines.push(`eta rate=${defined(data.summary.estimated_rate_ns_per_day) ? `${formatRate(data.summary.estimated_rate_ns_per_day)} ns/day` : "-"} source="${data.summary.estimated_rate_source || "-"}" queue="${formatEstimatedFinish(data.summary.queue_eta_at, data.summary.queue_eta_seconds)}" total="${formatEstimatedFinish(data.summary.total_eta_at, data.summary.total_eta_seconds)}"`);
   }
   return lines.join("\n");
 }
@@ -826,6 +827,7 @@ function simulationCard(simulation) {
   const temperature = defined(active.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   const pressure = defined(active.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
   const process = active.process_id ? `${active.process_id}${active.process_alive ? " live" : ""}` : "-";
+  const eta = formatEstimatedFinish(simulation.estimated_finish_at || active.estimated_finish_at, simulation.estimated_duration_seconds ?? active.estimated_duration_seconds);
 
   return `
     <article class="simulation">
@@ -843,7 +845,7 @@ function simulationCard(simulation) {
             <div class="detail"><span class="detail-label">stage</span><strong>${active.label || "-"}</strong></div>
             <div class="detail"><span class="detail-label">time</span><strong>${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}</strong></div>
             <div class="detail"><span class="detail-label">step</span><strong>${formatNumber(active.current_step)} / ${formatNumber(active.total_steps)}</strong></div>
-            <div class="detail"><span class="detail-label">eta</span><strong>${formatStageEta(active)}</strong></div>
+            <div class="detail"><span class="detail-label">eta</span><strong>${eta !== "-" ? eta : formatStageEta(active)}</strong></div>
             <div class="detail"><span class="detail-label">speed</span><strong>${performance}</strong></div>
             <div class="detail"><span class="detail-label">updated</span><strong>${formatAge(simulation.age_seconds)}</strong></div>
             <div class="detail"><span class="detail-label">temp</span><strong>${temperature}</strong></div>
@@ -991,6 +993,8 @@ function renderJobLedger(simulations, emptyText) {
     const liveSpeed = active.wall_speed_ns_per_day ?? active.performance_ns_per_day;
     const speed = defined(liveSpeed) ? `${formatRate(liveSpeed)} ns/day` : "-";
     const ns = defined(active.current_ns) || defined(active.total_ns) ? `${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "-";
+    const eta = formatEstimatedFinish(simulation.estimated_finish_at || active.estimated_finish_at, simulation.estimated_duration_seconds ?? active.estimated_duration_seconds);
+    const start = formatEstimatedFinish(simulation.estimated_start_at || active.estimated_start_at, null);
     const queueInput = active.input_path ? `<span>input=${active.input_path}</span>` : "";
     const detail = active.status_detail ? ` :: ${active.status_detail}` : "";
     return `
@@ -1001,7 +1005,8 @@ function renderJobLedger(simulations, emptyText) {
           ${queueInput}
         </div>
         <code>${statusLabel(simulation.status)} :: ${active.stage || "-"} :: ${formatPercent(active.percent)}${detail}</code>
-        <code>${ns} :: ${speed} :: files=${formatBytes(files)} :: age=${formatAge(simulation.age_seconds)}</code>
+        <code>${ns} :: ${speed} :: eta=${eta} :: start=${start}</code>
+        <code>files=${formatBytes(files)} :: age=${formatAge(simulation.age_seconds)} :: ${simulation.estimated_eta_source || active.estimated_eta_source || "observed"}</code>
         <code>${stageStatusSummary(simulation)}</code>
       </div>
     `;
@@ -1018,7 +1023,8 @@ function renderRunEtaSummary(data) {
   const rows = [
     ["rate basis", defined(summary.estimated_rate_ns_per_day) ? `${formatRate(summary.estimated_rate_ns_per_day)} ns/day (${summary.estimated_rate_source || "estimated"})` : "-"],
     ["active + queued", formatEstimatedFinish(summary.total_eta_at, summary.total_eta_seconds)],
-    ["queued only", formatEstimatedFinish(summary.queue_eta_at, summary.queue_eta_seconds)],
+    ["queued complete", formatEstimatedFinish(summary.queue_eta_at, summary.queue_eta_seconds)],
+    ["queued work", formatDuration(summary.queue_work_seconds)],
     ["estimated runs", summary.estimated_runs_count ?? "-"],
   ];
   const queued = (data?.simulations || []).filter((simulation) => simulation.status === "queued");
@@ -1051,6 +1057,9 @@ function renderStats(data, history) {
     ["simulations", data.summary?.simulations ?? "-"],
     ["running", data.summary?.running ?? 0],
     ["queued", data.summary?.queued ?? 0],
+    ["queue eta", formatEstimatedFinish(data.summary?.queue_eta_at, data.summary?.queue_eta_seconds)],
+    ["entire run eta", formatEstimatedFinish(data.summary?.total_eta_at, data.summary?.total_eta_seconds)],
+    ["eta rate", defined(data.summary?.estimated_rate_ns_per_day) ? `${formatRate(data.summary.estimated_rate_ns_per_day)} ns/day (${data.summary.estimated_rate_source || "estimated"})` : "-"],
     ["complete", data.summary?.complete ?? 0],
     ["active run", simulation?.name || "-"],
     ["stage", active?.label || "-"],
@@ -1332,6 +1341,8 @@ function render() {
   $("#completeCount").textContent = String(data.summary?.complete ?? 0);
   $("#activePercent").textContent = formatPercent(data.summary?.active_percent ?? active?.percent);
   $("#activeEta").textContent = active ? formatStageEta(active, latestActive.eta_seconds_from_rate) : formatEta(data.summary?.active_eta_at, data.summary?.active_eta);
+  $("#queueEta").textContent = formatDuration(data.summary?.queue_eta_seconds);
+  $("#totalEta").textContent = formatDuration(data.summary?.total_eta_seconds);
   $("#speedStat").textContent = defined(active?.wall_speed_ns_per_day) ? formatRate(active.wall_speed_ns_per_day) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-";
   $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
@@ -1353,6 +1364,7 @@ function render() {
   $("#observablesTable").innerHTML = renderObservables(data);
   $("#runtimeTable").innerHTML = renderRuntime(data);
   $("#mdpTable").innerHTML = renderMdp(data);
+  $("#runEtaSummary").innerHTML = renderRunEtaSummary(data);
   $("#queuedJobs").innerHTML = renderQueuedJobs(data);
   $("#completeJobs").innerHTML = renderCompleteJobs(data);
   $("#phaseRibbon").innerHTML = renderPhaseRibbon(data);
