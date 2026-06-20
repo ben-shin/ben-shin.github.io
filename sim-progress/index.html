@@ -44,6 +44,8 @@
         <article class="metric"><span>ACTIVE</span><strong id="activePercent">-</strong><em>current stage progress</em></article>
         <article class="metric"><span>SPEED</span><strong id="speedStat">-</strong><em>ns/day from log</em></article>
         <article class="metric"><span>ETA</span><strong id="activeEta">-</strong><em>GROMACS estimate</em></article>
+        <article class="metric"><span>QUEUE ETA</span><strong id="queueEta">-</strong><em>queued simulations</em></article>
+        <article class="metric"><span>TOTAL ETA</span><strong id="totalEta">-</strong><em>active + queued</em></article>
         <article class="metric"><span>TEMP</span><strong id="tempStat">-</strong><em>latest K</em></article>
         <article class="metric"><span>PRESSURE</span><strong id="pressureStat">-</strong><em>latest bar</em></article>
         <article class="metric"><span>STEP</span><strong id="stepStat">-</strong><em>current / total</em></article>
@@ -54,6 +56,11 @@
         <article class="metric"><span>MD</span><strong id="mdPercent">-</strong><em>production</em></article>
         <article class="metric"><span>WALL RATE</span><strong id="wallRateStat">-</strong><em>from 5s samples</em></article>
         <article class="metric"><span>ARTIFACTS</span><strong id="artifactStat">-</strong><em>latest files</em></article>
+      </section>
+
+      <section class="plot-card wide" aria-label="Run ETA">
+        <div class="panel-title"><span>run_eta.json</span><b>active + queued estimate</b></div>
+        <div id="runEtaSummary" class="stats-table"></div>
       </section>
 
       <section class="plot-card wide" aria-label="Phase progress">

@@ -307,13 +307,21 @@ function formatEstimatedEtaFromRate(seconds) {
   return duration === "-" ? "-" : `${duration} @ current wall rate`;
 }
 
+function formatEstimatedFinish(finishAt, seconds) {
+  const duration = formatDuration(seconds);
+  const finish = finishAt ? `${formatDateTime(finishAt)} ${viewerTimeZoneLabel(finishAt)}` : null;
+  if (duration !== "-" && finish) return `${duration} -> ${finish}`;
+  if (duration !== "-") return duration;
+  return finish || "-";
+}
+
 function formatStageEta(stage, fallbackSeconds = null) {
   if (!stage) return "-";
   if (stage.status === "complete") return "complete";
   if (stage.status === "paused") return `paused @ ${formatPercent(stage.percent)}`;
   if (stage.status === "stale") return `stale @ ${formatPercent(stage.percent)}`;
   if (stage.status === "failed") return "failed";
-  if (stage.status === "queued") return "queued";
+  if (stage.status === "queued") return formatEstimatedFinish(stage.estimated_finish_at, stage.estimated_duration_seconds) || "queued";
   if (cleanEta(stage.eta_text) !== "-" || stage.eta_at) return formatEta(stage.eta_at, stage.eta_text);
   return formatEstimatedEtaFromRate(fallbackSeconds);
 }
@@ -1003,6 +1011,27 @@ function renderJobLedger(simulations, emptyText) {
 function renderQueuedJobs(data) {
   const queued = (data?.simulations || []).filter((simulation) => simulation.status === "queued");
   return renderJobLedger(queued, "No queued jobs detected from stage input/log scan.");
+}
+
+function renderRunEtaSummary(data) {
+  const summary = data?.summary || {};
+  const rows = [
+    ["rate basis", defined(summary.estimated_rate_ns_per_day) ? `${formatRate(summary.estimated_rate_ns_per_day)} ns/day (${summary.estimated_rate_source || "estimated"})` : "-"],
+    ["active + queued", formatEstimatedFinish(summary.total_eta_at, summary.total_eta_seconds)],
+    ["queued only", formatEstimatedFinish(summary.queue_eta_at, summary.queue_eta_seconds)],
+    ["estimated runs", summary.estimated_runs_count ?? "-"],
+  ];
+  const queued = (data?.simulations || []).filter((simulation) => simulation.status === "queued");
+  queued.forEach((simulation) => {
+    const detail = [
+      `start ${formatEstimatedFinish(simulation.estimated_start_at, null)}`,
+      `duration ${formatDuration(simulation.estimated_duration_seconds)}`,
+      `finish ${formatEstimatedFinish(simulation.estimated_finish_at, null)}`,
+      simulation.estimated_eta_source || "estimate",
+    ].join(" :: ");
+    rows.push([simulation.name, detail]);
+  });
+  return renderKeyValueRows(rows);
 }
 
 function renderCompleteJobs(data) {
