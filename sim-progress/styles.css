@@ -212,7 +212,7 @@ main {
 
 .terminal-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
   gap: 1px;
   margin-top: 8px;
   border: 1px solid var(--line);
@@ -220,27 +220,33 @@ main {
 }
 
 .metric {
-  min-height: 64px;
-  padding: 8px;
+  min-height: 50px;
+  padding: 6px 8px;
   border: 0;
 }
 
 .metric strong {
   display: block;
-  margin-top: 5px;
+  min-width: 0;
+  margin-top: 3px;
   color: var(--green);
-  font-size: 0.96rem;
+  font-size: 0.82rem;
   font-weight: 700;
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric em {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   color: var(--muted);
   font-size: 0.62rem;
   font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .console-panel,
@@ -827,19 +833,19 @@ footer {
   }
 
   .terminal-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr));
     gap: 1px;
     margin-top: 4px;
   }
 
   .metric {
-    min-height: 40px;
-    padding: 4px;
+    min-height: 30px;
+    padding: 3px 4px;
   }
 
   .metric strong {
     margin-top: 2px;
-    font-size: 0.62rem;
+    font-size: 0.58rem;
     line-height: 1.05;
   }
 
@@ -1071,7 +1077,7 @@ footer {
 
 @media (min-width: 660px) {
   .health-pill { display: inline-flex; }
-  .terminal-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .terminal-grid { grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); }
   .plot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .plot-grid .wide { grid-column: 1 / -1; }
   .phase-ribbon { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1090,14 +1096,14 @@ footer {
 
 @media (min-width: 980px) {
   main { padding-top: 10px; }
-  .terminal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .terminal-grid { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); }
   .stats-and-runs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .plot svg { height: 190px; }
   .plot { min-height: 190px; }
 }
 
 @media (min-width: 1260px) {
-  .terminal-grid { grid-template-columns: repeat(14, minmax(0, 1fr)); }
+  .terminal-grid { grid-template-columns: repeat(auto-fit, minmax(138px, 1fr)); }
 }
 
 .easter-grid {
