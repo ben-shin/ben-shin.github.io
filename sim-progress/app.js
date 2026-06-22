@@ -518,6 +518,13 @@ function snapshotToTelemetry(data) {
       total_energy_kj_mol: active.total_energy_kj_mol ?? null,
       conserved_energy_kj_mol: active.conserved_energy_kj_mol ?? null,
       constraint_rmsd: active.constraint_rmsd ?? null,
+      rg_nm: active.rg_nm ?? null,
+      rg_time_ns: active.rg_time_ns ?? null,
+      rg_samples: active.rg_samples ?? null,
+      rg_histogram: active.rg_histogram || null,
+      rg_stats: active.rg_stats || null,
+      rg_updated_at: active.rg_updated_at || null,
+      rg_source: active.rg_source || null,
       observables: active.observables || {},
       observable_labels: active.observable_labels || {},
       process_id: active.process_id ?? null,
@@ -811,6 +818,55 @@ function makeLineChart({ samples, series, yMin = null, yMax = null, suffix = "",
   `;
 }
 
+function makeHistogramChart(histogram, { label = "population", suffix = "", decimals = 2 } = {}) {
+  const bins = Array.isArray(histogram?.bins) ? histogram.bins.map(Number) : [];
+  const counts = Array.isArray(histogram?.counts) ? histogram.counts.map(Number) : [];
+  const rows = bins.map((bin, index) => ({ bin, count: counts[index] || 0 })).filter((row) => Number.isFinite(row.bin));
+  const maxCount = Math.max(0, ...rows.map((row) => row.count));
+  if (!rows.length || maxCount <= 0) {
+    return `<div class="empty-plot">No Rg population data yet.<br>Waiting for the next gmx gyrate sample.</div>`;
+  }
+
+  const width = 720;
+  const height = 230;
+  const margin = { top: 16, right: 18, bottom: 34, left: 44 };
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+  const minX = Math.min(...rows.map((row) => row.bin));
+  const maxX = Math.max(...rows.map((row) => row.bin));
+  const barGap = 2;
+  const barW = Math.max(1, innerW / rows.length - barGap);
+  const x = (index) => margin.left + index * (innerW / rows.length) + barGap / 2;
+  const y = (count) => margin.top + (1 - count / maxCount) * innerH;
+  const bars = rows.map((row, index) => {
+    const yy = y(row.count);
+    const h = height - margin.bottom - yy;
+    return `<rect class="hist-bar" x="${x(index).toFixed(2)}" y="${yy.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}"><title>${row.bin.toFixed(decimals)}${suffix}: ${row.count}</title></rect>`;
+  }).join("");
+  const yTicks = [0, 0.5, 1].map((fraction) => Math.round(maxCount * fraction));
+  const grid = yTicks.map((value) => {
+    const yy = y(value);
+    return `<line class="grid-line" x1="${margin.left}" y1="${yy.toFixed(1)}" x2="${width - margin.right}" y2="${yy.toFixed(1)}"></line><text class="tick-label" x="8" y="${(yy + 3).toFixed(1)}">${value}</text>`;
+  }).join("");
+  const xLabels = [
+    { value: minX, anchor: "start", x: margin.left },
+    { value: (minX + maxX) / 2, anchor: "middle", x: margin.left + innerW / 2 },
+    { value: maxX, anchor: "end", x: width - margin.right },
+  ].map((tick) => `<text class="tick-label" x="${tick.x.toFixed(1)}" y="${height - 9}" text-anchor="${tick.anchor}">${tick.value.toFixed(decimals)}${suffix}</text>`).join("");
+  const samples = histogram.samples ?? counts.reduce((sum, value) => sum + value, 0);
+
+  return `
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${label}">
+      ${grid}
+      <line class="axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
+      <line class="axis" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
+      ${xLabels}
+      ${bars}
+    </svg>
+    <div class="legend"><span>${label}: ${samples} frames</span></div>
+  `;
+}
+
 function stageCell(stageName, stage) {
   if (!stage) {
     return `<div class="stage unknown"><strong>${stageName.toUpperCase()}</strong><span>-</span></div>`;
@@ -1080,6 +1136,8 @@ function renderStats(data, history) {
     ["T error", defined(active?.temperature_k) ? `${(Number(active.temperature_k) - TARGET_TEMP_K).toFixed(2)} K` : "-"],
     ["pressure", defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(2)} bar` : "-"],
     ["P error", defined(active?.pressure_bar) ? `${(Number(active.pressure_bar) - TARGET_PRESSURE_BAR).toFixed(2)} bar` : "-"],
+    ["Rg", defined(active?.rg_nm) ? `${Number(active.rg_nm).toFixed(3)} nm` : "-"],
+    ["Rg frames", defined(active?.rg_samples) ? formatNumber(active.rg_samples) : "-"],
     ["potential", defined(active?.potential_kj_mol) ? `${Number(active.potential_kj_mol).toExponential(4)} kJ/mol` : "-"],
     ["kinetic", defined(active?.kinetic_energy_kj_mol) ? `${Number(active.kinetic_energy_kj_mol).toExponential(4)} kJ/mol` : "-"],
     ["conserved", defined(active?.conserved_energy_kj_mol) ? `${Number(active.conserved_energy_kj_mol).toExponential(4)} kJ/mol` : "-"],
@@ -1287,6 +1345,17 @@ function renderPlots(history) {
     suffix: "",
     decimals: 3,
   });
+  $("#plotRg").innerHTML = makeLineChart({
+    samples: activeSamples,
+    series: [
+      { label: "Rg", value: (sample) => sample.active?.rg_nm },
+      { label: "mean", value: (sample) => sample.active?.rg_stats?.mean_nm },
+    ],
+    suffix: "",
+    decimals: 3,
+  });
+  const latestRg = [...activeSamples].reverse().find((sample) => sample.active?.rg_histogram)?.active;
+  $("#plotRgHistogram").innerHTML = makeHistogramChart(latestRg?.rg_histogram, { label: "Rg", suffix: " nm", decimals: 3 });
   $("#plotArtifacts").innerHTML = makeLineChart({
     samples: plotHistory,
     series: [
@@ -1346,6 +1415,7 @@ function render() {
   $("#speedStat").textContent = defined(active?.wall_speed_ns_per_day) ? formatRate(active.wall_speed_ns_per_day) : defined(latestActive.wall_speed_ns_per_day) ? formatRate(latestActive.wall_speed_ns_per_day) : defined(active?.performance_ns_per_day) ? Number(active.performance_ns_per_day).toFixed(2) : "-";
   $("#tempStat").textContent = defined(active?.temperature_k) ? `${Number(active.temperature_k).toFixed(1)} K` : "-";
   $("#pressureStat").textContent = defined(active?.pressure_bar) ? `${Number(active.pressure_bar).toFixed(1)} bar` : "-";
+  $("#rgStat").textContent = defined(active?.rg_nm) ? `${Number(active.rg_nm).toFixed(3)} nm` : "-";
   $("#stepStat").textContent = `${formatNumber(active?.current_step)} / ${formatNumber(active?.total_steps)}`;
   $("#samplesCount").textContent = String(history.length);
   $("#emPercent").textContent = formatPercent(stagePercent(simulation, "em"));

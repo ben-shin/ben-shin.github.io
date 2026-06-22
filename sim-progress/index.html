@@ -48,6 +48,7 @@
         <article class="metric"><span>TOTAL ETA</span><strong id="totalEta">-</strong><em>active + queued</em></article>
         <article class="metric"><span>TEMP</span><strong id="tempStat">-</strong><em>latest K</em></article>
         <article class="metric"><span>PRESSURE</span><strong id="pressureStat">-</strong><em>latest bar</em></article>
+        <article class="metric"><span>RG</span><strong id="rgStat">-</strong><em>Protein radius</em></article>
         <article class="metric"><span>STEP</span><strong id="stepStat">-</strong><em>current / total</em></article>
         <article class="metric"><span>SAMPLES</span><strong id="samplesCount">-</strong><em>history points</em></article>
         <article class="metric"><span>EM</span><strong id="emPercent">-</strong><em>minimization</em></article>
@@ -165,6 +166,14 @@
         <article class="plot-card">
           <div class="panel-title"><span>constraint_rmsd.xvg</span><b>LINCS</b></div>
           <div id="plotConstraint" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>rg_over_time.xvg</span><b>nm</b></div>
+          <div id="plotRg" class="plot"></div>
+        </article>
+        <article class="plot-card">
+          <div class="panel-title"><span>rg_population.hist</span><b>current trajectory</b></div>
+          <div id="plotRgHistogram" class="plot"></div>
         </article>
         <article class="plot-card">
           <div class="panel-title"><span>artifact_growth.tsv</span><b>MB</b></div>

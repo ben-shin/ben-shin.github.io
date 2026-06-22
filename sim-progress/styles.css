@@ -374,6 +374,11 @@ main {
 .chart-line.fifth { stroke: var(--blue); }
 .chart-line.sixth { stroke: var(--red); }
 .chart-area { fill: rgba(124, 255, 155, 0.035); }
+.hist-bar {
+  fill: rgba(124, 255, 155, 0.62);
+  stroke: rgba(180, 255, 205, 0.28);
+  stroke-width: 1;
+}
 .point { fill: var(--green); stroke: #000; stroke-width: 1; }
 .tick-label,
 .value-label {
