@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T05:18:28+02:00",
+  "generated_at": "2026-06-23T05:51:36+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/T553K",
   "start_ns": 248.25,
   "end_ns": 249.75,
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 1.558,
-    "fit_seconds": 1.229,
-    "render_seconds": 2.525,
-    "encode_seconds": 0.255
+    "extract_seconds": 1.565,
+    "fit_seconds": 1.245,
+    "render_seconds": 2.502,
+    "encode_seconds": 0.252
   }
 }
