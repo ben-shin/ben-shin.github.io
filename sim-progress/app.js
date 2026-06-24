@@ -23,6 +23,7 @@ const LEGACY_TIMESTAMP_TIME_ZONE = "Europe/London";
 const STATIC_HISTORY_REFRESH_MS = 5 * 60 * 1000;
 const LIVE_HISTORY_REFRESH_MS = 30 * 1000;
 const VIZ_METADATA_REFRESH_MS = 60 * 1000;
+const GITHUB_PAGES_RAW_BASE = "https://raw.githubusercontent.com/ben-shin/ben-shin.github.io/main/sim-progress";
 const TARGET_TEMP_K = 310;
 const TARGET_PRESSURE_BAR = 1;
 const MONTH_INDEX = {
@@ -377,18 +378,32 @@ function isStaticHost() {
   return window.location.protocol === "file:" || host.endsWith("github.io") || (host === "localhost" && !window.location.port);
 }
 
+function usesRawSnapshots() {
+  return window.location.hostname === "ben-shin.github.io";
+}
+
+function rawSnapshotUrl(path) {
+  return `${GITHUB_PAGES_RAW_BASE}/${path}`;
+}
+
 function statusEndpoint() {
   if (window.location.protocol === "file:") return "../out/status.json";
+  if (usesRawSnapshots()) return rawSnapshotUrl("status.json");
   return isStaticHost() ? "status.json" : "/api/status";
 }
 
 function historyEndpoint() {
   if (window.location.protocol === "file:") return "../out/history.json";
+  if (usesRawSnapshots()) return rawSnapshotUrl("history.json");
   return isStaticHost() ? "history.json" : "/api/history";
 }
 
 function vizMetadataEndpoint() {
-  return "viz/md_preview.json";
+  return usesRawSnapshots() ? rawSnapshotUrl("viz/md_preview.json") : "viz/md_preview.json";
+}
+
+function vizAssetUrl(path) {
+  return usesRawSnapshots() ? rawSnapshotUrl(path) : path;
 }
 
 function cacheBust(url) {
@@ -1168,8 +1183,8 @@ function renderViz() {
   stateLabel.textContent = `${formatClock(viz.generated_at)} ${viewerTimeZoneLabel(viz.generated_at)} :: ${formatBytes(viz.mp4_bytes)}`;
   if (viz.generated_at !== state.vizGeneratedAt) {
     state.vizGeneratedAt = viz.generated_at;
-    video.poster = cacheBust("viz/md_preview.png");
-    video.src = cacheBust("viz/md_preview.mp4");
+    video.poster = cacheBust(vizAssetUrl("viz/md_preview.png"));
+    video.src = cacheBust(vizAssetUrl("viz/md_preview.mp4"));
     video.load();
   }
   meta.textContent = [
@@ -1426,7 +1441,7 @@ function render() {
   $("#artifactStat").textContent = formatBytes(totalFileBytes(simulation?.files));
   $("#clockState").textContent = `${formatClock(new Date().toISOString())} ${viewerTimeZoneLabel(new Date())}`;
   $("#generatedAt").textContent = `${formatClock(data.generated_at)} ${viewerTimeZoneLabel(data.generated_at)}`;
-  $("#commitState").textContent = isStaticHost() ? "status.json + history.json" : "live /api/status";
+  $("#commitState").textContent = usesRawSnapshots() ? "raw snapshots" : (isStaticHost() ? "status.json + history.json" : "live /api/status");
   $("#lastRefresh").textContent = `refreshed ${formatClock(data.generated_at)} ${viewerTimeZoneLabel(data.generated_at)} :: browser ${formatClock(new Date().toISOString())} ${viewerTimeZoneLabel(new Date())}`;
   $("#nsStat").textContent = simulation && active ? `${simulation.name} :: ${formatNs(active.current_ns)} / ${formatNs(active.total_ns)}` : "no active run";
   $("#terminalLines").textContent = terminalLog(data, history);
@@ -1989,7 +2004,7 @@ state.timer = setInterval(refresh, state.refreshMs);
   function updateVizDownload() {
     if (!vizDownload) return;
     const generated = dashboard()?.viz?.generated_at || dashboardData()?.generated_at || Date.now();
-    vizDownload.href = `viz/md_preview.mp4?v=${encodeURIComponent(generated)}`;
+    vizDownload.href = cacheBust(vizAssetUrl("viz/md_preview.mp4"));
   }
 
   window.setInterval(updateFapC, 5000);
