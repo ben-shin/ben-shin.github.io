@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T10:30:41+02:00",
+  "generated_at": "2026-06-26T11:00:59+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/CEF/T553K",
   "start_ns": 248.25,
   "end_ns": 249.75,
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 1.804,
-    "fit_seconds": 1.399,
-    "render_seconds": 3.146,
-    "encode_seconds": 0.322
+    "extract_seconds": 1.778,
+    "fit_seconds": 1.402,
+    "render_seconds": 3.041,
+    "encode_seconds": 0.292
   }
 }
