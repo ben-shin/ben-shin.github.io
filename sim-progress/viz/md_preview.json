@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-27T07:07:09+02:00",
+  "generated_at": "2026-06-27T07:38:05+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/G600D",
   "start_ns": 73.105882,
   "end_ns": 74.605882,
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 2.82,
-    "fit_seconds": 1.838,
-    "render_seconds": 3.069,
-    "encode_seconds": 1.047
+    "extract_seconds": 2.352,
+    "fit_seconds": 1.833,
+    "render_seconds": 2.98,
+    "encode_seconds": 0.29
   }
 }
