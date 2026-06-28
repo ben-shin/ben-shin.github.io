@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-28T10:40:21+02:00",
+  "generated_at": "2026-06-28T11:23:58+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/G600D",
-  "start_ns": 180.08,
-  "end_ns": 181.58,
+  "start_ns": 185.76,
+  "end_ns": 187.26,
   "window_ns": 1.5,
   "dt_ps": 10.0,
   "fps": 30,
@@ -61,9 +61,9 @@
   ],
   "frames": 151,
   "atoms_per_frame": 728,
-  "mp4_bytes": 1397417,
-  "mp4_mb": 1.333,
-  "thumbnail_bytes": 89122,
+  "mp4_bytes": 1428312,
+  "mp4_mb": 1.362,
+  "thumbnail_bytes": 91970,
   "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 151.101,
-    "fit_seconds": 100.274,
-    "render_seconds": 106.923,
-    "encode_seconds": 10.282
+    "extract_seconds": 135.33,
+    "fit_seconds": 99.082,
+    "render_seconds": 99.266,
+    "encode_seconds": 10.551
   }
 }
