@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-30T01:43:03+02:00",
-  "source_root": "/home/benshin/gromacs_run/PBP/holo/AMX/G600D",
-  "start_ns": 245.52,
-  "end_ns": 247.02,
+  "generated_at": "2026-06-30T02:25:12+02:00",
+  "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/P601L",
+  "start_ns": 0.52,
+  "end_ns": 2.02,
   "window_ns": 1.5,
   "dt_ps": 10.0,
   "fps": 30,
@@ -60,10 +60,10 @@
     }
   ],
   "frames": 151,
-  "atoms_per_frame": 729,
-  "mp4_bytes": 1562522,
-  "mp4_mb": 1.49,
-  "thumbnail_bytes": 103711,
+  "atoms_per_frame": 728,
+  "mp4_bytes": 1450709,
+  "mp4_mb": 1.384,
+  "thumbnail_bytes": 96576,
   "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 77.771,
-    "fit_seconds": 85.972,
-    "render_seconds": 94.193,
-    "encode_seconds": 13.726
+    "extract_seconds": 109.813,
+    "fit_seconds": 100.835,
+    "render_seconds": 94.537,
+    "encode_seconds": 11.049
   }
 }
