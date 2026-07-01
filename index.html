@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ben Shin</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Tahoma, Geneva, Verdana, sans-serif;
@@ -76,6 +81,7 @@
     .socials a {
       text-decoration: none;
       color: #0077cc;
+      overflow-wrap: anywhere;
     }
 
     .socials a:hover {
@@ -86,15 +92,18 @@
       width: 18px;
       height: 18px;
       margin-right: 6px;
+      flex-shrink: 0;
     }
 
     h1 {
       font-size: 2rem;
+      margin-top: 0;
       margin-bottom: 1rem;
     }
 
     h2 {
       font-size: 1.5rem;
+      margin-top: 0;
       margin-bottom: 1rem;
     }
 
@@ -122,13 +131,14 @@
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-      font-family: Tahoma, Geneva, Verdana, monospace;
+      font-family: Tahoma, Geneva, Verdana, sans-serif;
       margin-bottom: 2rem;
     }
 
     .edu-line {
       display: flex;
       justify-content: space-between;
+      gap: 1rem;
     }
 
     .edu-line .degree {
@@ -151,6 +161,36 @@
     p, li {
       color: #000;
       margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        flex-direction: column;
+        gap: 2rem;
+        padding: 2rem 1.25rem;
+      }
+
+      .left-column,
+      .right-column {
+        width: 100%;
+      }
+
+      .edu-line {
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+
+      .edu-line .institution {
+        text-align: left;
+      }
+
+      .supervisor {
+        padding-left: 0;
+      }
+
+      nav ul {
+        padding: 1rem 1.25rem;
+      }
     }
   </style>
 </head>
@@ -198,14 +238,30 @@
 
     <!-- Right Column -->
     <section class="right-column">
-      <h2>Biochemistry PhD Student</h2>
+      <h2>Biochemistry PhD Candidate</h2>
 
       <h3>About Me</h3>
       <p>
-        I am a PhD student in Biochemistry and Biophysics, specializing in amyloid aggregation. My research combines biophysical techniques and computational methods to investigate the dynamics of intrinsically disordered proteins (IDPs) and the molecular events that drive their aggregation and misfolding. I am particularly interested in advancing my expertise in NMR spectroscopy and continuing to study IDPs and intrinsically disordered regions (IDRs) to better understand protein disorder and dynamics. I am currently seeking a postdoctoral position and welcome inquiries from potential employers. Outside of the lab, I enjoy playing baseball, brewing beer, and learning to code.
+        I am a PhD candidate in Biochemistry and Biophysics at Imperial College London,
+        working on the molecular mechanisms of functional amyloid aggregation. My research
+        combines protein biochemistry, NMR spectroscopy, fluorescence methods, and
+        computational analysis to study intrinsically disordered proteins and the early
+        events that control amyloid self-assembly. I am particularly interested in protein
+        disorder, biomolecular dynamics, and the use of integrated experimental and
+        computational approaches to understand aggregation-prone systems.
       </p>
 
-      <p><strong>Technical Skills:</strong> Protein Expression and Purification, Molecular Biology, NMR, Fluorescence Microscopy (FCS, TIRF), Coding (Matlab, Python)</p>
+      <p>
+        I am currently seeking postdoctoral opportunities in protein biophysics, NMR
+        spectroscopy, intrinsically disordered proteins, amyloid biology, and related areas.
+        Outside the lab, I play baseball and enjoy developing my coding skills.
+      </p>
+
+      <p>
+        <strong>Technical Skills:</strong> Protein expression and purification, molecular
+        biology, NMR spectroscopy, fluorescence assays and microscopy, FCS, TIRF, ThT
+        aggregation assays, Python, MATLAB, Bash/Linux, and molecular dynamics analysis.
+      </p>
 
       <h3>Education</h3>
       <div class="education">
@@ -226,32 +282,36 @@
           <span class="institution">Imperial College London (2018 – 2021)</span>
         </div>
         <div class="supervisor">Final Year Project Supervisor: Dr. James Murray</div>
-
-        <div class="edu-line">
-          <span class="degree">High School Diploma</span>
-          <span class="institution">Shanghai American School (2014 – 2018)</span>
-        </div>
       </div>
 
       <h3>Experience</h3>
       <div class="education">
         <div class="edu-line">
           <span class="degree">Scientific Advisor</span>
-          <span class="institution">reGELerate, Imperial College iGEM team (2026 – Present)</span>
+          <span class="institution">reGELerate, Imperial College iGEM Team (2026 – Present)</span>
         </div>
-        <div class="supervisor">Advising wet-lab and computational workflows for recombinant amyloid production, fibril characterization, and the design of amyloid-reinforced hydrogels.</div>
-        
+        <div class="supervisor">
+          Advising wet-lab and computational workflows for recombinant amyloid production,
+          fibril characterization, and the design of amyloid-reinforced hydrogels.
+        </div>
+
         <div class="edu-line">
           <span class="degree">Graduate Teaching Assistant</span>
           <span class="institution">Imperial College London (2022 – Present)</span>
         </div>
-        <div class="supervisor">Assisting in life sciences courses, supporting lab practicals and marking coursework.</div>
+        <div class="supervisor">
+          Supporting undergraduate life sciences teaching through laboratory demonstrating,
+          coursework marking, and small-group academic support.
+        </div>
 
         <div class="edu-line">
           <span class="degree">Coach and Manager</span>
           <span class="institution">Imperial College Baseball Club (2018 – Present)</span>
         </div>
-        <div class="supervisor">Coaching and managing the university baseball team. Specializing in pitching coaching and pitch design.</div>
+        <div class="supervisor">
+          Coaching and managing the university baseball team, with a focus on pitching
+          instruction, player development, and team organization.
+        </div>
       </div>
 
     </section>
