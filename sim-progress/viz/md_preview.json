@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-04T14:19:37+02:00",
+  "generated_at": "2026-07-04T14:57:57+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMX/DM",
-  "start_ns": 1.75,
-  "end_ns": 3.25,
+  "start_ns": 7.24,
+  "end_ns": 8.74,
   "window_ns": 1.5,
   "dt_ps": 10.0,
   "fps": 30,
@@ -61,9 +61,9 @@
   ],
   "frames": 151,
   "atoms_per_frame": 729,
-  "mp4_bytes": 1533539,
-  "mp4_mb": 1.462,
-  "thumbnail_bytes": 101603,
+  "mp4_bytes": 1464867,
+  "mp4_mb": 1.397,
+  "thumbnail_bytes": 100841,
   "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 83.818,
-    "fit_seconds": 87.203,
-    "render_seconds": 104.339,
-    "encode_seconds": 32.283
+    "extract_seconds": 100.697,
+    "fit_seconds": 94.696,
+    "render_seconds": 103.427,
+    "encode_seconds": 29.87
   }
 }
