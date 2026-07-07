@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pitch Lab | Baseball Arsenal Builder</title>
+  <meta name="description" content="A static GitHub Pages baseball pitch arsenal builder with strike zone logging, pitch recommendations, heatmaps, and CSV export." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="app-shell" id="top">
+    <header class="hero">
+      <nav class="topbar" aria-label="Main navigation">
+        <a href="#top" class="brand" aria-label="Pitch Lab home">
+          <span class="brand-mark">PL</span>
+          <span class="brand-copy">
+            <strong>Pitch Lab</strong>
+            <small>Arsenal builder + zone tracker</small>
+          </span>
+        </a>
+        <div class="top-actions">
+          <button class="ghost-button" id="themeToggle" type="button">Toggle theme</button>
+          <button class="ghost-button" id="saveSnapshot" type="button">Save session</button>
+          <button class="primary-button" id="exportCsv" type="button">Export CSV</button>
+        </div>
+      </nav>
+
+      <section class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Bullpen tool · pitch-calling aid · amateur analyst dashboard</p>
+          <h1>Build your arsenal, tap the zone, and see what your pitches are actually doing.</h1>
+          <p class="hero-text">
+            Log pitch endpoints with your mouse or phone, compare intent versus execution, track count leverage, and get pitch suggestions based on your own arsenal profile.
+          </p>
+          <div class="hero-actions">
+            <a href="#zoneSection" class="primary-button">Start tracking</a>
+            <a href="#arsenalSection" class="secondary-button">Edit arsenal</a>
+          </div>
+        </div>
+        <aside class="scoreboard-card" aria-label="Session summary">
+          <div class="scoreboard-head">
+            <span>Session</span>
+            <strong id="sessionStatus">Live</strong>
+          </div>
+          <div class="scoreboard-grid">
+            <div><span>Pitches</span><strong id="metricPitches">0</strong></div>
+            <div><span>Strike %</span><strong id="metricStrikePct">—</strong></div>
+            <div><span>Zone %</span><strong id="metricZonePct">—</strong></div>
+            <div><span>Waste</span><strong id="metricWastePct">—</strong></div>
+          </div>
+          <div class="mini-bars" id="pitchMixBars"></div>
+        </aside>
+      </section>
+    </header>
+
+    <section class="panel dense-panel">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Setup</p>
+          <h2>Game context</h2>
+        </div>
+        <button class="ghost-button" id="resetContext" type="button">Reset context</button>
+      </div>
+      <div class="control-grid context-grid">
+        <label>
+          Pitcher handedness
+          <select id="pitcherHand">
+            <option value="RHP" selected>RHP</option>
+            <option value="LHP">LHP</option>
+          </select>
+        </label>
+        <label>
+          Batter handedness
+          <select id="batterHand">
+            <option value="RHB" selected>RHB</option>
+            <option value="LHB">LHB</option>
+            <option value="SHB">Switch</option>
+          </select>
+        </label>
+        <label>
+          Count
+          <select id="countSelect">
+            <option>0-0</option><option>0-1</option><option>0-2</option>
+            <option>1-0</option><option>1-1</option><option>1-2</option>
+            <option>2-0</option><option>2-1</option><option>2-2</option>
+            <option>3-0</option><option>3-1</option><option>3-2</option>
+          </select>
+        </label>
+        <label>
+          Situation intent
+          <select id="intentSelect">
+            <option value="getAhead">Get ahead</option>
+            <option value="stealStrike">Steal a strike</option>
+            <option value="putAway">Put away</option>
+            <option value="weakContact">Weak contact</option>
+            <option value="doublePlay">Double play</option>
+            <option value="pitchAround">Pitch around</option>
+          </select>
+        </label>
+        <label>
+          Hitter tendency
+          <select id="hitterTendency">
+            <option value="balanced">Balanced</option>
+            <option value="aggressive">Aggressive early</option>
+            <option value="takes">Takes borderline pitches</option>
+            <option value="chases">Chases offspeed</option>
+            <option value="pull">Pull-heavy</option>
+            <option value="oppo">Opposite-field</option>
+          </select>
+        </label>
+        <label>
+          Risk mode
+          <select id="riskMode">
+            <option value="balanced">Balanced</option>
+            <option value="attack">Attack zone</option>
+            <option value="chase">Chase/expand</option>
+            <option value="safe">Avoid free passes</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel zone-panel" id="zoneSection">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Interactive tracker</p>
+            <h2>Tap where the pitch ended up</h2>
+          </div>
+          <div class="zone-actions">
+            <button class="ghost-button" id="clearLast" type="button">Undo</button>
+            <button class="ghost-button danger" id="clearSession" type="button">Clear session</button>
+          </div>
+        </div>
+
+        <div class="logger-grid">
+          <aside class="logger-controls">
+            <label>
+              Pitch thrown
+              <select id="pitchSelect"></select>
+            </label>
+            <label>
+              Intended target
+              <select id="targetSelect">
+                <option value="auto">Auto by recommendation</option>
+                <option value="up-in">Up/in</option>
+                <option value="up-away">Up/away</option>
+                <option value="middle-in">Middle/in</option>
+                <option value="middle-away">Middle/away</option>
+                <option value="down-in">Down/in</option>
+                <option value="down-away">Down/away</option>
+                <option value="below-zone">Below zone</option>
+                <option value="waste">Waste pitch</option>
+              </select>
+            </label>
+            <label>
+              Result
+              <select id="resultSelect">
+                <option value="calledStrike">Called strike</option>
+                <option value="swingingStrike">Swinging strike</option>
+                <option value="foul">Foul</option>
+                <option value="ball">Ball</option>
+                <option value="inPlayOut">In play out</option>
+                <option value="single">Single</option>
+                <option value="double">Double</option>
+                <option value="triple">Triple</option>
+                <option value="homeRun">Home run</option>
+                <option value="hbp">HBP</option>
+              </select>
+            </label>
+            <label>
+              Contact quality
+              <select id="contactSelect">
+                <option value="none">No contact</option>
+                <option value="weak">Weak</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+                <option value="barrel">Barrel</option>
+              </select>
+            </label>
+            <label>
+              Notes
+              <input id="pitchNote" type="text" placeholder="e.g., backed up slider, yanked glove side" />
+            </label>
+            <button class="primary-button full" id="manualBall" type="button">Log obvious ball</button>
+            <button class="secondary-button full" id="randomBullpen" type="button">Simulate 15-pitch bullpen</button>
+          </aside>
+
+          <div class="zone-wrap">
+            <div class="zone-meta">
+              <span id="zoneInstruction">Tap/click inside the plot to log endpoint.</span>
+              <span id="lastLocation">No pitches logged yet.</span>
+            </div>
+            <div class="strike-zone-stage" id="strikeStage" role="button" tabindex="0" aria-label="Strike zone. Tap where the pitch ended up.">
+              <div class="zone-label label-up">UP</div>
+              <div class="zone-label label-down">DOWN</div>
+              <div class="zone-label label-arm">ARM SIDE</div>
+              <div class="zone-label label-glove">GLOVE SIDE</div>
+              <canvas id="zoneCanvas" width="760" height="760"></canvas>
+            </div>
+            <div class="legend-row" id="pitchLegend"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel recommender-panel">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">Decision aid</p>
+            <h2>Pitch recommendation</h2>
+          </div>
+          <button class="ghost-button" id="refreshRec" type="button">Refresh</button>
+        </div>
+        <div class="recommendation-card" id="recommendationCard"></div>
+        <div class="scouting-card">
+          <h3>Smartest critic check</h3>
+          <p id="criticText">Log pitches to expose whether your intended plan matches your actual command.</p>
+        </div>
+        <div class="tag-cloud" id="arsenalTags"></div>
+      </aside>
+    </section>
+
+    <section class="panel" id="arsenalSection">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Pitch design</p>
+          <h2>Your arsenal</h2>
+        </div>
+        <div class="top-actions wrap-actions">
+          <button class="secondary-button" id="addPitch" type="button">Add pitch</button>
+          <button class="ghost-button" id="loadBenPreset" type="button">Load RHP starter preset</button>
+        </div>
+      </div>
+      <div class="arsenal-grid" id="arsenalGrid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Analytics</p>
+          <h2>Session dashboard</h2>
+        </div>
+        <div class="top-actions wrap-actions">
+          <label class="file-button">
+            Import CSV
+            <input id="importCsv" type="file" accept=".csv,text/csv" />
+          </label>
+          <button class="ghost-button" id="copySummary" type="button">Copy report</button>
+        </div>
+      </div>
+      <div class="analytics-grid">
+        <div class="chart-card">
+          <h3>Pitch mix</h3>
+          <canvas id="mixCanvas" width="520" height="300"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Location profile</h3>
+          <canvas id="locationCanvas" width="520" height="300"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Count leverage</h3>
+          <canvas id="countCanvas" width="520" height="300"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Outcome quality</h3>
+          <canvas id="outcomeCanvas" width="520" height="300"></canvas>
+        </div>
+      </div>
+      <div class="insight-grid" id="insightGrid"></div>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Raw log</p>
+          <h2>Pitch-by-pitch table</h2>
+        </div>
+        <span class="muted" id="tableCount">0 rows</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Pitch</th>
+              <th>Count</th>
+              <th>Batter</th>
+              <th>Target</th>
+              <th>Location</th>
+              <th>Zone</th>
+              <th>Result</th>
+              <th>Contact</th>
+              <th>Miss</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody id="pitchTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel playbook-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Playbook</p>
+          <h2>What this tool is trying to help you answer</h2>
+        </div>
+      </div>
+      <div class="playbook-grid">
+        <article>
+          <h3>1. Can you throw your best pitch for a strike?</h3>
+          <p>Whiff stuff only plays if you can land it early enough to avoid predictable fastball counts.</p>
+        </article>
+        <article>
+          <h3>2. Is your miss pattern useful?</h3>
+          <p>A slider that misses low glove side is very different from one that backs up middle-middle.</p>
+        </article>
+        <article>
+          <h3>3. Do you have a count-specific plan?</h3>
+          <p>The app weights pitch suggestions differently in get-ahead, neutral, leverage, and three-ball counts.</p>
+        </article>
+        <article>
+          <h3>4. Are you tunneling or just mixing randomly?</h3>
+          <p>The recommendation engine rewards pitch pairs with speed separation and complementary movement.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="pitchDialog">
+    <form method="dialog" class="dialog-card" id="pitchForm">
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">Edit pitch</p>
+          <h2 id="dialogTitle">Pitch profile</h2>
+        </div>
+        <button class="ghost-button" value="cancel" type="submit">Close</button>
+      </div>
+      <input type="hidden" id="editPitchId" />
+      <div class="control-grid">
+        <label>Name<input id="editPitchName" required maxlength="24" /></label>
+        <label>Type
+          <select id="editPitchType">
+            <option>Fastball</option><option>Breaking</option><option>Offspeed</option><option>Specialty</option>
+          </select>
+        </label>
+        <label>Velocity mph<input id="editVelocity" type="number" min="30" max="110" step="0.1" /></label>
+        <label>Confidence 1-10<input id="editConfidence" type="number" min="1" max="10" step="1" /></label>
+        <label>Command 1-10<input id="editCommand" type="number" min="1" max="10" step="1" /></label>
+        <label>Whiff 1-10<input id="editWhiff" type="number" min="1" max="10" step="1" /></label>
+        <label>Groundball 1-10<input id="editGround" type="number" min="1" max="10" step="1" /></label>
+        <label>Arm-side run / horizontal movement<input id="editHorizontal" type="number" min="-30" max="30" step="0.5" /></label>
+        <label>Ride/drop / vertical movement<input id="editVertical" type="number" min="-30" max="30" step="0.5" /></label>
+        <label>Best target
+          <select id="editBestTarget">
+            <option value="up-in">Up/in</option><option value="up-away">Up/away</option>
+            <option value="middle-in">Middle/in</option><option value="middle-away">Middle/away</option>
+            <option value="down-in">Down/in</option><option value="down-away">Down/away</option>
+            <option value="below-zone">Below zone</option><option value="waste">Waste pitch</option>
+          </select>
+        </label>
+        <label>Color<input id="editColor" type="color" /></label>
+      </div>
+      <label class="full-label">Notes<textarea id="editPitchNotes" rows="3" placeholder="What does this pitch do? What is the common miss?"></textarea></label>
+      <div class="dialog-actions">
+        <button class="ghost-button danger" id="deletePitch" type="button">Delete</button>
+        <button class="primary-button" id="savePitch" value="default" type="submit">Save pitch</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
