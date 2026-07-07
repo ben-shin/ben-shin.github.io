@@ -41,7 +41,7 @@
 
         <aside class="panel mini-model" aria-label="System overview">
           <h2>The states</h2>
-          <p>Track soluble monomer, transient oligomer, and fibril populations over a conceptual 12 hour experiment.</p>
+          <p>Track soluble monomer, transient oligomer, protofibril, and mature fibril populations over a conceptual 36 hour experiment.</p>
           <div class="state-row">
             <span class="state-token monomer"></span>
             <div><strong>Soluble ensemble</strong><p>Mostly NMR-visible, FCS-fast species.</p></div>
@@ -51,8 +51,12 @@
             <div><strong>Oligomer pool</strong><p>Transient assemblies, often more invisible by NMR and slower by FCS.</p></div>
           </div>
           <div class="state-row">
+            <span class="state-token protofibril"></span>
+            <div><strong>Protofibril pool</strong><p>Short ordered assemblies with partial ThT/EM character.</p></div>
+          </div>
+          <div class="state-row">
             <span class="state-token fibril"></span>
-            <div><strong>Fibril mass</strong><p>ThT-positive ordered material and EM-visible structures.</p></div>
+            <div><strong>Mature fibril mass</strong><p>Strong ThT-positive ordered material and EM-visible structures.</p></div>
           </div>
         </aside>
       </section>
@@ -172,6 +176,13 @@
                 <span class="status" id="statusBadge">Lag phase</span>
               </div>
               <canvas id="particleCanvas" aria-label="Conceptual particle animation"></canvas>
+              <div class="species-legend" aria-label="Species color legend">
+                <span><i class="s-monomer"></i>Monomer</span>
+                <span><i class="s-oligomer"></i>Oligomer</span>
+                <span><i class="s-protofibril"></i>Protofibril</span>
+                <span><i class="s-fibril"></i>Fibril</span>
+                <span><i class="s-offpath"></i>Off-path</span>
+              </div>
             </div>
 
             <div class="panel dashboard-card">
@@ -184,7 +195,7 @@
               <div class="stats" aria-label="Conceptual statistics">
                 <div class="stat"><span class="num" id="lagStat">3.4 h</span><span class="cap">Lag time</span></div>
                 <div class="stat"><span class="num" id="halfStat">5.9 h</span><span class="cap">Half-time</span></div>
-                <div class="stat"><span class="num" id="endpointStat">75%</span><span class="cap">Fibril endpoint</span></div>
+                <div class="stat"><span class="num" id="endpointStat">75%</span><span class="cap">ThT plateau</span></div>
                 <div class="stat"><span class="num" id="burdenStat">Medium</span><span class="cap">Oligomer burden</span></div>
                 <div class="stat"><span class="num" id="riskStat">Moderate</span><span class="cap">Misread risk</span></div>
                 <div class="stat"><span class="num" id="dominantStat">Nucleation</span><span class="cap">Dominant bottleneck</span></div>
@@ -200,6 +211,11 @@
                   <span>Oligomer</span>
                   <div class="bar"><span id="barO"></span></div>
                   <strong id="oFinal">8%</strong>
+                </div>
+                <div class="bar-row">
+                  <span>Protofibril</span>
+                  <div class="bar"><span id="barP"></span></div>
+                  <strong id="pFinal">0%</strong>
                 </div>
                 <div class="bar-row">
                   <span>Fibril</span>
@@ -220,7 +236,7 @@
               <div>
                 <p class="eyebrow">Kinetic traces</p>
                 <h2 id="curve-title">Same system, different instruments</h2>
-                <p>ThT mainly follows ordered fibril signal, FCS sees slow diffusing species, NMR loses soluble signal, and EM has a detection threshold.</p>
+                <p>ThT mainly follows ordered protofibril/fibril signal, FCS sees slow diffusing species, NMR loses soluble signal, and EM has a detection threshold.</p>
               </div>
               <span class="pill" id="timePill">0.0 h</span>
             </div>

@@ -125,6 +125,8 @@ p { color: var(--muted); margin: 0; }
 .state-token::before, .state-token::after { content: ""; position: absolute; }
 .state-token.monomer::before { width: 12px; height: 12px; border-radius: 50%; background: var(--accent-2); left: 14px; top: 15px; box-shadow: 18px 12px 0 var(--accent-2), 8px 26px 0 var(--accent-2); }
 .state-token.oligomer::before { width: 15px; height: 15px; border-radius: 50%; background: var(--rose); left: 12px; top: 13px; box-shadow: 15px 3px 0 var(--rose), 8px 20px 0 var(--rose), 25px 20px 0 var(--rose); }
+.state-token.protofibril::before { left: 10px; right: 10px; top: 20px; height: 8px; border-radius: 99px; transform: rotate(14deg); background: repeating-linear-gradient(90deg, var(--blue), var(--blue) 6px, #a9b8ff 6px, #a9b8ff 12px); }
+.state-token.protofibril::after { left: 16px; right: 14px; top: 31px; height: 7px; border-radius: 99px; transform: rotate(14deg); background: repeating-linear-gradient(90deg, var(--blue), var(--blue) 6px, #a9b8ff 6px, #a9b8ff 12px); opacity: 0.7; }
 .state-token.fibril::before { left: 9px; right: 9px; top: 24px; height: 10px; border-radius: 99px; transform: rotate(-11deg); background: repeating-linear-gradient(90deg, var(--accent), var(--accent) 7px, #efd48f 7px, #efd48f 14px); }
 .state-row strong { display: block; margin-bottom: 3px; }
 .state-row p { font-size: 0.92rem; }
@@ -168,9 +170,20 @@ canvas { display: block; width: 100%; border-radius: 18px; background: radial-gr
 .bar span { display: block; height: 100%; width: 0%; border-radius: 999px; transition: width 250ms ease; }
 #barM { background: var(--accent-2); }
 #barO { background: var(--rose); }
+#barP { background: var(--blue); }
 #barF { background: var(--accent); }
 #barX { background: var(--purple); }
 .bar-row strong { color: var(--ink); text-align: right; }
+
+.species-legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 12px; color: var(--muted); font-size: 0.9rem; }
+.species-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.species-legend i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 12px currentColor; }
+.s-monomer { background: var(--accent-2); color: var(--accent-2); }
+.s-oligomer { background: var(--rose); color: var(--rose); }
+.s-protofibril { background: var(--blue); color: var(--blue); }
+.s-fibril { background: var(--accent); color: var(--accent); }
+.s-offpath { background: var(--purple); color: var(--purple); }
+
 .legend { display: flex; flex-wrap: wrap; gap: 12px 18px; margin-top: 14px; color: var(--muted); font-size: 0.92rem; }
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
 .legend i { width: 18px; height: 4px; border-radius: 99px; display: inline-block; }

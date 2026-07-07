@@ -15,7 +15,7 @@ const readouts = {
   concValue: $('concValue'), fapAValue: $('fapAValue'), fapEValue: $('fapEValue'), seedValue: $('seedValue'), fragValue: $('fragValue'), offValue: $('offValue'),
   lagStat: $('lagStat'), halfStat: $('halfStat'), endpointStat: $('endpointStat'), burdenStat: $('burdenStat'), riskStat: $('riskStat'), dominantStat: $('dominantStat'),
   statusBadge: $('statusBadge'), scenarioText: $('scenarioText'), timePill: $('timePill'),
-  mFinal: $('mFinal'), oFinal: $('oFinal'), fFinal: $('fFinal'), xFinal: $('xFinal'), barM: $('barM'), barO: $('barO'), barF: $('barF'), barX: $('barX'),
+  mFinal: $('mFinal'), oFinal: $('oFinal'), pFinal: $('pFinal'), fFinal: $('fFinal'), xFinal: $('xFinal'), barM: $('barM'), barO: $('barO'), barP: $('barP'), barF: $('barF'), barX: $('barX'),
   thtTitle: $('thtTitle'), thtText: $('thtText'), fcsTitle: $('fcsTitle'), fcsText: $('fcsText'), nmrTitle: $('nmrTitle'), nmrText: $('nmrText'), emTitle: $('emTitle'), emText: $('emText'),
   equationText: $('equationText'), mechanismText: $('mechanismText'), criticText: $('criticText'), experimentText: $('experimentText'), copyStatus: $('copyStatus')
 };
@@ -25,8 +25,19 @@ const curveCanvas = $('curveCanvas');
 const pctx = particleCanvas.getContext('2d');
 const cctx = curveCanvas.getContext('2d');
 
+const MAX_TIME = 36;
+const ANIMATION_MS = 6500;
+const COLORS = {
+  monomer: '#76c7c0',
+  oligomer: '#e98c77',
+  protofibril: '#8fa7ff',
+  fibril: '#d7b56d',
+  offpath: '#c89cff'
+};
+
 let particles = [];
 let cachedSimulation = null;
+let cachedSettings = null;
 let animationFrame = null;
 let animationStart = null;
 let paused = false;
@@ -39,8 +50,12 @@ function clamp(value, min, max) {
 function fitCanvas(canvas, ctx) {
   const ratio = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
-  canvas.width = Math.round(rect.width * ratio);
-  canvas.height = Math.round(rect.height * ratio);
+  const width = Math.round(rect.width * ratio);
+  const height = Math.round(rect.height * ratio);
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   return rect;
 }
@@ -66,66 +81,82 @@ function getRates(s) {
   const frag = s.frag / 100;
   const off = s.off / 100;
 
-  const primary = 0.010 * Math.pow(c, 2.15) * (1 + 1.9 * nucleator) / (1 + 1.6 * inhibitor);
-  const reversible = 0.028 * (1 + 0.55 * inhibitor);
-  const mature = 0.030 * (1 + 1.45 * nucleator + 0.9 * seed) / (1 + 2.4 * inhibitor + 1.15 * off);
-  const elongate = 0.020 * c * (1 + 2.2 * seed + 0.85 * nucleator) / (1 + 0.85 * inhibitor);
-  const fragment = 0.018 * frag * (1 + 0.75 * c) / (1 + 0.35 * inhibitor);
+  const primary = 0.034 * Math.pow(c, 2.15) * (1 + 1.9 * nucleator) / (1 + 1.6 * inhibitor);
+  const reversible = 0.022 * (1 + 0.45 * inhibitor);
+  const mature = 0.125 * (1 + 1.35 * nucleator + 0.75 * seed) / (1 + 2.2 * inhibitor + 1.05 * off);
+  const convert = 0.230 * (1 + 1.55 * nucleator + 1.2 * seed) / (1 + 1.7 * inhibitor + 0.8 * off);
+  const elongate = 0.120 * c * (1 + 2.4 * seed + 0.85 * nucleator) / (1 + 0.75 * inhibitor);
+  const protoElongate = 0.070 * c * (1 + 1.25 * nucleator + 0.7 * seed) / (1 + 1.0 * inhibitor + 0.55 * off);
+  const fragment = 0.065 * frag * (1 + 0.75 * c) / (1 + 0.35 * inhibitor);
   const trap = 0.006 + 0.035 * off * (1 + 0.55 * inhibitor);
   const rescue = 0.004 / (1 + 0.9 * off + 0.45 * inhibitor);
 
-  return { primary, reversible, mature, elongate, fragment, trap, rescue };
+  return { primary, reversible, mature, convert, elongate, protoElongate, fragment, trap, rescue };
 }
 
 function simulate(s) {
   const rates = getRates(s);
-  const dt = 0.03;
-  const maxT = 12;
-  const steps = Math.round(maxT / dt);
+  const dt = 0.04;
+  const steps = Math.round(MAX_TIME / dt);
   const seedFraction = s.seed / 100;
 
   let M = clamp(1 - seedFraction, 0.01, 1);
   let O = 0;
+  let P = 0;
   let F = clamp(seedFraction, 0, 0.38);
   let X = 0;
 
   const data = [];
   let oligomerArea = 0;
   let maxO = 0;
+  let plateauStart = null;
+  let lastTht = 0;
 
   for (let i = 0; i <= steps; i++) {
     const t = i * dt;
-    const tht = clamp((F / 0.9) * 100, 0, 100);
-    const fcs = clamp((0.2 * M + 0.95 * O + 1.1 * F + 0.65 * X) * 100, 0, 100);
+    const thtRaw = (F * 1.0 + P * 0.45) / 0.86;
+    const tht = clamp(thtRaw * 100, 0, 100);
+    const fcs = clamp((0.16 * M + 0.95 * O + 1.12 * P + 1.05 * F + 0.65 * X) * 100, 0, 100);
     const nmr = clamp(M * 100, 0, 100);
-    const em = F > 0.12 ? clamp(((F - 0.12) / 0.72) * 100, 0, 100) : 0;
-    data.push({ t, M, O, F, X, tht, fcs, nmr, em });
+    const em = (F + P * 0.35) > 0.12 ? clamp((((F + P * 0.35) - 0.12) / 0.72) * 100, 0, 100) : 0;
+    data.push({ t, M, O, P, F, X, tht, fcs, nmr, em });
+
+    if (i > 8) {
+      const slope = Math.abs((tht - lastTht) / dt);
+      if (plateauStart === null && tht > 65 && slope < 0.55) plateauStart = t;
+    }
+    lastTht = tht;
 
     oligomerArea += O * dt;
     maxO = Math.max(maxO, O);
 
     const nucleation = rates.primary * Math.pow(Math.max(M, 0), 2.05);
     const dissociation = rates.reversible * O;
-    const maturation = rates.mature * O * (0.35 + M);
+    const protoFormation = rates.mature * O * (0.35 + M);
+    const fibrilConversion = rates.convert * P * (0.22 + F + seedFraction * 1.4);
+    const protoElongation = rates.protoElongate * M * P * (0.65 + P);
     const elongation = rates.elongate * M * F * (1 + F * 0.8);
-    const fragmentationAmplification = rates.fragment * F * (0.25 + F) * M;
+    const fragmentationAmplification = rates.fragment * (F + 0.35 * P) * (0.25 + F + P) * M;
     const trap = rates.trap * O;
     const rescue = rates.rescue * X;
 
-    let dM = -nucleation + dissociation - elongation - fragmentationAmplification + rescue * 0.45;
-    let dO = nucleation - dissociation - maturation - trap + fragmentationAmplification * 0.12 + rescue * 0.15;
-    let dF = maturation + elongation + fragmentationAmplification;
+    let dM = -nucleation + dissociation - protoElongation - elongation - fragmentationAmplification + rescue * 0.45;
+    let dO = nucleation - dissociation - protoFormation - trap + fragmentationAmplification * 0.10 + rescue * 0.15;
+    let dP = protoFormation + protoElongation + fragmentationAmplification * 0.48 - fibrilConversion;
+    let dF = fibrilConversion + elongation + fragmentationAmplification * 0.42;
     let dX = trap - rescue * 0.6;
 
     M = clamp(M + dM * dt, 0, 1.3);
     O = clamp(O + dO * dt, 0, 1.3);
+    P = clamp(P + dP * dt, 0, 1.3);
     F = clamp(F + dF * dt, 0, 1.3);
     X = clamp(X + dX * dt, 0, 1.3);
 
-    const total = M + O + F + X;
+    const total = M + O + P + F + X;
     if (total > 1.0001) {
       M /= total;
       O /= total;
+      P /= total;
       F /= total;
       X /= total;
     }
@@ -137,19 +168,25 @@ function simulate(s) {
   const lagPoint = data.find(d => d.tht >= 8);
   const emPoint = data.find(d => d.em >= 10);
 
-  const lag = lagPoint ? lagPoint.t : 12;
-  const half = halfPoint ? halfPoint.t : 12;
+  const lag = lagPoint ? lagPoint.t : MAX_TIME;
+  const half = halfPoint ? halfPoint.t : MAX_TIME;
   const emTime = emPoint ? emPoint.t : null;
   const endpoint = final.tht;
-  const oligomerBurden = oligomerArea / maxT;
+  const oligomerBurden = oligomerArea / MAX_TIME;
+  const plateau = plateauStart;
 
-  return { data, rates, final, lag, half, emTime, endpoint, oligomerBurden, maxO };
+  return { data, rates, final, lag, half, emTime, endpoint, oligomerBurden, maxO, plateau };
+}
+
+function refreshSimulation() {
+  cachedSettings = getSettings();
+  cachedSimulation = simulate(cachedSettings);
+  return { s: cachedSettings, sim: cachedSimulation };
 }
 
 function currentSimulation() {
-  const s = getSettings();
-  cachedSimulation = simulate(s);
-  return { s, sim: cachedSimulation };
+  if (!cachedSimulation || !cachedSettings) return refreshSimulation();
+  return { s: cachedSettings, sim: cachedSimulation };
 }
 
 function burdenLabel(b) {
@@ -204,15 +241,15 @@ function updateLabels(s) {
 }
 
 function updateDashboard() {
-  const { s, sim } = currentSimulation();
+  const { s, sim } = refreshSimulation();
   updateLabels(s);
 
   const scene = scenarioText(s, sim);
   readouts.statusBadge.textContent = scene.status;
   readouts.scenarioText.textContent = scene.scenario;
 
-  readouts.lagStat.textContent = sim.lag >= 11.95 ? '>12 h' : `${sim.lag.toFixed(1)} h`;
-  readouts.halfStat.textContent = sim.half >= 11.95 ? '>12 h' : `${sim.half.toFixed(1)} h`;
+  readouts.lagStat.textContent = sim.lag >= MAX_TIME - 0.05 ? `>${MAX_TIME} h` : `${sim.lag.toFixed(1)} h`;
+  readouts.halfStat.textContent = sim.half >= MAX_TIME - 0.05 ? `>${MAX_TIME} h` : `${sim.half.toFixed(1)} h`;
   readouts.endpointStat.textContent = `${Math.round(sim.endpoint)}%`;
   readouts.burdenStat.textContent = burdenLabel(sim.oligomerBurden);
   readouts.riskStat.textContent = riskLabel(s, sim);
@@ -221,10 +258,11 @@ function updateDashboard() {
   const final = sim.final;
   const mp = Math.round(final.M * 100);
   const op = Math.round(final.O * 100);
+  const pp = Math.round(final.P * 100);
   const fp = Math.round(final.F * 100);
   const xp = Math.round(final.X * 100);
-  readouts.mFinal.textContent = `${mp}%`; readouts.oFinal.textContent = `${op}%`; readouts.fFinal.textContent = `${fp}%`; readouts.xFinal.textContent = `${xp}%`;
-  readouts.barM.style.width = `${mp}%`; readouts.barO.style.width = `${op}%`; readouts.barF.style.width = `${fp}%`; readouts.barX.style.width = `${xp}%`;
+  readouts.mFinal.textContent = `${mp}%`; readouts.oFinal.textContent = `${op}%`; readouts.pFinal.textContent = `${pp}%`; readouts.fFinal.textContent = `${fp}%`; readouts.xFinal.textContent = `${xp}%`;
+  readouts.barM.style.width = `${mp}%`; readouts.barO.style.width = `${op}%`; readouts.barP.style.width = `${pp}%`; readouts.barF.style.width = `${fp}%`; readouts.barX.style.width = `${xp}%`;
 
   updateReadoutCards(s, sim);
   updateMechanism(s, sim);
@@ -238,7 +276,7 @@ function updateReadoutCards(s, sim) {
 
   if (endpoint < 12) {
     readouts.thtTitle.textContent = 'Mostly flat signal';
-    readouts.thtText.textContent = 'ThT-like signal would suggest weak fibril formation inside the 12 hour window, but that does not rule out soluble assemblies.';
+    readouts.thtText.textContent = 'ThT-like signal would suggest weak fibril formation inside the displayed 36 hour window, but that does not rule out soluble assemblies.';
   } else if (sim.lag < 1.5) {
     readouts.thtTitle.textContent = 'Lag nearly collapses';
     readouts.thtText.textContent = 'The fibril-associated signal rises early, consistent with seeding or strong nucleator-like behavior.';
@@ -322,7 +360,7 @@ function updateMechanism(s, sim) {
 }
 
 function getAtProgress(sim) {
-  const t = progress * 12;
+  const t = progress * MAX_TIME;
   let best = sim.data[0];
   for (const d of sim.data) {
     if (Math.abs(d.t - t) < Math.abs(best.t - t)) best = d;
@@ -333,12 +371,12 @@ function getAtProgress(sim) {
 function initParticles() {
   const rect = fitCanvas(particleCanvas, pctx);
   const s = getSettings();
-  const count = Math.round(34 + s.conc * 0.42);
+  const count = Math.round(42 + s.conc * 0.42);
   particles = Array.from({ length: count }, (_, i) => ({
     x: Math.random() * rect.width,
     y: Math.random() * rect.height,
-    vx: (Math.random() - 0.5) * (0.32 + s.frag / 85),
-    vy: (Math.random() - 0.5) * (0.32 + s.frag / 85),
+    vx: (Math.random() - 0.5) * (1.15 + s.frag / 36),
+    vy: (Math.random() - 0.5) * (1.15 + s.frag / 36),
     r: Math.random() * 2.1 + 3.1,
     phase: Math.random() * Math.PI * 2,
     seed: i
@@ -357,43 +395,52 @@ function drawParticles(timestamp = 0) {
   pctx.fillStyle = 'rgba(244,239,231,0.045)';
   for (let i = 0; i < 28; i++) {
     pctx.beginPath();
-    pctx.arc((i * 101 + t * 9) % w, (i * 47 + Math.sin(t + i) * 10) % h, 1.4, 0, Math.PI * 2);
+    pctx.arc((i * 101 + t * 24) % w, (i * 47 + Math.sin(t * 1.8 + i) * 16 + h) % h, 1.4, 0, Math.PI * 2);
     pctx.fill();
   }
 
   const centerX = w * 0.54;
   const centerY = h * 0.53;
   const fCount = Math.floor(particles.length * clamp(now.F, 0, 0.92));
-  const oCount = Math.floor(particles.length * clamp(now.O * 1.25, 0, 0.55));
+  const pCount = Math.floor(particles.length * clamp(now.P * 1.1, 0, 0.70));
+  const oCount = Math.floor(particles.length * clamp(now.O * 1.3, 0, 0.55));
   const xCount = Math.floor(particles.length * clamp(now.X, 0, 0.45));
 
   particles.forEach((p, i) => {
     let x = p.x;
     let y = p.y;
-    let color = '#76c7c0';
+    let color = COLORS.monomer;
     let radius = p.r;
     let alpha = 0.95;
 
     if (i < fCount) {
-      const lineIndex = i % 42;
-      const strand = Math.floor(i / 42) % 6;
-      x = centerX - 205 + lineIndex * 10 + Math.sin(lineIndex * 0.45 + t * 2.5) * 1.5;
-      y = centerY - 32 + strand * 12 + Math.sin(lineIndex * 0.7 + t * 3) * 1.5;
-      color = '#d7b56d';
+      const lineIndex = i % 54;
+      const strand = Math.floor(i / 54) % 7;
+      x = centerX - 245 + lineIndex * 9 + Math.sin(lineIndex * 0.45 + t * 4.5) * 2.2;
+      y = centerY - 42 + strand * 12 + Math.sin(lineIndex * 0.7 + t * 5.0) * 1.8;
+      color = COLORS.fibril;
       radius = 4.3;
-    } else if (i < fCount + oCount) {
+    } else if (i < fCount + pCount) {
       const j = i - fCount;
-      const angle = (j / Math.max(1, oCount)) * Math.PI * 2 + t * 0.35;
-      const clusterR = 16 + (j % 10) * 2.8;
-      x = centerX + Math.cos(angle) * clusterR;
-      y = centerY + Math.sin(angle) * clusterR;
-      color = '#e98c77';
+      const segment = j % 18;
+      const filament = Math.floor(j / 18) % 5;
+      x = centerX - 118 + segment * 8 + Math.sin(segment * 0.7 + t * 3.6 + filament) * 2.4;
+      y = centerY + 58 + filament * 13 + Math.cos(segment * 0.65 + t * 3.2) * 3.0;
+      color = COLORS.protofibril;
+      radius = 4.7;
+    } else if (i < fCount + pCount + oCount) {
+      const j = i - fCount - pCount;
+      const angle = (j / Math.max(1, oCount)) * Math.PI * 2 + t * 0.95;
+      const clusterR = 16 + (j % 10) * 3.1 + Math.sin(t * 2 + j) * 2.5;
+      x = centerX + 132 + Math.cos(angle) * clusterR;
+      y = centerY - 30 + Math.sin(angle) * clusterR;
+      color = COLORS.oligomer;
       radius = 5.2;
-    } else if (i < fCount + oCount + xCount) {
-      const j = i - fCount - oCount;
-      x = w * 0.22 + Math.cos(j * 1.7 + t * 0.22) * (26 + (j % 8) * 2);
-      y = h * 0.70 + Math.sin(j * 1.4 + t * 0.28) * (24 + (j % 7) * 2);
-      color = '#c89cff';
+    } else if (i < fCount + pCount + oCount + xCount) {
+      const j = i - fCount - pCount - oCount;
+      x = w * 0.22 + Math.cos(j * 1.7 + t * 0.55) * (26 + (j % 8) * 2.6);
+      y = h * 0.72 + Math.sin(j * 1.4 + t * 0.7) * (24 + (j % 7) * 2.6);
+      color = COLORS.offpath;
       radius = 4.8;
       alpha = 0.75;
     } else {
@@ -401,8 +448,8 @@ function drawParticles(timestamp = 0) {
       p.y += p.vy;
       if (p.x < 0 || p.x > w) p.vx *= -1;
       if (p.y < 0 || p.y > h) p.vy *= -1;
-      x = p.x + Math.sin(t + p.phase) * 1.3;
-      y = p.y + Math.cos(t * 0.8 + p.phase) * 1.3;
+      x = p.x + Math.sin(t * 2.4 + p.phase) * 2.8;
+      y = p.y + Math.cos(t * 2.0 + p.phase) * 2.8;
     }
 
     pctx.globalAlpha = alpha;
@@ -421,10 +468,10 @@ function drawParticles(timestamp = 0) {
     pctx.lineWidth = 2;
     const loops = Math.round(4 + s.fapA * 5);
     for (let i = 0; i < loops; i++) {
-      const x = (i * 91 + t * 16) % w;
+      const x = (i * 91 + t * 36) % w;
       const y = 42 + ((i * 53) % Math.max(50, h - 84));
       pctx.beginPath();
-      pctx.arc(x, y, 12 + Math.sin(t + i) * 2, 0, Math.PI * 2);
+      pctx.arc(x, y, 12 + Math.sin(t * 2 + i) * 2, 0, Math.PI * 2);
       pctx.stroke();
     }
   }
@@ -458,7 +505,7 @@ function drawTrace(ctx, data, key, color, w, h, pad, scaleMode = 'normal') {
   ctx.lineWidth = 3;
   ctx.beginPath();
   data.forEach((d, i) => {
-    const x = pad + (d.t / 12) * (w - pad * 1.45);
+    const x = pad + (d.t / MAX_TIME) * (w - pad * 1.45);
     let value = d[key];
     if (scaleMode === 'fraction') value *= 100;
     const y = (h - pad) - clamp(value, 0, 100) / 100 * (h - pad * 1.55);
@@ -497,22 +544,23 @@ function drawCurve() {
   cctx.font = '12px system-ui, sans-serif';
   cctx.fillText('signal / population', 12, 18);
   cctx.fillText('0 h', pad - 6, h - 16);
-  cctx.fillText('12 h', w - 66, h - 16);
+  cctx.fillText(`${MAX_TIME} h`, w - 72, h - 16);
 
   if (s.showAll) {
-    drawTrace(cctx, sim.data, 'tht', '#d7b56d', w, h, pad);
-    drawTrace(cctx, sim.data, 'fcs', '#e98c77', w, h, pad);
-    drawTrace(cctx, sim.data, 'nmr', '#76c7c0', w, h, pad);
-    drawTrace(cctx, sim.data, 'em', '#8fa7ff', w, h, pad);
+    drawTrace(cctx, sim.data, 'tht', COLORS.fibril, w, h, pad);
+    drawTrace(cctx, sim.data, 'fcs', COLORS.oligomer, w, h, pad);
+    drawTrace(cctx, sim.data, 'nmr', COLORS.monomer, w, h, pad);
+    drawTrace(cctx, sim.data, 'em', COLORS.protofibril, w, h, pad);
   } else {
-    drawTrace(cctx, sim.data, 'tht', '#d7b56d', w, h, pad);
-    drawTrace(cctx, sim.data, 'O', '#e98c77', w, h, pad, 'fraction');
-    drawTrace(cctx, sim.data, 'M', '#76c7c0', w, h, pad, 'fraction');
-    drawTrace(cctx, sim.data, 'F', '#8fa7ff', w, h, pad, 'fraction');
+    drawTrace(cctx, sim.data, 'tht', COLORS.fibril, w, h, pad);
+    drawTrace(cctx, sim.data, 'O', COLORS.oligomer, w, h, pad, 'fraction');
+    drawTrace(cctx, sim.data, 'P', COLORS.protofibril, w, h, pad, 'fraction');
+    drawTrace(cctx, sim.data, 'M', COLORS.monomer, w, h, pad, 'fraction');
+    drawTrace(cctx, sim.data, 'F', COLORS.fibril, w, h, pad, 'fraction');
   }
 
   const d = getAtProgress(sim);
-  const x = pad + (d.t / 12) * (w - pad * 1.45);
+  const x = pad + (d.t / MAX_TIME) * (w - pad * 1.45);
   const y = (h - pad) - clamp(d.tht, 0, 100) / 100 * (h - pad * 1.55);
   cctx.fillStyle = '#f4efe7';
   cctx.strokeStyle = 'rgba(0,0,0,0.35)';
@@ -522,8 +570,8 @@ function drawCurve() {
   cctx.fill();
   cctx.stroke();
 
-  if (sim.lag < 12) {
-    const lagX = pad + (sim.lag / 12) * (w - pad * 1.45);
+  if (sim.lag < MAX_TIME) {
+    const lagX = pad + (sim.lag / MAX_TIME) * (w - pad * 1.45);
     cctx.strokeStyle = 'rgba(118,199,192,0.65)';
     cctx.setLineDash([5, 5]);
     cctx.beginPath();
@@ -545,8 +593,8 @@ function redraw() {
 }
 
 function animate(ts) {
-  if (!animationStart) animationStart = ts - progress * 9000;
-  if (!paused) progress = clamp((ts - animationStart) / 9000, 0, 1);
+  if (!animationStart) animationStart = ts - progress * ANIMATION_MS;
+  if (!paused) progress = clamp((ts - animationStart) / ANIMATION_MS, 0, 1);
   drawParticles(ts);
   drawCurve();
   if (progress < 1 && !paused) {
@@ -642,9 +690,11 @@ function conditionSummary() {
       off_pathway_trapping_percent: s.off
     },
     conceptual_outputs: {
-      lag_time_h: sim.lag >= 11.95 ? '>12' : Number(sim.lag.toFixed(2)),
-      half_time_h: sim.half >= 11.95 ? '>12' : Number(sim.half.toFixed(2)),
-      fibril_endpoint_percent: Math.round(sim.endpoint),
+      lag_time_h: sim.lag >= MAX_TIME - 0.05 ? `>${MAX_TIME}` : Number(sim.lag.toFixed(2)),
+      half_time_h: sim.half >= MAX_TIME - 0.05 ? `>${MAX_TIME}` : Number(sim.half.toFixed(2)),
+      tht_plateau_percent: Math.round(sim.endpoint),
+      protofibril_final_percent: Math.round(sim.final.P * 100),
+      fibril_final_percent: Math.round(sim.final.F * 100),
       oligomer_burden: burdenLabel(sim.oligomerBurden),
       misread_risk: riskLabel(s, sim),
       bottleneck: dominantBottleneck(s, sim)
@@ -662,7 +712,7 @@ async function copySummary() {
     `Seed: ${summary.controls.preformed_seed_percent}%\n` +
     `Agitation/fragmentation: ${summary.controls.agitation_fragmentation_percent}%\n` +
     `Off-pathway trapping: ${summary.controls.off_pathway_trapping_percent}%\n` +
-    `Lag: ${summary.conceptual_outputs.lag_time_h} h; half-time: ${summary.conceptual_outputs.half_time_h} h; endpoint: ${summary.conceptual_outputs.fibril_endpoint_percent}%\n` +
+    `Lag: ${summary.conceptual_outputs.lag_time_h} h; half-time: ${summary.conceptual_outputs.half_time_h} h; ThT plateau: ${summary.conceptual_outputs.tht_plateau_percent}%\n` +
     `Oligomer burden: ${summary.conceptual_outputs.oligomer_burden}; misread risk: ${summary.conceptual_outputs.misread_risk}; bottleneck: ${summary.conceptual_outputs.bottleneck}`;
   try {
     await navigator.clipboard.writeText(text);
