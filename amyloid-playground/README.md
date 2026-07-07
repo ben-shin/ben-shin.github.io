@@ -1,20 +1,23 @@
 # Amyloid Explainer Playground
 
-This folder is designed to be uploaded into the root of an existing GitHub Pages repository without replacing your main `index.html`.
+A static GitHub Pages subpage for conceptually explaining amyloid aggregation.
 
-## How to use
+## Upload
 
-1. Unzip this package.
-2. Drag the `amyloid-playground` folder into the root of your GitHub Pages repository.
-3. Commit and push.
-4. Visit: `https://YOUR-USERNAME.github.io/amyloid-playground/`
+Place the `amyloid-playground` folder in the root of your GitHub Pages repository.
 
-## Optional homepage link
+Your page will be available at:
 
-Add this link somewhere on your main homepage:
-
-```html
-<a href="amyloid-playground/">Amyloid Explainer Playground</a>
+```text
+https://your-username.github.io/amyloid-playground/
 ```
 
-The page is self-contained inside `amyloid-playground/index.html`, so it does not depend on your existing site CSS or JavaScript.
+## Files
+
+- `index.html`: page structure
+- `styles.css`: visual design
+- `app.js`: conceptual model, animation, plots, presets, and export tools
+
+## Notes
+
+This is a teaching model, not a fitted kinetic model. Use it to explain hypotheses and experimental logic before showing real aggregation data.

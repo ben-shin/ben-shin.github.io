@@ -4,498 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Amyloid Explainer Playground</title>
-  <style>
-    :root {
-      --bg: #0e1117;
-      --panel: #171c25;
-      --panel-2: #202735;
-      --ink: #f4efe7;
-      --muted: #aab2c0;
-      --soft: #7f8ca3;
-      --accent: #d7b56d;
-      --accent-2: #76c7c0;
-      --danger: #e98c77;
-      --ok: #a5d68f;
-      --line: rgba(255,255,255,0.12);
-      --shadow: 0 24px 70px rgba(0,0,0,0.35);
-      --radius: 22px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 15% 10%, rgba(118, 199, 192, 0.14), transparent 32rem),
-        radial-gradient(circle at 85% 5%, rgba(215, 181, 109, 0.13), transparent 30rem),
-        linear-gradient(145deg, #0b0e13 0%, var(--bg) 48%, #10141d 100%);
-      color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.5;
-    }
-
-    a { color: inherit; }
-
-    .shell {
-      width: min(1180px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 24px 0 56px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 36px;
-    }
-
-    .brand {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      text-decoration: none;
-    }
-
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: conic-gradient(from 160deg, var(--accent), var(--accent-2), #7087ff, var(--accent));
-      box-shadow: 0 0 40px rgba(118, 199, 192, 0.25);
-    }
-
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav a, button, .pill {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.055);
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 10px 14px;
-      text-decoration: none;
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
-    }
-
-    button:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.26); }
-    button:active { transform: translateY(0); }
-
-    .hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
-      gap: 24px;
-      align-items: stretch;
-      margin-bottom: 24px;
-    }
-
-    .hero-card, .panel {
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.035));
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-    }
-
-    .hero-card {
-      padding: clamp(24px, 4vw, 48px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-card::after {
-      content: "";
-      position: absolute;
-      inset: auto -10% -35% 35%;
-      height: 280px;
-      background: radial-gradient(circle, rgba(215,181,109,0.18), transparent 62%);
-      pointer-events: none;
-    }
-
-    .eyebrow {
-      color: var(--accent);
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin: 0 0 12px;
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 780px;
-      font-size: clamp(2.35rem, 6vw, 5rem);
-      line-height: 0.92;
-      letter-spacing: -0.075em;
-    }
-
-    .subtitle {
-      max-width: 660px;
-      margin: 22px 0 0;
-      color: var(--muted);
-      font-size: clamp(1rem, 2vw, 1.18rem);
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 28px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .primary {
-      background: linear-gradient(135deg, var(--accent), #edcf88);
-      color: #17130a;
-      border: 0;
-      font-weight: 800;
-    }
-
-    .secondary { color: var(--ink); }
-
-    .mini-model {
-      padding: 22px;
-      display: grid;
-      gap: 14px;
-    }
-
-    .mini-model h2, .panel h2, .panel h3 { margin: 0; letter-spacing: -0.03em; }
-    .mini-model p, .panel p { color: var(--muted); margin: 0; }
-
-    .model-row {
-      display: grid;
-      grid-template-columns: 92px 1fr;
-      gap: 12px;
-      align-items: center;
-      padding: 13px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .state-icon {
-      min-height: 54px;
-      border-radius: 14px;
-      background: rgba(0,0,0,0.15);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent-2);
-      position: absolute;
-      box-shadow: 0 0 18px rgba(118,199,192,0.4);
-    }
-
-    .dot.one { left: 20px; top: 22px; }
-    .dot.two { left: 46px; top: 18px; }
-    .dot.three { left: 58px; top: 34px; }
-    .dot.four { left: 30px; top: 34px; }
-
-    .fibril-line {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      top: 24px;
-      height: 10px;
-      border-radius: 99px;
-      background: repeating-linear-gradient(90deg, var(--accent), var(--accent) 8px, #eed18f 8px, #eed18f 16px);
-      transform: rotate(-10deg);
-      box-shadow: 0 0 22px rgba(215,181,109,0.25);
-    }
-
-    .playground {
-      display: grid;
-      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-      gap: 24px;
-      align-items: start;
-      margin-top: 24px;
-    }
-
-    .panel { padding: 22px; }
-
-    .controls {
-      position: sticky;
-      top: 16px;
-      display: grid;
-      gap: 18px;
-    }
-
-    .control-group {
-      padding: 16px;
-      border: 1px solid rgba(255,255,255,0.09);
-      background: rgba(0,0,0,0.12);
-      border-radius: 18px;
-    }
-
-    .control-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: baseline;
-      margin-bottom: 10px;
-    }
-
-    label {
-      color: var(--ink);
-      font-weight: 750;
-      letter-spacing: -0.02em;
-    }
-
-    .readout { color: var(--accent); font-weight: 800; }
-
-    input[type="range"] {
-      width: 100%;
-      accent-color: var(--accent);
-    }
-
-    .hint {
-      display: block;
-      margin-top: 8px;
-      color: var(--soft);
-      font-size: 0.88rem;
-    }
-
-    .switches { display: grid; gap: 10px; }
-
-    .switch {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 13px 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .switch input { display: none; }
-
-    .toggle {
-      width: 48px;
-      height: 28px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,0.26);
-      padding: 3px;
-      flex: 0 0 auto;
-      transition: background 150ms ease;
-    }
-
-    .toggle::before {
-      content: "";
-      display: block;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--muted);
-      transition: transform 150ms ease, background 150ms ease;
-    }
-
-    .switch input:checked + .toggle { background: rgba(118,199,192,0.2); }
-    .switch input:checked + .toggle::before { transform: translateX(19px); background: var(--accent-2); }
-
-    .buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .main-stage {
-      display: grid;
-      gap: 24px;
-    }
-
-    .visual-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
-      gap: 24px;
-    }
-
-    .canvas-wrap {
-      min-height: 440px;
-      display: grid;
-      grid-template-rows: auto 1fr;
-      gap: 16px;
-    }
-
-    .panel-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: flex-start;
-      margin-bottom: 16px;
-    }
-
-    .status {
-      color: #17130a;
-      background: var(--accent);
-      border-radius: 999px;
-      padding: 7px 10px;
-      font-size: 0.78rem;
-      font-weight: 850;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      white-space: nowrap;
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      border-radius: 18px;
-      background:
-        radial-gradient(circle at 35% 20%, rgba(118,199,192,0.09), transparent 18rem),
-        linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.07));
-      border: 1px solid rgba(255,255,255,0.09);
-    }
-
-    #particleCanvas { height: 350px; }
-    #curveCanvas { height: 270px; }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .stat {
-      padding: 15px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .stat .num {
-      display: block;
-      color: var(--ink);
-      font-size: 1.5rem;
-      line-height: 1.1;
-      font-weight: 850;
-      letter-spacing: -0.04em;
-    }
-
-    .stat .cap {
-      display: block;
-      color: var(--soft);
-      font-size: 0.84rem;
-      margin-top: 5px;
-    }
-
-    .explain {
-      display: grid;
-      gap: 13px;
-    }
-
-    .explain-card {
-      border-left: 3px solid var(--accent-2);
-      background: rgba(255,255,255,0.045);
-      border-radius: 16px;
-      padding: 14px 15px;
-    }
-
-    .explain-card strong { display: block; margin-bottom: 4px; }
-    .explain-card p { font-size: 0.95rem; }
-
-    .stages {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .stage {
-      padding: 17px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.045);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .stage span {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      color: #17130a;
-      background: var(--accent);
-      font-weight: 900;
-      margin-bottom: 12px;
-    }
-
-    .stage h3 { margin-bottom: 8px; font-size: 1.02rem; }
-    .stage p { font-size: 0.92rem; }
-
-    .note {
-      border: 1px solid rgba(215,181,109,0.25);
-      background: rgba(215,181,109,0.07);
-    }
-
-    .formula {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      color: var(--ink);
-      font-size: 0.92rem;
-      overflow-x: auto;
-      padding: 14px;
-      border-radius: 15px;
-      background: rgba(0,0,0,0.24);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-top: 12px;
-    }
-
-    footer {
-      color: var(--soft);
-      text-align: center;
-      margin-top: 32px;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 920px) {
-      .hero, .playground, .visual-grid { grid-template-columns: 1fr; }
-      .controls { position: static; }
-      .stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-
-    @media (max-width: 560px) {
-      .shell { width: min(100% - 20px, 1180px); padding-top: 14px; }
-      .topbar { align-items: flex-start; flex-direction: column; }
-      .nav { justify-content: flex-start; }
-      .hero-card, .panel { padding: 18px; }
-      .stats, .stages, .buttons { grid-template-columns: 1fr; }
-      .panel-head { flex-direction: column; }
-      .status { white-space: normal; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="shell" id="top">
     <header class="topbar">
       <a class="brand" href="#top" aria-label="Amyloid Explainer Playground home">
         <span class="brand-mark" aria-hidden="true"></span>
-        <span>Amyloid Playground</span>
+        <span class="brand-block">
+          <span>Amyloid Playground</span>
+          <span class="byline">conceptual aggregation lab</span>
+        </span>
       </a>
       <nav class="nav" aria-label="Page navigation">
         <a href="#playground">Playground</a>
-        <a href="#stages">Stages</a>
-        <a href="#model">Model</a>
+        <a href="#readouts">Readouts</a>
+        <a href="#mechanism">Mechanism</a>
+        <a href="#export">Export</a>
       </nav>
     </header>
 
@@ -503,42 +28,47 @@
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-card">
           <p class="eyebrow">Conceptual amyloid simulator</p>
-          <h1 id="hero-title">Watch proteins choose between soluble life and fibril fate.</h1>
+          <h1 id="hero-title">Build an aggregation story before showing the data.</h1>
           <p class="subtitle">
-            A lightweight visual explainer for amyloid aggregation. Change concentration, agitation,
-            inhibitor-like chaperone activity, and nucleator-like seeding to see how lag phase,
-            oligomer burden, and fibril formation shift.
+            Explore how concentration, chaperone-like inhibition, nucleation, seeding, and fragmentation can reshape an amyloid timecourse.
+            The page links molecular cartoons to experimental signatures from ThT, FCS, NMR, and EM.
           </p>
           <div class="hero-actions">
             <a class="primary" href="#playground">Start playing</a>
-            <a class="secondary" href="#model">See the assumptions</a>
+            <button class="secondary" type="button" id="randomizeBtn">Random condition</button>
           </div>
         </div>
 
-        <aside class="mini-model panel" aria-label="Mini model overview">
-          <h2>The mental model</h2>
-          <p>This is not a fitted kinetic model. It is a visual map of common aggregation logic.</p>
-          <div class="model-row">
-            <div class="state-icon" aria-hidden="true">
-              <span class="dot one"></span>
-              <span class="dot two"></span>
-            </div>
-            <div><strong>Monomers</strong><p>Mostly soluble, dynamic proteins.</p></div>
+        <aside class="panel mini-model" aria-label="System overview">
+          <h2>The states</h2>
+          <p>Track soluble monomer, transient oligomer, and fibril populations over a conceptual 12 hour experiment.</p>
+          <div class="state-row">
+            <span class="state-token monomer"></span>
+            <div><strong>Soluble ensemble</strong><p>Mostly NMR-visible, FCS-fast species.</p></div>
           </div>
-          <div class="model-row">
-            <div class="state-icon" aria-hidden="true">
-              <span class="dot one"></span>
-              <span class="dot two"></span>
-              <span class="dot three"></span>
-              <span class="dot four"></span>
-            </div>
-            <div><strong>Oligomers</strong><p>Transient assemblies that can either dissolve or mature.</p></div>
+          <div class="state-row">
+            <span class="state-token oligomer"></span>
+            <div><strong>Oligomer pool</strong><p>Transient assemblies, often more invisible by NMR and slower by FCS.</p></div>
           </div>
-          <div class="model-row">
-            <div class="state-icon" aria-hidden="true"><span class="fibril-line"></span></div>
-            <div><strong>Fibrils</strong><p>Ordered, beta-rich assemblies that amplify growth.</p></div>
+          <div class="state-row">
+            <span class="state-token fibril"></span>
+            <div><strong>Fibril mass</strong><p>ThT-positive ordered material and EM-visible structures.</p></div>
           </div>
         </aside>
+      </section>
+
+      <section class="preset-strip panel" aria-label="Fap system presets">
+        <div>
+          <p class="eyebrow">Fap-system presets</p>
+          <h2>Start from a biological scenario</h2>
+        </div>
+        <div class="preset-buttons">
+          <button type="button" data-preset="fapc">FapC alone</button>
+          <button type="button" data-preset="fapa">FapC + FapA</button>
+          <button type="button" data-preset="fape">FapC + FapE</button>
+          <button type="button" data-preset="all">FapC + FapA + FapE</button>
+          <button type="button" data-preset="seeded">Seeded fibril growth</button>
+        </div>
       </section>
 
       <section class="playground" id="playground" aria-labelledby="playground-title">
@@ -546,50 +76,87 @@
           <div>
             <p class="eyebrow">Controls</p>
             <h2 id="playground-title">Tune the system</h2>
-            <p>Use these as qualitative knobs, not literal experimental parameters.</p>
+            <p>These knobs are qualitative. They are meant to change the mechanistic story, not estimate real rate constants.</p>
           </div>
 
           <div class="control-group">
             <div class="control-top">
-              <label for="conc">Protein concentration</label>
+              <label for="conc">FapC-like amyloid protein</label>
               <span class="readout"><span id="concValue">50</span> µM</span>
             </div>
             <input id="conc" type="range" min="5" max="150" value="50" step="5" />
-            <span class="hint">Higher concentration makes productive collisions more likely.</span>
+            <span class="hint">Raises encounter frequency and increases the chance of productive nuclei.</span>
           </div>
 
           <div class="control-group">
             <div class="control-top">
-              <label for="agitation">Agitation</label>
-              <span class="readout"><span id="agitationValue">40</span>%</span>
+              <label for="fapA">FapA-like inhibitor / chaperone</label>
+              <span class="readout"><span id="fapAValue">0.0</span>x</span>
             </div>
-            <input id="agitation" type="range" min="0" max="100" value="40" step="5" />
-            <span class="hint">Mixing can increase encounter frequency and fragmentation-like amplification.</span>
+            <input id="fapA" type="range" min="0" max="2" value="0" step="0.1" />
+            <span class="hint">Suppresses productive maturation and shifts material into soluble or stalled assemblies.</span>
           </div>
 
-          <div class="control-group switches" aria-label="Modifiers">
+          <div class="control-group">
+            <div class="control-top">
+              <label for="fapE">FapE-like nucleator</label>
+              <span class="readout"><span id="fapEValue">0.0</span>x</span>
+            </div>
+            <input id="fapE" type="range" min="0" max="2" value="0" step="0.1" />
+            <span class="hint">Lowers the nucleation barrier and can shorten the lag phase.</span>
+          </div>
+
+          <div class="control-group">
+            <div class="control-top">
+              <label for="seed">Pre-formed seed</label>
+              <span class="readout"><span id="seedValue">0</span>%</span>
+            </div>
+            <input id="seed" type="range" min="0" max="30" value="0" step="1" />
+            <span class="hint">Bypasses part of primary nucleation and exposes elongation directly.</span>
+          </div>
+
+          <div class="control-group">
+            <div class="control-top">
+              <label for="fragmentation">Agitation / fragmentation</label>
+              <span class="readout"><span id="fragValue">35</span>%</span>
+            </div>
+            <input id="fragmentation" type="range" min="0" max="100" value="35" step="5" />
+            <span class="hint">Boosts encounter rate and creates more ends once fibrils exist.</span>
+          </div>
+
+          <div class="control-group">
+            <div class="control-top">
+              <label for="offpathway">Off-pathway trapping</label>
+              <span class="readout"><span id="offValue">15</span>%</span>
+            </div>
+            <input id="offpathway" type="range" min="0" max="80" value="15" step="5" />
+            <span class="hint">Routes oligomers into stalled/nonproductive material rather than ordered fibrils.</span>
+          </div>
+
+          <div class="control-group switches" aria-label="Display options">
             <label class="switch">
               <span>
-                <strong>FapA-like inhibitor</strong><br />
-                <span class="hint">Raises the barrier to productive maturation.</span>
+                <strong>Show all experimental traces</strong><br />
+                <span class="hint">Overlay ThT, FCS, NMR, and EM-like signals.</span>
               </span>
-              <input id="inhibitor" type="checkbox" />
+              <input id="showAll" type="checkbox" checked />
               <span class="toggle" aria-hidden="true"></span>
             </label>
-
             <label class="switch">
               <span>
-                <strong>FapE-like nucleator</strong><br />
-                <span class="hint">Shortens lag by increasing productive nuclei.</span>
+                <strong>Reviewer 2 mode</strong><br />
+                <span class="hint">Adds caveats and alternative interpretations.</span>
               </span>
-              <input id="nucleator" type="checkbox" />
+              <input id="criticMode" type="checkbox" />
               <span class="toggle" aria-hidden="true"></span>
             </label>
           </div>
 
           <div class="buttons">
             <button class="primary" id="runBtn" type="button">Run animation</button>
+            <button id="pauseBtn" type="button">Pause</button>
             <button id="resetBtn" type="button">Reset</button>
+            <button id="copyBtn" type="button">Copy summary</button>
           </div>
         </aside>
 
@@ -599,36 +166,50 @@
               <div class="panel-head">
                 <div>
                   <p class="eyebrow">Molecular cartoon</p>
-                  <h2>Soluble → oligomeric → fibrillar</h2>
-                  <p id="scenarioText">A balanced aggregation condition with a visible lag phase.</p>
+                  <h2>Species movement</h2>
+                  <p id="scenarioText">A balanced condition with a visible lag phase.</p>
                 </div>
                 <span class="status" id="statusBadge">Lag phase</span>
               </div>
               <canvas id="particleCanvas" aria-label="Conceptual particle animation"></canvas>
             </div>
 
-            <div class="panel">
+            <div class="panel dashboard-card">
               <div class="panel-head">
                 <div>
-                  <p class="eyebrow">Readout</p>
+                  <p class="eyebrow">Dashboard</p>
                   <h2>Predicted behavior</h2>
                 </div>
               </div>
               <div class="stats" aria-label="Conceptual statistics">
-                <div class="stat"><span class="num" id="lagStat">3.6 h</span><span class="cap">Conceptual lag time</span></div>
-                <div class="stat"><span class="num" id="halfStat">6.1 h</span><span class="cap">Half-time</span></div>
-                <div class="stat"><span class="num" id="plateauStat">78%</span><span class="cap">Fibril endpoint</span></div>
-                <div class="stat"><span class="num" id="oligoStat">Medium</span><span class="cap">Oligomer burden</span></div>
+                <div class="stat"><span class="num" id="lagStat">3.4 h</span><span class="cap">Lag time</span></div>
+                <div class="stat"><span class="num" id="halfStat">5.9 h</span><span class="cap">Half-time</span></div>
+                <div class="stat"><span class="num" id="endpointStat">75%</span><span class="cap">Fibril endpoint</span></div>
+                <div class="stat"><span class="num" id="burdenStat">Medium</span><span class="cap">Oligomer burden</span></div>
+                <div class="stat"><span class="num" id="riskStat">Moderate</span><span class="cap">Misread risk</span></div>
+                <div class="stat"><span class="num" id="dominantStat">Nucleation</span><span class="cap">Dominant bottleneck</span></div>
               </div>
 
-              <div class="explain" style="margin-top:16px">
-                <div class="explain-card">
-                  <strong id="mainInterpretation">Lag phase is present.</strong>
-                  <p id="interpretationText">Monomers sample many reversible contacts before enough productive nuclei form to drive rapid growth.</p>
+              <div class="species-bars" aria-label="Final species distribution">
+                <div class="bar-row">
+                  <span>Soluble</span>
+                  <div class="bar"><span id="barM"></span></div>
+                  <strong id="mFinal">30%</strong>
                 </div>
-                <div class="explain-card" style="border-left-color:var(--accent)">
-                  <strong>Useful teaching point</strong>
-                  <p id="teachingText">The most interesting species may not be the endpoint fibril, but the transient oligomers that appear during the lag-to-growth transition.</p>
+                <div class="bar-row">
+                  <span>Oligomer</span>
+                  <div class="bar"><span id="barO"></span></div>
+                  <strong id="oFinal">8%</strong>
+                </div>
+                <div class="bar-row">
+                  <span>Fibril</span>
+                  <div class="bar"><span id="barF"></span></div>
+                  <strong id="fFinal">62%</strong>
+                </div>
+                <div class="bar-row">
+                  <span>Off-path</span>
+                  <div class="bar"><span id="barX"></span></div>
+                  <strong id="xFinal">0%</strong>
                 </div>
               </div>
             </div>
@@ -637,451 +218,94 @@
           <section class="panel" aria-labelledby="curve-title">
             <div class="panel-head">
               <div>
-                <p class="eyebrow">Kinetic cartoon</p>
-                <h2 id="curve-title">Aggregation curve</h2>
-                <p>Sigmoidal growth with adjustable lag, growth rate, and endpoint.</p>
+                <p class="eyebrow">Kinetic traces</p>
+                <h2 id="curve-title">Same system, different instruments</h2>
+                <p>ThT mainly follows ordered fibril signal, FCS sees slow diffusing species, NMR loses soluble signal, and EM has a detection threshold.</p>
               </div>
-              <span class="pill">Timecourse: 0–12 h</span>
+              <span class="pill" id="timePill">0.0 h</span>
             </div>
             <canvas id="curveCanvas" aria-label="Conceptual aggregation curve"></canvas>
+            <div class="legend" id="legend">
+              <span><i class="l-tht"></i>ThT-like fibril signal</span>
+              <span><i class="l-fcs"></i>FCS slow species</span>
+              <span><i class="l-nmr"></i>NMR soluble signal</span>
+              <span><i class="l-em"></i>EM-visible fibrils</span>
+            </div>
           </section>
         </div>
       </section>
 
-      <section class="panel" id="stages" aria-labelledby="stages-title" style="margin-top:24px">
-        <p class="eyebrow">Explainer</p>
-        <h2 id="stages-title">Four stages worth explaining</h2>
-        <div class="stages" style="margin-top:16px">
-          <article class="stage">
-            <span>1</span>
-            <h3>Soluble ensemble</h3>
-            <p>Proteins diffuse as monomers or small reversible assemblies. Most contacts are unproductive.</p>
+      <section class="panel" id="readouts" aria-labelledby="readouts-title">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Experimental readouts</p>
+            <h2 id="readouts-title">What would each experiment seem to say?</h2>
+          </div>
+        </div>
+        <div class="readout-grid">
+          <article class="readout-card">
+            <span class="readout-kicker">ThT</span>
+            <h3 id="thtTitle">Clear sigmoidal aggregation</h3>
+            <p id="thtText">Fibril-associated signal rises after a lag phase and approaches a visible endpoint.</p>
           </article>
-          <article class="stage">
-            <span>2</span>
-            <h3>Nucleation barrier</h3>
-            <p>A rare arrangement survives long enough to template further assembly. This controls the lag phase.</p>
+          <article class="readout-card">
+            <span class="readout-kicker">FCS</span>
+            <h3 id="fcsTitle">Slow species appear before endpoint</h3>
+            <p id="fcsText">Diffusion shifts earlier than the final ThT plateau, suggesting soluble assemblies or growing particles.</p>
           </article>
-          <article class="stage">
-            <span>3</span>
-            <h3>Growth phase</h3>
-            <p>Existing ordered assemblies recruit soluble protein, so apparent aggregation accelerates.</p>
+          <article class="readout-card">
+            <span class="readout-kicker">NMR</span>
+            <h3 id="nmrTitle">Soluble signal decays</h3>
+            <p id="nmrText">Peak intensity loss would report disappearance from the fast-tumbling monomeric pool.</p>
           </article>
-          <article class="stage">
-            <span>4</span>
-            <h3>Plateau</h3>
-            <p>The curve flattens as soluble material is depleted or the system reaches a new steady state.</p>
+          <article class="readout-card">
+            <span class="readout-kicker">EM</span>
+            <h3 id="emTitle">Visible fibrils late</h3>
+            <p id="emText">Structures become easy to see only after enough ordered mass accumulates.</p>
           </article>
         </div>
       </section>
 
-      <section class="panel note" id="model" aria-labelledby="model-title" style="margin-top:24px">
+      <section class="panel" id="mechanism" aria-labelledby="mechanism-title">
+        <p class="eyebrow">Mechanism builder</p>
+        <h2 id="mechanism-title">Current mechanistic story</h2>
+        <div class="mechanism-layout">
+          <div class="equation-card">
+            <h3>Conceptual network</h3>
+            <pre id="equationText">M ⇌ O → F</pre>
+            <p id="mechanismText">Primary nucleation creates a transient oligomer pool. Some oligomers mature into fibrils, and fibrils then elongate by recruiting soluble material.</p>
+          </div>
+          <div class="critic-card">
+            <h3>What your smartest critic would ask</h3>
+            <p id="criticText">Does the curve actually require this mechanism, or could another pathway produce a similar shape?</p>
+          </div>
+          <div class="experiment-card">
+            <h3>Best next experiment</h3>
+            <p id="experimentText">Run a concentration series and compare ThT timing against FCS/NMR evidence for early soluble assemblies.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel note" id="export" aria-labelledby="export-title">
         <p class="eyebrow">Scientific honesty</p>
-        <h2 id="model-title">What this page is, and what it is not</h2>
+        <h2 id="export-title">What this page can and cannot claim</h2>
         <p>
-          This playground is a conceptual teaching tool. It does not infer rate constants, nucleation order,
-          off-pathway states, fragmentation rates, or microscopic mechanisms from data. To make a mechanistic
-          claim, you would fit concentration-dependent timecourses to explicit ODE or master-equation models.
+          This playground is an intuition tool. It does not fit microscopic rate constants, prove nucleation order, or distinguish every possible on-pathway and off-pathway mechanism. To make a mechanistic claim, pair concentration-dependent timecourses with explicit ODE or master-equation models and independent structural readouts.
         </p>
-        <div class="formula" aria-label="Conceptual equation">
-          Conceptual curve: fibril_fraction(t) = endpoint / (1 + exp(-growth × (t - half_time)))
+        <div class="formula" aria-label="Conceptual ODE description">
+          M = soluble monomer, O = oligomeric intermediate, F = fibril, X = off-pathway material<br />
+          M → O depends on concentration and nucleator-like activity<br />
+          O → F competes with inhibitor-like suppression and off-pathway trapping<br />
+          F growth increases when seed, elongation, or fragmentation-like amplification is high
+        </div>
+        <div class="export-box">
+          <button type="button" id="downloadJsonBtn">Download current condition</button>
+          <span id="copyStatus" role="status" aria-live="polite"></span>
         </div>
       </section>
     </main>
-
   </div>
 
-  <script>
-    const conc = document.getElementById('conc');
-    const agitation = document.getElementById('agitation');
-    const inhibitor = document.getElementById('inhibitor');
-    const nucleator = document.getElementById('nucleator');
-    const concValue = document.getElementById('concValue');
-    const agitationValue = document.getElementById('agitationValue');
-    const runBtn = document.getElementById('runBtn');
-    const resetBtn = document.getElementById('resetBtn');
-
-    const lagStat = document.getElementById('lagStat');
-    const halfStat = document.getElementById('halfStat');
-    const plateauStat = document.getElementById('plateauStat');
-    const oligoStat = document.getElementById('oligoStat');
-    const statusBadge = document.getElementById('statusBadge');
-    const scenarioText = document.getElementById('scenarioText');
-    const mainInterpretation = document.getElementById('mainInterpretation');
-    const interpretationText = document.getElementById('interpretationText');
-    const teachingText = document.getElementById('teachingText');
-
-    const particleCanvas = document.getElementById('particleCanvas');
-    const curveCanvas = document.getElementById('curveCanvas');
-    const pctx = particleCanvas.getContext('2d');
-    const cctx = curveCanvas.getContext('2d');
-
-    let particles = [];
-    let animationStart = null;
-    let animationFrame = null;
-    let runProgress = 0;
-
-    function fitCanvas(canvas, ctx) {
-      const ratio = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.round(rect.width * ratio);
-      canvas.height = Math.round(rect.height * ratio);
-      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-      return rect;
-    }
-
-    function getParams() {
-      const c = Number(conc.value);
-      const a = Number(agitation.value);
-      const hasInhibitor = inhibitor.checked;
-      const hasNucleator = nucleator.checked;
-
-      let lag = 7.2 - (c / 150) * 4.2 - (a / 100) * 1.25;
-      let growth = 0.7 + (c / 150) * 1.35 + (a / 100) * 0.65;
-      let endpoint = 52 + (c / 150) * 42;
-      let oligoScore = 35 + (c / 150) * 30 + (a / 100) * 12;
-
-      if (hasInhibitor) {
-        lag += 2.7;
-        growth *= 0.58;
-        endpoint *= 0.7;
-        oligoScore *= 0.55;
-      }
-
-      if (hasNucleator) {
-        lag -= 2.4;
-        growth *= 1.45;
-        endpoint *= 1.08;
-        oligoScore *= hasInhibitor ? 1.18 : 0.82;
-      }
-
-      lag = Math.max(0.5, Math.min(10.5, lag));
-      growth = Math.max(0.25, Math.min(4, growth));
-      endpoint = Math.max(18, Math.min(98, endpoint));
-      const half = Math.max(0.9, Math.min(11.5, lag + 1.4 + (2.2 / growth)));
-      oligoScore = Math.max(5, Math.min(100, oligoScore));
-
-      return { c, a, hasInhibitor, hasNucleator, lag, growth, endpoint, half, oligoScore };
-    }
-
-    function curveValue(t, params) {
-      return params.endpoint / (1 + Math.exp(-params.growth * (t - params.half)));
-    }
-
-    function oligoLabel(score) {
-      if (score < 25) return 'Low';
-      if (score < 55) return 'Medium';
-      if (score < 78) return 'High';
-      return 'Very high';
-    }
-
-    function describe(params) {
-      if (params.hasInhibitor && params.hasNucleator) {
-        return {
-          scenario: 'A tug-of-war condition: nucleation is encouraged, but inhibitor-like activity blocks maturation.',
-          status: 'Competing effects',
-          main: 'Nucleator and inhibitor oppose each other.',
-          interp: 'The system forms productive seeds more easily, but maturation and elongation are partially suppressed. This is where transient intermediates become especially interesting.',
-          teach: 'This is a good way to explain why adding a nucleator does not always guarantee a high fibril endpoint if chaperone-like inhibition is also active.'
-        };
-      }
-      if (params.hasInhibitor) {
-        return {
-          scenario: 'Inhibitor-like behavior delays aggregation and lowers the apparent endpoint.',
-          status: 'Suppressed growth',
-          main: 'The barrier has been raised.',
-          interp: 'Monomers and small assemblies still collide, but fewer interactions mature into productive fibril-forming nuclei.',
-          teach: 'A useful intervention can act before visible fibrils appear, by targeting the early ensemble rather than the final amyloid state.'
-        };
-      }
-      if (params.hasNucleator) {
-        return {
-          scenario: 'Nucleator-like behavior shortens the lag phase and promotes rapid fibril formation.',
-          status: 'Seeded growth',
-          main: 'The lag phase collapses.',
-          interp: 'The system bypasses part of the rare-nucleus search, so elongation begins earlier and the curve steepens.',
-          teach: 'This is the conceptual difference between waiting for spontaneous nucleation and supplying a productive template.'
-        };
-      }
-      if (params.c > 100 && params.a > 65) {
-        return {
-          scenario: 'High concentration and strong agitation create an aggressive aggregation condition.',
-          status: 'Fast growth',
-          main: 'Collision frequency is high.',
-          interp: 'Many encounters occur, so the system rapidly samples aggregation-prone arrangements.',
-          teach: 'This is why concentration series are essential: the shape of the timecourse changes when molecular encounters become more likely.'
-        };
-      }
-      if (params.c < 25) {
-        return {
-          scenario: 'Low concentration keeps most proteins soluble over the displayed time window.',
-          status: 'Mostly soluble',
-          main: 'Productive encounters are rare.',
-          interp: 'The system can still form small reversible contacts, but few survive long enough to trigger runaway growth.',
-          teach: 'A flat curve does not prove nothing is happening. It may mean the rare event is outside your observation window.'
-        };
-      }
-      return {
-        scenario: 'A balanced aggregation condition with a visible lag phase.',
-        status: 'Lag phase',
-        main: 'Lag phase is present.',
-        interp: 'Monomers sample many reversible contacts before enough productive nuclei form to drive rapid growth.',
-        teach: 'The most interesting species may not be the endpoint fibril, but the transient oligomers that appear during the lag-to-growth transition.'
-      };
-    }
-
-    function updateText() {
-      const params = getParams();
-      const text = describe(params);
-      concValue.textContent = params.c;
-      agitationValue.textContent = params.a;
-      lagStat.textContent = `${params.lag.toFixed(1)} h`;
-      halfStat.textContent = `${params.half.toFixed(1)} h`;
-      plateauStat.textContent = `${Math.round(params.endpoint)}%`;
-      oligoStat.textContent = oligoLabel(params.oligoScore);
-      statusBadge.textContent = text.status;
-      scenarioText.textContent = text.scenario;
-      mainInterpretation.textContent = text.main;
-      interpretationText.textContent = text.interp;
-      teachingText.textContent = text.teach;
-    }
-
-    function drawCurve() {
-      const params = getParams();
-      const rect = fitCanvas(curveCanvas, cctx);
-      const w = rect.width;
-      const h = rect.height;
-      const pad = 42;
-      cctx.clearRect(0, 0, w, h);
-
-      cctx.strokeStyle = 'rgba(255,255,255,0.12)';
-      cctx.lineWidth = 1;
-      cctx.beginPath();
-      cctx.moveTo(pad, pad / 2);
-      cctx.lineTo(pad, h - pad);
-      cctx.lineTo(w - pad / 2, h - pad);
-      cctx.stroke();
-
-      cctx.fillStyle = 'rgba(244,239,231,0.7)';
-      cctx.font = '12px system-ui, sans-serif';
-      cctx.fillText('Fibril signal', 12, 20);
-      cctx.fillText('0 h', pad - 6, h - 14);
-      cctx.fillText('12 h', w - 70, h - 14);
-      cctx.fillText('time', w / 2 - 10, h - 14);
-
-      for (let i = 0; i <= 4; i++) {
-        const y = pad / 2 + i * ((h - pad * 1.5) / 4);
-        cctx.strokeStyle = 'rgba(255,255,255,0.055)';
-        cctx.beginPath();
-        cctx.moveTo(pad, y);
-        cctx.lineTo(w - pad / 2, y);
-        cctx.stroke();
-      }
-
-      cctx.strokeStyle = '#d7b56d';
-      cctx.lineWidth = 3;
-      cctx.beginPath();
-      for (let i = 0; i <= 240; i++) {
-        const t = (i / 240) * 12;
-        const yVal = curveValue(t, params);
-        const x = pad + (t / 12) * (w - pad * 1.5);
-        const y = (h - pad) - (yVal / 100) * (h - pad * 1.5);
-        if (i === 0) cctx.moveTo(x, y);
-        else cctx.lineTo(x, y);
-      }
-      cctx.stroke();
-
-      const lagX = pad + (params.lag / 12) * (w - pad * 1.5);
-      cctx.strokeStyle = 'rgba(118,199,192,0.7)';
-      cctx.setLineDash([5, 5]);
-      cctx.beginPath();
-      cctx.moveTo(lagX, pad / 2);
-      cctx.lineTo(lagX, h - pad);
-      cctx.stroke();
-      cctx.setLineDash([]);
-      cctx.fillStyle = 'rgba(118,199,192,0.95)';
-      cctx.fillText('lag', lagX + 6, pad / 2 + 14);
-
-      const progressT = runProgress * 12;
-      const progressY = curveValue(progressT, params);
-      const px = pad + (progressT / 12) * (w - pad * 1.5);
-      const py = (h - pad) - (progressY / 100) * (h - pad * 1.5);
-      cctx.fillStyle = '#f4efe7';
-      cctx.beginPath();
-      cctx.arc(px, py, 5.5, 0, Math.PI * 2);
-      cctx.fill();
-    }
-
-    function initParticles() {
-      const rect = fitCanvas(particleCanvas, pctx);
-      const params = getParams();
-      const count = Math.round(30 + params.c * 0.45);
-      particles = Array.from({ length: count }, (_, i) => ({
-        x: Math.random() * rect.width,
-        y: Math.random() * rect.height,
-        vx: (Math.random() - 0.5) * (0.4 + params.a / 90),
-        vy: (Math.random() - 0.5) * (0.4 + params.a / 90),
-        r: Math.random() * 2.2 + 3.3,
-        phase: Math.random() * Math.PI * 2,
-        seed: i
-      }));
-    }
-
-    function drawParticles(timestamp) {
-      const params = getParams();
-      const rect = fitCanvas(particleCanvas, pctx);
-      const w = rect.width;
-      const h = rect.height;
-      const t = timestamp ? timestamp / 1000 : 0;
-      const fibrilFraction = curveValue(runProgress * 12, params) / 100;
-      const oligoFraction = Math.max(0, Math.sin(Math.min(1, runProgress) * Math.PI) * (params.oligoScore / 120));
-
-      pctx.clearRect(0, 0, w, h);
-
-      pctx.fillStyle = 'rgba(244,239,231,0.05)';
-      for (let i = 0; i < 24; i++) {
-        pctx.beginPath();
-        pctx.arc((i * 97 + t * 8) % w, (i * 43) % h, 1.5, 0, Math.PI * 2);
-        pctx.fill();
-      }
-
-      const centerX = w * 0.54;
-      const centerY = h * 0.54;
-      const aggregateCount = Math.floor(particles.length * Math.min(0.9, fibrilFraction + oligoFraction * 0.32));
-
-      particles.forEach((p, i) => {
-        let x = p.x;
-        let y = p.y;
-        let color = '#76c7c0';
-        let radius = p.r;
-
-        if (i < aggregateCount) {
-          const lineIndex = i % 34;
-          const strand = Math.floor(i / 34) % 5;
-          const fibrilPull = Math.max(0, (fibrilFraction - 0.12) / 0.88);
-          const clusterAngle = (i / Math.max(1, aggregateCount)) * Math.PI * 2;
-          const clusterR = 18 + (i % 9) * 3;
-          const clusterX = centerX + Math.cos(clusterAngle + t * 0.25) * clusterR;
-          const clusterY = centerY + Math.sin(clusterAngle + t * 0.25) * clusterR;
-          const fibrilX = centerX - 165 + lineIndex * 10;
-          const fibrilY = centerY - 22 + strand * 12 + Math.sin(lineIndex * 0.8 + t * 3) * 2;
-          x = clusterX * (1 - fibrilPull) + fibrilX * fibrilPull;
-          y = clusterY * (1 - fibrilPull) + fibrilY * fibrilPull;
-          color = fibrilPull > 0.45 ? '#d7b56d' : '#e98c77';
-          radius = fibrilPull > 0.45 ? 4.5 : 5.2;
-        } else {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.x < 0 || p.x > w) p.vx *= -1;
-          if (p.y < 0 || p.y > h) p.vy *= -1;
-          x = p.x + Math.sin(t + p.phase) * 1.5;
-          y = p.y + Math.cos(t * 0.9 + p.phase) * 1.5;
-        }
-
-        pctx.fillStyle = color;
-        pctx.shadowColor = color;
-        pctx.shadowBlur = 12;
-        pctx.beginPath();
-        pctx.arc(x, y, radius, 0, Math.PI * 2);
-        pctx.fill();
-        pctx.shadowBlur = 0;
-      });
-
-      if (params.hasInhibitor) {
-        pctx.strokeStyle = 'rgba(165,214,143,0.45)';
-        pctx.lineWidth = 2;
-        for (let i = 0; i < 9; i++) {
-          const x = (i * 83 + t * 18) % w;
-          const y = 50 + ((i * 47) % (h - 90));
-          pctx.beginPath();
-          pctx.arc(x, y, 12, 0, Math.PI * 2);
-          pctx.stroke();
-        }
-      }
-
-      if (params.hasNucleator) {
-        pctx.fillStyle = 'rgba(215,181,109,0.9)';
-        pctx.beginPath();
-        pctx.roundRect(centerX - 36, centerY - 10, 72, 20, 10);
-        pctx.fill();
-      }
-    }
-
-    function animate(timestamp) {
-      if (!animationStart) animationStart = timestamp;
-      const elapsed = timestamp - animationStart;
-      runProgress = Math.min(1, elapsed / 7600);
-      drawParticles(timestamp);
-      drawCurve();
-      if (runProgress < 1) {
-        animationFrame = requestAnimationFrame(animate);
-      }
-    }
-
-    function redrawStatic() {
-      updateText();
-      drawParticles(0);
-      drawCurve();
-    }
-
-    function runAnimation() {
-      cancelAnimationFrame(animationFrame);
-      animationStart = null;
-      runProgress = 0;
-      initParticles();
-      updateText();
-      animationFrame = requestAnimationFrame(animate);
-    }
-
-    function reset() {
-      cancelAnimationFrame(animationFrame);
-      conc.value = 50;
-      agitation.value = 40;
-      inhibitor.checked = false;
-      nucleator.checked = false;
-      runProgress = 0;
-      initParticles();
-      redrawStatic();
-    }
-
-    [conc, agitation, inhibitor, nucleator].forEach(el => {
-      el.addEventListener('input', () => {
-        runProgress = Math.min(runProgress, 0.15);
-        initParticles();
-        redrawStatic();
-      });
-      el.addEventListener('change', () => {
-        runProgress = Math.min(runProgress, 0.15);
-        initParticles();
-        redrawStatic();
-      });
-    });
-
-    runBtn.addEventListener('click', runAnimation);
-    resetBtn.addEventListener('click', reset);
-    window.addEventListener('resize', () => {
-      initParticles();
-      redrawStatic();
-    });
-
-    if (!CanvasRenderingContext2D.prototype.roundRect) {
-      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-        this.beginPath();
-        this.moveTo(x + r, y);
-        this.lineTo(x + w - r, y);
-        this.quadraticCurveTo(x + w, y, x + w, y + r);
-        this.lineTo(x + w, y + h - r);
-        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        this.lineTo(x + r, y + h);
-        this.quadraticCurveTo(x, y + h, x, y + h - r);
-        this.lineTo(x, y + r);
-        this.quadraticCurveTo(x, y, x + r, y);
-        this.closePath();
-      };
-    }
-
-    initParticles();
-    redrawStatic();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
