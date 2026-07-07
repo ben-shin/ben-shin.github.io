@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-07T02:02:08+02:00",
-  "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/WT",
-  "start_ns": 243.99,
-  "end_ns": 245.49,
-  "window_ns": 1.5,
+  "generated_at": "2026-07-07T02:42:25+02:00",
+  "source_root": "/home/benshin/gromacs_run/PBP/holo/AMP/T553K",
+  "start_ns": 0.0,
+  "end_ns": 0.33999999999999997,
+  "window_ns": 0.33999999999999997,
   "dt_ps": 10.0,
   "fps": 30,
   "width": 960,
@@ -59,12 +59,12 @@
       ]
     }
   ],
-  "frames": 151,
+  "frames": 35,
   "atoms_per_frame": 728,
-  "mp4_bytes": 1427689,
-  "mp4_mb": 1.362,
-  "thumbnail_bytes": 105092,
-  "duration_seconds": 5.033,
+  "mp4_bytes": 357294,
+  "mp4_mb": 0.341,
+  "thumbnail_bytes": 109148,
+  "duration_seconds": 1.167,
   "renderer": "pure-python-calpha-trace",
   "files": {
     "mp4": "viz/md_preview.mp4",
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 134.505,
-    "fit_seconds": 74.586,
-    "render_seconds": 104.345,
-    "encode_seconds": 29.95
+    "extract_seconds": 25.813,
+    "fit_seconds": 25.94,
+    "render_seconds": 21.342,
+    "encode_seconds": 42.439
   }
 }
