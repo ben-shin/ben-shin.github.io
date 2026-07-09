@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-09T17:49:09+02:00",
+  "generated_at": "2026-07-09T18:20:44+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMX/WT",
   "start_ns": 248.25,
   "end_ns": 249.75,
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 2.522,
-    "fit_seconds": 1.651,
-    "render_seconds": 3.407,
-    "encode_seconds": 0.316
+    "extract_seconds": 2.723,
+    "fit_seconds": 1.638,
+    "render_seconds": 3.235,
+    "encode_seconds": 0.673
   }
 }
