@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-10T20:35:03+02:00",
+  "generated_at": "2026-07-10T21:14:50+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMX/T553K",
-  "start_ns": 157.98,
-  "end_ns": 159.48,
+  "start_ns": 163.24,
+  "end_ns": 164.74,
   "window_ns": 1.5,
   "dt_ps": 10.0,
   "fps": 30,
@@ -61,9 +61,9 @@
   ],
   "frames": 151,
   "atoms_per_frame": 731,
-  "mp4_bytes": 1449855,
-  "mp4_mb": 1.383,
-  "thumbnail_bytes": 107119,
+  "mp4_bytes": 1475215,
+  "mp4_mb": 1.407,
+  "thumbnail_bytes": 107658,
   "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 128.503,
-    "fit_seconds": 106.43,
-    "render_seconds": 101.849,
-    "encode_seconds": 10.585
+    "extract_seconds": 131.468,
+    "fit_seconds": 98.78,
+    "render_seconds": 100.101,
+    "encode_seconds": 10.926
   }
 }
