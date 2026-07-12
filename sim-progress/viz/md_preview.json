@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-13T00:44:31+02:00",
+  "generated_at": "2026-07-13T01:16:02+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/AMX/T553K",
   "start_ns": 248.25,
   "end_ns": 249.75,
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 2.161,
-    "fit_seconds": 1.601,
-    "render_seconds": 2.974,
-    "encode_seconds": 0.26
+    "extract_seconds": 2.158,
+    "fit_seconds": 1.583,
+    "render_seconds": 3.064,
+    "encode_seconds": 0.257
   }
 }
