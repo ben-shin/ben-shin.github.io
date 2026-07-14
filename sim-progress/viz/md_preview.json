@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-07-14T14:03:35+02:00",
+  "generated_at": "2026-07-14T14:45:45+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/CEF/T553K",
-  "start_ns": 143.58,
-  "end_ns": 145.08,
+  "start_ns": 149.34,
+  "end_ns": 150.84,
   "window_ns": 1.5,
   "dt_ps": 10.0,
   "fps": 30,
@@ -61,9 +61,9 @@
   ],
   "frames": 151,
   "atoms_per_frame": 730,
-  "mp4_bytes": 1387531,
-  "mp4_mb": 1.323,
-  "thumbnail_bytes": 95362,
+  "mp4_bytes": 1384526,
+  "mp4_mb": 1.32,
+  "thumbnail_bytes": 93252,
   "duration_seconds": 5.033,
   "renderer": "pure-python-calpha-trace",
   "files": {
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 136.29,
-    "fit_seconds": 101.208,
-    "render_seconds": 98.962,
-    "encode_seconds": 9.555
+    "extract_seconds": 126.983,
+    "fit_seconds": 98.472,
+    "render_seconds": 98.954,
+    "encode_seconds": 10.674
   }
 }
