@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-07-17T12:52:02+02:00",
+  "generated_at": "2026-07-17T12:25:46+01:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/CEF/G600D",
-  "start_ns": 0.0,
-  "end_ns": 1.42,
-  "window_ns": 1.42,
-  "dt_ps": 10.0,
-  "fps": 30,
-  "width": 960,
-  "height": 540,
+  "start_ns": 3.2699999999999996,
+  "end_ns": 4.27,
+  "window_ns": 1.0,
+  "dt_ps": 20.0,
+  "fps": 24,
+  "width": 720,
+  "height": 405,
   "center_group": "Protein",
   "fit_group": "Protein",
   "output_group": "non-Water",
@@ -59,12 +59,12 @@
       ]
     }
   ],
-  "frames": 143,
+  "frames": 51,
   "atoms_per_frame": 730,
-  "mp4_bytes": 1006175,
-  "mp4_mb": 0.96,
-  "thumbnail_bytes": 69775,
-  "duration_seconds": 4.767,
+  "mp4_bytes": 206294,
+  "mp4_mb": 0.197,
+  "thumbnail_bytes": 50674,
+  "duration_seconds": 2.125,
   "renderer": "pure-python-calpha-trace",
   "files": {
     "mp4": "viz/md_preview.mp4",
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 118.602,
-    "fit_seconds": 111.656,
-    "render_seconds": 78.86,
-    "encode_seconds": 18.62
+    "extract_seconds": 1.866,
+    "fit_seconds": 1.002,
+    "render_seconds": 1.168,
+    "encode_seconds": 0.322
   }
 }
