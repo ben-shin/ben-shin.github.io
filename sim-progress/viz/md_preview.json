@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-20T18:38:32+02:00",
+  "generated_at": "2026-07-20T19:10:30+02:00",
   "source_root": "/home/benshin/gromacs_run/PBP/holo/CEF/G600D",
   "start_ns": 248.25,
   "end_ns": 249.75,
@@ -72,9 +72,9 @@
     "metadata": "viz/md_preview.json"
   },
   "timings": {
-    "extract_seconds": 2.885,
-    "fit_seconds": 1.893,
-    "render_seconds": 2.827,
-    "encode_seconds": 0.261
+    "extract_seconds": 2.899,
+    "fit_seconds": 1.911,
+    "render_seconds": 2.877,
+    "encode_seconds": 0.274
   }
 }
