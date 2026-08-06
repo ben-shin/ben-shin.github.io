@@ -124,6 +124,47 @@
       margin-bottom: 0.75rem;
       font-family: Tahoma, Geneva, Verdana, sans-serif;
     }
+
+    .resources-intro {
+      margin-bottom: 1.5rem;
+    }
+
+    .resource-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .resource-card {
+      padding: 1.25rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background-color: #fafafa;
+    }
+
+    .resource-card h3 {
+      margin: 0 0 0.5rem;
+      padding: 0;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .resource-card h3::after {
+      display: none;
+    }
+
+    .resource-card p {
+      margin: 0 0 0.75rem;
+    }
+
+    .resource-link {
+      color: #0077cc;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .resource-link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 
@@ -171,7 +212,27 @@
     <!-- Right Column -->
     <section class="right-column">
       <h2>Resources</h2>
-      <p>WIP – tools available for download on <a href="https://github.com/ben-shin">GitHub</a>.</p>
+      <p class="resources-intro">Open-source software and practical tools for scientific data analysis, modelling, and NMR workflows.</p>
+
+      <div class="resource-list">
+        <article class="resource-card">
+          <h3>Protein Folding Practical</h3>
+          <p>A Python GUI for importing CLARIOstar 96-well GFP folding data, assigning wells and GuHCl concentrations, exporting group datasets, and fitting denaturation curves.</p>
+          <a class="resource-link" href="https://github.com/ben-shin/Protein-Folding-Practical" target="_blank" rel="noopener noreferrer">View repository &rarr;</a>
+        </article>
+
+        <article class="resource-card">
+          <h3>mODEler</h3>
+          <p>A GUI-based toolkit for constructing kinetic reaction schemes, automatically generating ODE systems, fitting models to experimental data, and exporting results.</p>
+          <a class="resource-link" href="https://github.com/ben-shin/mODEler" target="_blank" rel="noopener noreferrer">View repository &rarr;</a>
+        </article>
+
+        <article class="resource-card">
+          <h3>NEF Convert Toolkit</h3>
+          <p>A collection of simple scripts for converting NMR Exchange Format (NEF) files into formats used in downstream NMR workflows.</p>
+          <a class="resource-link" href="https://github.com/ben-shin/NEF_convert_toolkit" target="_blank" rel="noopener noreferrer">View repository &rarr;</a>
+        </article>
+      </div>
     </section>
 
   </main>
