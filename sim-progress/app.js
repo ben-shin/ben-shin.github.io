@@ -17,7 +17,7 @@ const state = {
   refreshMs: 5000,
 };
 
-const STAGES = ["em", "nvt", "npt", "md_relax", "md"];
+const STAGES = ["em", "nvt", "npt", "md_relax", "relax", "md", "metad"];
 const ETA_SOURCE_TIME_ZONE = "Europe/London";
 const LEGACY_TIMESTAMP_TIME_ZONE = "Europe/London";
 const STATIC_HISTORY_REFRESH_MS = 5 * 60 * 1000;
